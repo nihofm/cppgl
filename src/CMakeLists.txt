@@ -31,5 +31,10 @@ target_link_libraries(${TARGET} ${GLEW_LIBRARIES})
 find_package(glfw3 REQUIRED)
 target_link_libraries(${TARGET} glfw)
 
+# ass-imp
+find_package(ASSIMP REQUIRED)
+include_directories(${ASSIMP_INCLUDE_DIRS})
+target_link_libraries(cppgl ${ASSIMP_LIBRARIES})
+
 # std::filesystem
 target_link_libraries(${TARGET} stdc++fs)

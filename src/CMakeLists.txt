@@ -12,7 +12,6 @@ set_target_properties(${TARGET} PROPERTIES VERSION 0.1)
 # install
 install(TARGETS ${TARGET} DESTINATION lib)
 install(DIRECTORY . DESTINATION include/${TARGET} FILES_MATCHING PATTERN "*.h")
-install(DIRECTORY imgui DESTINATION include/${TARGET}/imgui FILES_MATCHING PATTERN "*.h")
 
 # ----------------------------------------------------------
 # dependencies

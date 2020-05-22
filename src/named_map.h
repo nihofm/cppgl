@@ -3,6 +3,7 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <stdexcept>
 
 template <typename T> class NamedMap {
 public:

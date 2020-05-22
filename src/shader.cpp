@@ -42,18 +42,12 @@ static std::string get_log(GLuint object) {
     return error_string;
 }
 
-static GLuint compile_shader(GLenum type, bool throw_error, std::map<GLenum, fs::path>& source_files, std::map<GLenum, fs::file_time_type>& timestamps) {
+static GLuint compile_shader(GLenum type, std::map<GLenum, fs::path>& source_files, std::map<GLenum, fs::file_time_type>& timestamps) {
     std::cout << "Loading: " << source_files[type] << "..." << std::endl;
     std::string source = read_file(source_files[type]);
     timestamps[type] = fs::last_write_time(source_files[type]);
-    if (source.empty()) {
-        const std::string error_msg = "ERROR: Trying to compile shader from empty source!";
-        if (throw_error)
-            throw std::runtime_error(error_msg);
-        else
-            std::cerr << error_msg << std::endl;
-        return 0;
-    }
+    if (source.empty())
+        throw std::runtime_error("ERROR: Trying to compile shader from empty source!");
 
     // handle single level of #include TODO FIXME
     std::string::size_type inc_at;
@@ -71,14 +65,8 @@ static GLuint compile_shader(GLenum type, bool throw_error, std::map<GLenum, fs:
             auto first = inc_str.find("<") + 1;
             auto second = inc_str.find(">", first);
             inc_file = inc_str.substr(first, second - first);
-        } else {
-            const std::string error_msg = "ERROR: Failed to parse #include string: " + inc_str;
-            if (throw_error)
-                throw std::runtime_error(error_msg);
-            else
-                std::cerr << error_msg << std::endl;
-            return 0;
-        }
+        } else
+            throw std::runtime_error("ERROR: Failed to parse #include string: " + inc_str);
 
         // read #include-file
         fs::path p = source_files[type];
@@ -90,14 +78,8 @@ static GLuint compile_shader(GLenum type, bool throw_error, std::map<GLenum, fs:
                 inc_src += line + "\n";
             // replace #include with file
             source.replace(inc_at, inc_to - inc_at, inc_src);
-        } else {
-            const std::string error_msg = "ERROR: Failed to open #include file: " + inc_str;
-            if (throw_error)
-                throw std::runtime_error(error_msg);
-            else
-                std::cerr << error_msg << std::endl;
-            return 0;
-        }
+        } else
+            throw std::runtime_error("ERROR: Failed to open #include file: " + inc_str);
     }
 
     GLuint shader = glCreateShader(type);
@@ -132,10 +114,7 @@ static GLuint compile_shader(GLenum type, bool throw_error, std::map<GLenum, fs:
             line++;
         }
         glDeleteShader(shader);
-        if (throw_error)
-            throw std::runtime_error(error_msg);
-        else
-            std::cerr << error_msg << std::endl;
+        throw std::runtime_error(error_msg);
         return 0;
     }
     return shader;
@@ -148,13 +127,13 @@ Shader::Shader(const std::string& name) : NamedMap(name), id(0) {}
 
 Shader::Shader(const std::string& name, const fs::path& compute_source) : Shader(name) {
     set_compute_source(compute_source);
-    compile(true);
+    compile();
 }
 
 Shader::Shader(const std::string& name, const fs::path& vertex_source, const fs::path& fragment_source) : Shader(name) {
     set_vertex_source(vertex_source);
     set_fragment_source(fragment_source);
-    compile(true);
+    compile();
 }
 
 Shader::Shader(const std::string& name, const fs::path& vertex_source, const fs::path& geometry_source, const fs::path& fragment_source)
@@ -162,7 +141,7 @@ Shader::Shader(const std::string& name, const fs::path& vertex_source, const fs:
     set_vertex_source(vertex_source);
     set_geometry_source(geometry_source);
     set_fragment_source(fragment_source);
-    compile(true);
+    compile();
 }
 
 Shader::~Shader() {
@@ -209,11 +188,11 @@ void Shader::set_compute_source(const fs::path& path) {
     set_source(GL_COMPUTE_SHADER, path);
 }
 
-void Shader::compile(bool throw_error) {
+void Shader::compile() {
     // compile shaders
     GLuint program = glCreateProgram();
     if (source_files.count(GL_COMPUTE_SHADER)) { // is compute shader
-        GLuint shader = compile_shader(GL_COMPUTE_SHADER, throw_error, source_files, timestamps);
+        GLuint shader = compile_shader(GL_COMPUTE_SHADER, source_files, timestamps);
         if (!shader) {
             glDeleteProgram(program);
             return;
@@ -221,7 +200,7 @@ void Shader::compile(bool throw_error) {
         glAttachShader(program, shader);
     } else { // is pipeline
         if (source_files.count(GL_VERTEX_SHADER)) {
-            GLuint shader = compile_shader(GL_VERTEX_SHADER, throw_error, source_files, timestamps);
+            GLuint shader = compile_shader(GL_VERTEX_SHADER, source_files, timestamps);
             if (!shader) {
                 glDeleteProgram(program);
                 return;
@@ -229,7 +208,7 @@ void Shader::compile(bool throw_error) {
             glAttachShader(program, shader);
         }
         if (source_files.count(GL_TESS_CONTROL_SHADER)) {
-            GLuint shader = compile_shader(GL_TESS_CONTROL_SHADER, throw_error, source_files, timestamps);
+            GLuint shader = compile_shader(GL_TESS_CONTROL_SHADER, source_files, timestamps);
             if (!shader) {
                 glDeleteProgram(program);
                 return;
@@ -237,7 +216,7 @@ void Shader::compile(bool throw_error) {
             glAttachShader(program, shader);
         }
         if (source_files.count(GL_TESS_EVALUATION_SHADER)) {
-            GLuint shader = compile_shader(GL_TESS_EVALUATION_SHADER, throw_error, source_files, timestamps);
+            GLuint shader = compile_shader(GL_TESS_EVALUATION_SHADER, source_files, timestamps);
             if (!shader) {
                 glDeleteProgram(program);
                 return;
@@ -245,7 +224,7 @@ void Shader::compile(bool throw_error) {
             glAttachShader(program, shader);
         }
         if (source_files.count(GL_GEOMETRY_SHADER)) {
-            GLuint shader = compile_shader(GL_GEOMETRY_SHADER, throw_error, source_files, timestamps);
+            GLuint shader = compile_shader(GL_GEOMETRY_SHADER, source_files, timestamps);
             if (!shader) {
                 glDeleteProgram(program);
                 return;
@@ -253,7 +232,7 @@ void Shader::compile(bool throw_error) {
             glAttachShader(program, shader);
         }
         if (source_files.count(GL_FRAGMENT_SHADER)) {
-            GLuint shader = compile_shader(GL_FRAGMENT_SHADER, throw_error, source_files, timestamps);
+            GLuint shader = compile_shader(GL_FRAGMENT_SHADER, source_files, timestamps);
             if (!shader) {
                 glDeleteProgram(program);
                 return;
@@ -271,11 +250,7 @@ void Shader::compile(bool throw_error) {
             error_msg += entry.second.string() + "\n";
         error_msg += "Log: " + get_log(program) + "\n";
         glDeleteProgram(program);
-        if (throw_error)
-            throw std::runtime_error(error_msg);
-        else
-            std::cerr << error_msg << std::endl;
-        return;
+        throw std::runtime_error(error_msg);
     }
     // success, set new id
     if (glIsProgram(id))
@@ -394,9 +369,13 @@ void Shader::uniform(const std::string &name, const std::shared_ptr<Texture3D>& 
 
 void Shader::reload_if_modified() {
     for (const auto& entry : source_files) {
-        if (fs::last_write_time(entry.second) != timestamps[entry.first]) {
-            compile();
-            return;
+        try {
+            if (fs::last_write_time(entry.second) != timestamps[entry.first]) {
+                compile();
+                return;
+            }
+        } catch (std::exception& e) {
+            std::cerr << e.what() << std::endl;
         }
     }
 }

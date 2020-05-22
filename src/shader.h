@@ -43,7 +43,7 @@ public:
     void set_compute_source(const fs::path& path);
 
     // compile and link shader from previously given source files
-    void compile(bool throw_error = false);
+    void compile();
 
     // compute shader dispatch (call with actual amount of threads, will internally divide by workgroup size)
     void dispatch_compute(uint32_t w, uint32_t h = 1, uint32_t d = 1) const;

@@ -115,7 +115,6 @@ static GLuint compile_shader(GLenum type, std::map<GLenum, fs::path>& source_fil
         }
         glDeleteShader(shader);
         throw std::runtime_error(error_msg);
-        return 0;
     }
     return shader;
 }

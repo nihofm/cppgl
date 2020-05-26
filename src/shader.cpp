@@ -49,7 +49,7 @@ static GLuint compile_shader(GLenum type, std::map<GLenum, fs::path>& source_fil
     if (source.empty())
         throw std::runtime_error("ERROR: Trying to compile shader from empty source!");
 
-    // handle single level of #include TODO FIXME
+    // handle single level of #include
     std::string::size_type inc_at;
     while ((inc_at = source.find("#include")) != std::string::npos) {
         auto inc_to = source.find("\n", inc_at);
@@ -82,6 +82,7 @@ static GLuint compile_shader(GLenum type, std::map<GLenum, fs::path>& source_fil
             throw std::runtime_error("ERROR: Failed to open #include file: " + inc_str);
     }
 
+    // actually compile shader
     GLuint shader = glCreateShader(type);
     const char *src = source.c_str();
     glShaderSource(shader, 1, &src, NULL);

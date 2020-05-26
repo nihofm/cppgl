@@ -85,10 +85,8 @@ static void glfw_char_callback(GLFWwindow* window, unsigned int c) {
 static ContextParameters parameters;
 
 Context::Context() {
-    if (!glfwInit()) {
-        std::cerr << "glfwInit failed!" << std::endl;
-        exit(1);
-    }
+    if (!glfwInit())
+        throw std::runtime_error("glfwInit failed!");
     glfwSetErrorCallback(glfw_error_func);
 
     // some GL context settings
@@ -106,9 +104,8 @@ Context::Context() {
     // create window and context
     glfw_window = glfwCreateWindow(parameters.width, parameters.height, parameters.title.c_str(), 0, 0);
     if (!glfw_window) {
-        std::cerr << "ERROR: glfwCreateContext failed!" << std::endl;
         glfwTerminate();
-        exit(1);
+        throw std::runtime_error("glfwCreateContext failed!");
     }
     glfwMakeContextCurrent(glfw_window);
     glfwSwapInterval(parameters.swap_interval);
@@ -116,16 +113,15 @@ Context::Context() {
     glewExperimental = GL_TRUE;
     const GLenum err = glewInit();
     if (err != GLEW_OK) {
-        std::cerr << "ERROR: GLEWInit failed: " << glewGetErrorString(err) << std::endl;
         glfwDestroyWindow(glfw_window);
         glfwTerminate();
-        exit(1);
+        throw std::runtime_error(std::string("GLEWInit failed: ") + (const char*)glewGetErrorString(err));
     }
 
     // output configuration
-    std::cerr << "GLFW: " << glfwGetVersionString() << std::endl;
-    std::cerr << "OpenGL: " << glGetString(GL_VERSION) << ", " << glGetString(GL_RENDERER) << std::endl;
-    std::cerr << "GLSL: " << glGetString(GL_SHADING_LANGUAGE_VERSION) << std::endl;
+    std::cout << "GLFW: " << glfwGetVersionString() << std::endl;
+    std::cout << "OpenGL: " << glGetString(GL_VERSION) << ", " << glGetString(GL_RENDERER) << std::endl;
+    std::cout << "GLSL: " << glGetString(GL_SHADING_LANGUAGE_VERSION) << std::endl;
 
     // enable debugging output
     enable_strack_trace_on_crash();

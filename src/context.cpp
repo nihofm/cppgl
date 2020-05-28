@@ -27,6 +27,7 @@ static void (*user_mouse_callback)(double xpos, double ypos) = 0;
 static void (*user_mouse_button_callback)(int button, int action, int mods) = 0;
 static void (*user_mouse_scroll_callback)(double xoffset, double yoffset) = 0;
 static void (*user_resize_callback)(int w, int h) = 0;
+static void (*user_gui_callback)(void) = 0;
 
 static void glfw_key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
     if (key == GLFW_KEY_ESCAPE)
@@ -280,6 +281,8 @@ void Context::set_mouse_scroll_callback(void (*fn)(double xoffset, double yoffse
 
 void Context::set_resize_callback(void (*fn)(int w, int h)) { user_resize_callback = fn; }
 
+void Context::set_gui_callback(void (*fn)(void)) { user_gui_callback = fn; }
+
 // -------------------------------------------
 // GUI
 
@@ -435,4 +438,7 @@ static void draw_gui() {
         }
         ImGui::End();
     }
+
+    if (user_gui_callback)
+        user_gui_callback();
 }

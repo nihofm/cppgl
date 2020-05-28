@@ -68,6 +68,7 @@ public:
     static void set_mouse_button_callback(void (*fn)(int button, int action, int mods));
     static void set_mouse_scroll_callback(void (*fn)(double xoffset, double yoffset));
     static void set_resize_callback(void (*fn)(int w, int h));
+    static void set_gui_callback(void (*fn)(void));
 
     // data
     GLFWwindow* glfw_window;

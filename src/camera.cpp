@@ -8,6 +8,7 @@
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/rotate_vector.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/quaternion.hpp>
 
 static Camera* current_camera = 0;
 float Camera::default_camera_movement_speed = 0.005;
@@ -42,17 +43,29 @@ void Camera::update() {
 
 void Camera::forward(float by) { pos += by * dir; }
 void Camera::backward(float by) { pos -= by * dir; }
-void Camera::leftward(float by) { pos -= by * cross(dir, up); }
-void Camera::rightward(float by) { pos += by * cross(dir, up); }
-void Camera::upward(float by) { pos += by * glm::normalize(cross(cross(dir, up), dir)); }
-void Camera::downward(float by) { pos -= by * glm::normalize(cross(cross(dir, up), dir)); }
+void Camera::leftward(float by) { pos -= by * glm::cross(dir, up); }
+void Camera::rightward(float by) { pos += by * glm::cross(dir, up); }
+void Camera::upward(float by) { pos += by * glm::normalize(glm::cross(glm::cross(dir, up), dir)); }
+void Camera::downward(float by) { pos -= by * glm::normalize(glm::cross(glm::cross(dir, up), dir)); }
 
 void Camera::yaw(float angle) { dir = glm::normalize(glm::rotate(dir, angle * float(M_PI) / 180.f, up)); }
 void Camera::pitch(float angle) {
-    dir = glm::normalize(glm::rotate(dir, angle * float(M_PI) / 180.f, normalize(cross(dir, up))));
+    dir = glm::normalize(glm::rotate(dir, angle * float(M_PI) / 180.f, glm::normalize(glm::cross(dir, up))));
     if (not fix_up_vector) up = glm::normalize(glm::cross(glm::cross(dir, up), dir));
 }
 void Camera::roll(float angle) { up = glm::normalize(glm::rotate(up, angle * float(M_PI) / 180.f, dir)); }
+
+void Camera::store(glm::vec3& pos, glm::quat& rot) const {
+    pos = this->pos;
+    rot = glm::quat_cast(view);
+}
+
+void Camera::load(glm::vec3& pos, glm::quat& rot) {
+    this->pos = pos;
+    this->view = glm::mat4_cast(rot);
+    this->dir = -glm::vec3(view[0][2], view[1][2], view[2][2]);
+    this->up = glm::vec3(view[0][1], view[1][1], view[2][1]);
+}
 
 float Camera::aspect_ratio() {
     GLint xywh[4];

@@ -31,7 +31,7 @@ public:
 
     // load/store
     void store(glm::vec3& pos, glm::quat& rot) const;
-    void load(glm::vec3& pos, glm::quat& rot);
+    void load(const glm::vec3& pos, const glm::quat& rot);
 
     // compute aspect ratio from current viewport
     static float aspect_ratio();

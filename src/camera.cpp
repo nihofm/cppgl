@@ -60,7 +60,7 @@ void Camera::store(glm::vec3& pos, glm::quat& rot) const {
     rot = glm::quat_cast(view);
 }
 
-void Camera::load(glm::vec3& pos, glm::quat& rot) {
+void Camera::load(const glm::vec3& pos, const glm::quat& rot) {
     this->pos = pos;
     this->view = glm::mat4_cast(rot);
     this->dir = -glm::vec3(view[0][2], view[1][2], view[2][2]);

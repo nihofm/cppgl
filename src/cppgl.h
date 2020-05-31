@@ -1,10 +1,12 @@
 #pragma once
 
+#include "anim.h"
 #include "camera.h"
 #include "context.h"
 #include "debug.h"
 #include "drawelement.h"
 #include "framebuffer.h"
+#include "imgui/imgui.h"
 #include "material.h"
 #include "mesh.h"
 #include "meshloader.h"

@@ -1,7 +1,7 @@
 CppGL Framework
 =======
 
-Simplistic OpenGL framework for use in teaching with focus on simplicity and reusability.
+OpenGL framework for use in teaching with focus on simplicity and reusability.
 
 ## Dependencies
 

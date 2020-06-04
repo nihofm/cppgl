@@ -1,6 +1,7 @@
 #pragma once
 
 #include "anim.h"
+#include "buffer.h"
 #include "camera.h"
 #include "context.h"
 #include "debug.h"
@@ -14,6 +15,4 @@
 #include "quad.h"
 #include "query.h"
 #include "shader.h"
-#include "ssbo.h"
 #include "texture.h"
-#include "timer.h"

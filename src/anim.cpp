@@ -12,7 +12,7 @@ template <typename T> struct CubicPolynomial {
         c3 = 2.f*x0 - 2.f*x1 + t0 + t1;
     }
 
-    T operator()(float t) const {
+    T eval(float t) const {
         const float t2 = t*t;
         const float t3 = t2*t;
         return c0 + c1*t + c2*t2 + c3*t3;
@@ -56,18 +56,8 @@ Animation::~Animation() {}
 
 void Animation::update(float dt_ms) {
     if (running && time < camera_path.size() && !camera_path.empty()) {
-        // compute spline
-        const size_t at = glm::floor(time);
-        const auto& p0 = camera_path[std::max(at - 1, size_t(0))];
-        const auto& p1 = camera_path[std::min(at + 0, camera_path.size()) % camera_path.size()];
-        const auto& p2 = camera_path[std::min(at + 1, camera_path.size()) % camera_path.size()];
-        const auto& p3 = camera_path[std::min(at + 2, camera_path.size()) % camera_path.size()];
-        const CentripedalCR spline(p0.first, p1.first, p2.first, p3.first);
-        // update camera
-        const glm::vec3& pos = spline(glm::fract(time));
-        const glm::quat& rot = glm::slerp(p1.second, p2.second, glm::fract(time)); // TODO spherical spline
-        Camera::current()->load(pos, rot);
-        // advance
+        // update camera and advance time
+        Camera::current()->load(eval_pos(), eval_rot());
         time = glm::min(time + dt_ms / ms_between_nodes, float(camera_path.size()));
     } else
         running = false;
@@ -152,20 +142,19 @@ void Animation::put_data(const std::string& name, size_t i, const glm::vec4& val
 glm::vec3 Animation::eval_pos() const {
     // eval centripedal catmull rom spline
     const size_t at = glm::floor(time);
-    const auto& p0 = camera_path[std::max(size_t(0), at - 1)].first;
-    const auto& p1 = camera_path[std::min(at, camera_path.size()) % camera_path.size()].first;
+    const auto& p0 = camera_path[std::max(at - 1, size_t(0))].first;
+    const auto& p1 = camera_path[std::min(at + 0, camera_path.size()) % camera_path.size()].first;
     const auto& p2 = camera_path[std::min(at + 1, camera_path.size()) % camera_path.size()].first;
     const auto& p3 = camera_path[std::min(at + 2, camera_path.size()) % camera_path.size()].first;
-    CentripedalCR spline(p0, p1, p2, p3);
-    return spline(glm::fract(time));
+    return CentripedalCR(p0, p1, p2, p3).eval(glm::fract(time));
 }
 
 glm::quat Animation::eval_rot() const {
     // TODO spherical spline
     const size_t at = glm::floor(time);
-    const auto& lower = camera_path[std::min(at, camera_path.size()) % camera_path.size()];
-    const auto& upper = camera_path[std::min(at + 1, camera_path.size()) % camera_path.size()];
-    return glm::slerp(lower.second, upper.second, time - at);
+    const auto& lower = camera_path[std::min(at, camera_path.size()) % camera_path.size()].second;
+    const auto& upper = camera_path[std::min(at + 1, camera_path.size()) % camera_path.size()].second;
+    return glm::slerp(lower, upper, time - at);
 }
 
 int Animation::eval_int(const std::string& name) const {

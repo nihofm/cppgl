@@ -150,7 +150,7 @@ Context::Context() {
     ImGui_ImplOpenGL3_Init("#version 130");
     ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
     // load custom font?
-    if (not parameters.font_ttf_filename.empty()) {
+    if (fs::exists(parameters.font_ttf_filename)) {
         ImFontConfig config;
         config.OversampleH = 3;
         config.OversampleV = 3;
@@ -171,9 +171,9 @@ Context::Context() {
 
     // setup timer
     last_t = curr_t = glfwGetTime();
-    cpu_timer = std::make_shared<TimerQuery>("CPU-overall");
+    cpu_timer = std::make_shared<TimerQuery>("CPU-time");
     frame_timer = std::make_shared<TimerQuery>("Frame-time");
-    gpu_timer = std::make_shared<TimerQueryGL>("GPU-overall");
+    gpu_timer = std::make_shared<TimerQueryGL>("GPU-time");
     cpu_timer->start();
     frame_timer->start();
     gpu_timer->start();
@@ -342,13 +342,11 @@ static void display_framebuffer(const Framebuffer* fbo) {
     ImGui::Indent();
     ImGui::Text("ID: %u", fbo->id);
     ImGui::Text("size: %ux%u", fbo->w, fbo->h);
-    if (ImGui::CollapsingHeader(("depth attachment##" + fbo->name).c_str()) && fbo->depth_texture) {
+    if (ImGui::CollapsingHeader(("depth attachment##" + fbo->name).c_str()) && fbo->depth_texture)
         display_texture(fbo->depth_texture.get());
-    }
-    for (uint32_t i = 0; i < fbo->color_textures.size(); ++i) {
+    for (uint32_t i = 0; i < fbo->color_textures.size(); ++i)
         if (ImGui::CollapsingHeader(std::string("color attachment " + std::to_string(i) + "##" + fbo->name).c_str()))
             display_texture(fbo->color_textures[i].get());
-    }
     ImGui::Unindent();
 }
 

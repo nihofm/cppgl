@@ -9,7 +9,6 @@ namespace fs = std::filesystem;
 #include <GL/glew.h>
 #include <GL/gl.h>
 #include <glm/glm.hpp>
-
 #include "named_map.h"
 #include "texture.h"
 

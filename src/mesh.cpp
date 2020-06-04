@@ -60,7 +60,7 @@ Mesh::Mesh(const std::string& name, const aiMesh *mesh_ai) : Mesh(name) {
             indices.push_back(face.mIndices[1]);
             indices.push_back(face.mIndices[2]);
         } else
-            std::cout << "WARN: Mesh: skipping non-triangle face!" << std::endl;
+            std::cerr << "WARN: Mesh: skipping non-triangle face!" << std::endl;
     }
 
     // build GL data
@@ -95,7 +95,7 @@ uint32_t Mesh::add_vertex_buffer(GLenum type, uint32_t element_dim, uint32_t num
         throw std::runtime_error("Mesh " + name + ": vertex buffer size mismatch!");
     this->num_vertices = num_vertices;
     const uint32_t buf_id = vbo_ids.size();
-    vbo_ids.push_back(0);
+    vbo_ids.push_back(0); // dummy
     vbo_types.push_back(type);
     vbo_dims.push_back(element_dim);
     // setup vbo
@@ -132,7 +132,7 @@ void Mesh::add_index_buffer(uint32_t num_indices, const uint32_t* data, GLenum h
 }
 
 void Mesh::update_vertex_buffer(uint32_t buf_id, const void* data) {
-    if (buf_id > vbo_ids.size())
+    if (buf_id >= vbo_ids.size())
         throw std::runtime_error("Mesh " + name + ": buffer id out of range!");
     glBindBuffer(GL_ARRAY_BUFFER, vbo_ids[buf_id]);
     const size_t stride = type_to_bytes(vbo_types[buf_id]) * vbo_dims[buf_id];

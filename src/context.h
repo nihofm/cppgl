@@ -21,7 +21,7 @@ struct ContextParameters {
     int maximised = GLFW_FALSE;
     int gl_debug_context = GLFW_TRUE;
     uint32_t swap_interval = 1; // 0 = no vsync, 1 = 60fps, 2 = 30fps, etc
-    std::string font_ttf_filename;
+    fs::path font_ttf_filename;
     uint32_t font_size_pixels = 13;
 };
 

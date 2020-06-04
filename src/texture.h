@@ -5,7 +5,6 @@
 namespace fs = std::filesystem;
 #include <GL/glew.h>
 #include <GL/gl.h>
-
 #include "named_map.h"
 
 // ----------------------------------------------------
@@ -35,6 +34,8 @@ public:
     void unbind() const;
     void bind_image(uint32_t unit, GLenum access, GLenum format) const;
     void unbind_image(uint32_t unit) const;
+
+    // TODO CPU <-> GPU data transfers
 
     // save to disk
     void save_png(const fs::path& path, bool flip = true) const;
@@ -78,6 +79,8 @@ public:
     void unbind() const;
     void bind_image(uint32_t unit, GLenum access, GLenum format) const;
     void unbind_image(uint32_t unit) const;
+
+    // TODO CPU <-> GPU data transfers
 
     // data
     GLuint id;

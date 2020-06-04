@@ -36,6 +36,10 @@ public:
     // compute aspect ratio from current viewport
     static float aspect_ratio();
 
+    // default camera keyboard/mouse handler for basic movement
+    static float default_camera_movement_speed;
+    static bool default_input_handler(double dt_ms);
+
     // data
     glm::vec3 pos, dir, up;             // camera coordinate system
     float fov_degree, near, far;        // perspective projection
@@ -43,10 +47,6 @@ public:
     bool perspective;                   // switch between perspective and orthographic (default: perspective)
     bool fix_up_vector;                 // keep up vector fixed to avoid camera drift
     glm::mat4 view, view_normal, proj;  // camera matrices (computed via a call update())
-
-    // default camera keyboard/mouse handler for basic movement
-    static float default_camera_movement_speed;
-    static bool default_input_handler(double dt_ms);
 };
 
 // variadic alias for std::make_shared<>(...)

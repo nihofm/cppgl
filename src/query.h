@@ -9,6 +9,26 @@
 #include "named_map.h"
 
 // -------------------------------------------------------
+// (CPU) Timer
+
+class Timer {
+public:
+	inline Timer() { start(); }
+
+	inline void start() {
+        start_time = std::chrono::system_clock::now();
+	}
+
+	inline double look() { // milliseconds
+        return std::chrono::duration_cast<std::chrono::duration<double, std::milli>>(
+                std::chrono::system_clock::now() - start_time).count();
+	}
+
+    // data
+	std::chrono::time_point<std::chrono::system_clock> start_time;
+};
+
+// -------------------------------------------------------
 // Ring buffer
 
 template <typename T> struct RingBuffer {
@@ -29,7 +49,7 @@ template <typename T> struct RingBuffer {
     }
 
     T max() const {
-        T t(0);
+        T t(FLT_MIN);
         for (const auto& val : data)
             t = std::max(t, val);
         return t;
@@ -42,6 +62,7 @@ template <typename T> struct RingBuffer {
         return t / N;
     }
 
+    // data
     const size_t N;
     size_t curr;
     std::vector<T> data;
@@ -54,12 +75,13 @@ template <typename T> struct RingBuffer {
 class TimerQuery : public NamedMap<TimerQuery> {
 public:
     TimerQuery(const std::string& name, size_t samples = 256);
-    ~TimerQuery();
+    virtual ~TimerQuery();
 
     void start();
     void end();
     float get() const; // milliseconds
 
+    Timer timer;
     RingBuffer<float> buf;
     std::chrono::time_point<std::chrono::system_clock> start_time;
 };
@@ -70,7 +92,7 @@ public:
 class TimerQueryGL : public NamedMap<TimerQueryGL> {
 public:
     TimerQueryGL(const std::string& name, size_t samples = 256);
-    ~TimerQueryGL();
+    virtual ~TimerQueryGL();
 
     // prevent copies and moves, since GL buffers aren't reference counted
     TimerQueryGL(const TimerQueryGL&) = delete;

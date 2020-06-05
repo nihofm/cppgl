@@ -2,34 +2,25 @@
 
 #include "named_map.h"
 #include "mesh.h"
-#include "material.h"
+#include "shader.h"
 
 // -----------------------------------------------
-// Drawelement
+// Drawelement (object instance for rendering)
 
 class Drawelement : public NamedMap<Drawelement> {
 public:
     Drawelement(const std::string& name);
-    Drawelement(const std::string& name, const std::shared_ptr<Shader>& shader, const std::shared_ptr<Material>& material);
-    Drawelement(const std::string& name, const std::shared_ptr<Shader>& shader, const std::shared_ptr<Material>& material,
-            const std::shared_ptr<Mesh>& mesh);
-    Drawelement(const std::string& name, const std::shared_ptr<Shader>& shader, const std::shared_ptr<Material>& material,
-            const std::vector<std::shared_ptr<Mesh>>& meshes);
+    Drawelement(const std::string& name, const std::shared_ptr<Shader>& shader);
+    Drawelement(const std::string& name, const std::shared_ptr<Shader>& shader, const std::shared_ptr<Mesh>& mesh);
     virtual ~Drawelement();
 
     void bind() const;
+    void draw() const;
     void unbind() const;
 
-    void draw(const glm::mat4& model) const;
-
-    inline void add_mesh(const std::shared_ptr<Mesh>& mesh) { meshes.push_back(mesh); }
-    inline void add_meshes(const std::vector<std::shared_ptr<Mesh>>& meshes) { for (auto& mesh : meshes) add_mesh(mesh); }
-    inline void use_shader(const std::shared_ptr<Shader>& shader) { this->shader = shader; }
-    inline void use_material(const std::shared_ptr<Material>& material) { this->material = material; }
-
+    glm::mat4 model;
     std::shared_ptr<Shader> shader;
-    std::shared_ptr<Material> material;
-    std::vector<std::shared_ptr<Mesh>> meshes;
+    std::shared_ptr<Mesh> mesh;
 };
 
 // variadic alias for std::make_shared<>(...)

@@ -21,7 +21,7 @@ public:
     SSBO& operator=(const SSBO&) = delete;
     SSBO& operator=(const SSBO&&) = delete;
 
-    explicit inline operator bool() const  { return glIsBuffer(id) && size_bytes > 0; }
+    explicit inline operator bool() const { return glIsBuffer(id) && size_bytes > 0; }
     inline operator GLuint() const { return id; }
 
     // resize (discards all data!)
@@ -59,7 +59,7 @@ public:
     UBO& operator=(const UBO&) = delete;
     UBO& operator=(const UBO&&) = delete;
 
-    explicit inline operator bool() const  { return glIsBuffer(id) && size_bytes > 0; }
+    explicit inline operator bool() const { return glIsBuffer(id) && size_bytes > 0; }
     inline operator GLuint() const { return id; }
 
     // resize (discards all data!)

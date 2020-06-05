@@ -36,7 +36,7 @@ Material::Material(const std::string& name, const fs::path& base_path, const aiM
 
 Material::~Material() {}
 
-void Material::bind(const std::shared_ptr<Shader>& shader) const {
+void Material::bind(const Shader& shader) const {
     uint32_t unit = 0;
     for (const auto& entry : texture_map)
         shader->uniform(entry.first, entry.second, unit++);

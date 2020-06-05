@@ -4,11 +4,11 @@
 
 Drawelement::Drawelement(const std::string& name) : NamedMap(name), model(glm::mat4(1)) {}
 
-Drawelement::Drawelement(const std::string& name, const std::shared_ptr<Shader>& shader) : Drawelement(name) {
+Drawelement::Drawelement(const std::string& name, const Shader& shader) : Drawelement(name) {
     this->shader = shader;
 }
 
-Drawelement::Drawelement(const std::string& name, const std::shared_ptr<Shader>& shader, const std::shared_ptr<Mesh>& mesh) : Drawelement(name) {
+Drawelement::Drawelement(const std::string& name, const Shader& shader, const std::shared_ptr<Mesh>& mesh) : Drawelement(name) {
     this->shader = shader;
     this->mesh = mesh;
 }

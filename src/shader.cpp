@@ -121,34 +121,33 @@ static GLuint compile_shader(GLenum type, std::map<GLenum, fs::path>& source_fil
 }
 
 // ----------------------------------------------------
-// Shader
+// ShaderImpl
 
-Shader::Shader(const std::string& name) : NamedMap(name), id(0) {}
+ShaderImpl::ShaderImpl() : id(0) {}
 
-Shader::Shader(const std::string& name, const fs::path& compute_source) : Shader(name) {
+ShaderImpl::ShaderImpl(const fs::path& compute_source) : id(0) {
     set_compute_source(compute_source);
     compile();
 }
 
-Shader::Shader(const std::string& name, const fs::path& vertex_source, const fs::path& fragment_source) : Shader(name) {
+ShaderImpl::ShaderImpl(const fs::path& vertex_source, const fs::path& fragment_source) : id(0)  {
     set_vertex_source(vertex_source);
     set_fragment_source(fragment_source);
     compile();
 }
 
-Shader::Shader(const std::string& name, const fs::path& vertex_source, const fs::path& geometry_source, const fs::path& fragment_source)
-    : Shader(name) {
+ShaderImpl::ShaderImpl(const fs::path& vertex_source, const fs::path& geometry_source, const fs::path& fragment_source) : id(0)  {
     set_vertex_source(vertex_source);
     set_geometry_source(geometry_source);
     set_fragment_source(fragment_source);
     compile();
 }
 
-Shader::~Shader() {
+ShaderImpl::~ShaderImpl() {
     clear();
 }
 
-void Shader::clear() {
+void ShaderImpl::clear() {
     if (glIsProgram(id))
         glDeleteProgram(id);
     id = 0;
@@ -156,39 +155,39 @@ void Shader::clear() {
     timestamps.clear();
 }
 
-void Shader::bind() const { glUseProgram(id); }
+void ShaderImpl::bind() const { glUseProgram(id); }
 
-void Shader::unbind() const { glUseProgram(0); }
+void ShaderImpl::unbind() const { glUseProgram(0); }
 
-void Shader::set_source(GLenum type, const fs::path& path) {
+void ShaderImpl::set_source(GLenum type, const fs::path& path) {
     source_files[type] = path;
 }
 
-void Shader::set_vertex_source(const fs::path& path) {
+void ShaderImpl::set_vertex_source(const fs::path& path) {
     set_source(GL_VERTEX_SHADER, path);
 }
 
-void Shader::set_tesselation_control_source(const fs::path& path) {
+void ShaderImpl::set_tesselation_control_source(const fs::path& path) {
     set_source(GL_TESS_CONTROL_SHADER, path);
 }
 
-void Shader::set_tesselation_evaluation_source(const fs::path& path) {
+void ShaderImpl::set_tesselation_evaluation_source(const fs::path& path) {
     set_source(GL_TESS_EVALUATION_SHADER, path);
 }
 
-void Shader::set_geometry_source(const fs::path& path) {
+void ShaderImpl::set_geometry_source(const fs::path& path) {
     set_source(GL_GEOMETRY_SHADER, path);
 }
 
-void Shader::set_fragment_source(const fs::path& path) {
+void ShaderImpl::set_fragment_source(const fs::path& path) {
     set_source(GL_FRAGMENT_SHADER, path);
 }
 
-void Shader::set_compute_source(const fs::path& path) {
+void ShaderImpl::set_compute_source(const fs::path& path) {
     set_source(GL_COMPUTE_SHADER, path);
 }
 
-void Shader::compile() {
+void ShaderImpl::compile() {
     // compile shaders
     GLuint program = glCreateProgram();
     if (source_files.count(GL_COMPUTE_SHADER)) { // is compute shader
@@ -258,116 +257,116 @@ void Shader::compile() {
     id = program;
 }
 
-void Shader::dispatch_compute(uint32_t w, uint32_t h, uint32_t d) const {
+void ShaderImpl::dispatch_compute(uint32_t w, uint32_t h, uint32_t d) const {
     glm::ivec3 size;
     glGetProgramiv(id, GL_COMPUTE_WORK_GROUP_SIZE, &size.x);
     glDispatchCompute(int(ceil(w / float(size.x))), int(ceil(h / float(size.y))), int(ceil(d / float(size.z))));
 }
 
-void Shader::uniform(const std::string& name, int val) const {
+void ShaderImpl::uniform(const std::string& name, int val) const {
     int loc = glGetUniformLocation(id, name.c_str());
     glUniform1i(loc, val);
 }
 
-void Shader::uniform(const std::string& name, int *val, uint32_t count) const {
+void ShaderImpl::uniform(const std::string& name, int *val, uint32_t count) const {
     int loc = glGetUniformLocation(id, name.c_str());
     glUniform1iv(loc, count, val);
 }
 
-void Shader::uniform(const std::string& name, float val) const {
+void ShaderImpl::uniform(const std::string& name, float val) const {
     int loc = glGetUniformLocation(id, name.c_str());
     glUniform1f(loc, val);
 }
 
-void Shader::uniform(const std::string& name, float *val, uint32_t count) const {
+void ShaderImpl::uniform(const std::string& name, float *val, uint32_t count) const {
     int loc = glGetUniformLocation(id, name.c_str());
     glUniform1fv(loc, count, val);
 }
 
-void Shader::uniform(const std::string& name, const glm::vec2& val) const {
+void ShaderImpl::uniform(const std::string& name, const glm::vec2& val) const {
     int loc = glGetUniformLocation(id, name.c_str());
     glUniform2f(loc, val.x, val.y);
 }
 
-void Shader::uniform(const std::string& name, const glm::vec3& val) const {
+void ShaderImpl::uniform(const std::string& name, const glm::vec3& val) const {
     int loc = glGetUniformLocation(id, name.c_str());
     glUniform3f(loc, val.x, val.y, val.z);
 }
 
-void Shader::uniform(const std::string& name, const glm::vec4& val) const {
+void ShaderImpl::uniform(const std::string& name, const glm::vec4& val) const {
     int loc = glGetUniformLocation(id, name.c_str());
     glUniform4f(loc, val.x, val.y, val.z, val.w);
 }
 
-void Shader::uniform(const std::string& name, const glm::ivec2& val) const {
+void ShaderImpl::uniform(const std::string& name, const glm::ivec2& val) const {
     int loc = glGetUniformLocation(id, name.c_str());
     glUniform2i(loc, val.x, val.y);
 }
 
-void Shader::uniform(const std::string& name, const glm::ivec3& val) const {
+void ShaderImpl::uniform(const std::string& name, const glm::ivec3& val) const {
     int loc = glGetUniformLocation(id, name.c_str());
     glUniform3i(loc, val.x, val.y, val.z);
 }
 
-void Shader::uniform(const std::string& name, const glm::ivec4& val) const {
+void ShaderImpl::uniform(const std::string& name, const glm::ivec4& val) const {
     int loc = glGetUniformLocation(id, name.c_str());
     glUniform4i(loc, val.x, val.y, val.z, val.w);
 }
 
-void Shader::uniform(const std::string& name, const glm::uvec2& val) const {
+void ShaderImpl::uniform(const std::string& name, const glm::uvec2& val) const {
     int loc = glGetUniformLocation(id, name.c_str());
     glUniform2ui(loc, val.x, val.y);
 }
 
-void Shader::uniform(const std::string& name, const glm::uvec3& val) const {
+void ShaderImpl::uniform(const std::string& name, const glm::uvec3& val) const {
     int loc = glGetUniformLocation(id, name.c_str());
     glUniform3ui(loc, val.x, val.y, val.z);
 }
 
-void Shader::uniform(const std::string& name, const glm::uvec4& val) const {
+void ShaderImpl::uniform(const std::string& name, const glm::uvec4& val) const {
     int loc = glGetUniformLocation(id, name.c_str());
     glUniform4ui(loc, val.x, val.y, val.z, val.w);
 }
 
-void Shader::uniform(const std::string& name, const glm::mat3& val) const {
+void ShaderImpl::uniform(const std::string& name, const glm::mat3& val) const {
     int loc = glGetUniformLocation(id, name.c_str());
     glUniformMatrix3fv(loc, 1, GL_FALSE, glm::value_ptr(val));
 }
 
-void Shader::uniform(const std::string& name, const glm::mat4& val) const {
+void ShaderImpl::uniform(const std::string& name, const glm::mat4& val) const {
     int loc = glGetUniformLocation(id, name.c_str());
     glUniformMatrix4fv(loc, 1, GL_FALSE, glm::value_ptr(val));
 }
 
-void Shader::uniform(const std::string& name, const Texture2D& tex, uint32_t unit) const {
+void ShaderImpl::uniform(const std::string& name, const Texture2D& tex, uint32_t unit) const {
     int loc = glGetUniformLocation(id, name.c_str());
     tex.bind(unit);
     glUniform1i(loc, unit);
 }
 
-void Shader::uniform(const std::string& name, const Texture2D* tex, uint32_t unit) const {
+void ShaderImpl::uniform(const std::string& name, const Texture2D* tex, uint32_t unit) const {
     uniform(name, *tex, unit);
 }
 
-void Shader::uniform(const std::string &name, const std::shared_ptr<Texture2D>& tex, uint32_t unit) const {
+void ShaderImpl::uniform(const std::string &name, const std::shared_ptr<Texture2D>& tex, uint32_t unit) const {
     uniform(name, *tex, unit);
 }
 
-void Shader::uniform(const std::string& name, const Texture3D& tex, uint32_t unit) const {
+void ShaderImpl::uniform(const std::string& name, const Texture3D& tex, uint32_t unit) const {
     int loc = glGetUniformLocation(id, name.c_str());
     tex.bind(unit);
     glUniform1i(loc, unit);
 }
 
-void Shader::uniform(const std::string& name, const Texture3D* tex, uint32_t unit) const {
+void ShaderImpl::uniform(const std::string& name, const Texture3D* tex, uint32_t unit) const {
     uniform(name, *tex, unit);
 }
 
-void Shader::uniform(const std::string &name, const std::shared_ptr<Texture3D>& tex, uint32_t unit) const {
+void ShaderImpl::uniform(const std::string &name, const std::shared_ptr<Texture3D>& tex, uint32_t unit) const {
     uniform(name, *tex, unit);
 }
 
-void Shader::reload_if_modified() {
+void ShaderImpl::reload_if_modified() {
     for (const auto& entry : source_files) {
         try {
             if (fs::last_write_time(entry.second) != timestamps[entry.first]) {
@@ -378,9 +377,4 @@ void Shader::reload_if_modified() {
             std::cerr << e.what() << std::endl;
         }
     }
-}
-
-void Shader::reload_modified() {
-    for (auto it = begin(); it != end(); ++it)
-        it->second->reload_if_modified();
 }

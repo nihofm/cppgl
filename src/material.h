@@ -19,7 +19,7 @@ public:
     Material(const std::string& name, const fs::path& base_path, const aiMaterial* mat_ai);
     virtual ~Material();
 
-    void bind(const std::shared_ptr<Shader>& shader) const;
+    void bind(const Shader& shader) const;
     void unbind() const;
 
     void add_texture(const std::string& uniform_name, const std::shared_ptr<Texture2D>& texture);

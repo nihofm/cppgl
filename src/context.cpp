@@ -318,7 +318,7 @@ static void display_texture(const Texture2D* tex, ImVec2 size = ImVec2(300, 300)
     ImGui::Unindent();
 }
 
-static void display_shader(Shader* shader) {
+static void display_shader(Shader& shader) {
     ImGui::Indent();
     ImGui::Text("ID: %u", shader->id);
     if (shader->source_files.count(GL_VERTEX_SHADER))
@@ -423,7 +423,7 @@ static void draw_gui() {
             for (auto& entry : Shader::map)
                 if (ImGui::CollapsingHeader(entry.first.c_str()))
                     display_shader(entry.second);
-            if (ImGui::Button("Reload modified")) Shader::reload_modified();
+            if (ImGui::Button("Reload modified")) reload_modified_shaders();
         }
         ImGui::End();
     }

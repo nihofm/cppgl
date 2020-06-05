@@ -37,7 +37,7 @@ public:
     void clear_gpu(); // free gpu resources
     void upload_gpu(); // cpu -> gpu transfer
 
-    void bind(const std::shared_ptr<Shader>& shader) const;
+    void bind(const Shader& shader) const;
     void draw() const;
     void unbind() const;
 

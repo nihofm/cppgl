@@ -121,7 +121,7 @@ void Mesh::update_vertex_buffer(uint32_t buf_id, const void* data) {
 
 void Mesh::set_primitive_type(GLenum primitive_type) { this->primitive_type = primitive_type; }
 
-void Mesh::bind(const std::shared_ptr<Shader>& shader) const {
+void Mesh::bind(const Shader& shader) const {
     glBindVertexArray(vao);
     if (material)
         material->bind(shader);

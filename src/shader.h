@@ -9,21 +9,25 @@ namespace fs = std::filesystem;
 #include <GL/glew.h>
 #include <GL/gl.h>
 #include <glm/glm.hpp>
-#include "named_map.h"
+#include "named_handle.h"
 #include "texture.h"
 
-class Shader : public NamedMap<Shader> {
+// ------------------------------------------
+// ShaderImpl
+
+class ShaderImpl {
 public:
-    Shader(const std::string& name);
-    Shader(const std::string& name, const fs::path& compute_source);
-    Shader(const std::string& name, const fs::path& vertex_source, const fs::path& fragment_source);
-    Shader(const std::string& name, const fs::path& vertex_source, const fs::path& geometry_source, const fs::path& fragment_source);
-    virtual ~Shader();
+    ShaderImpl();
+    ShaderImpl(const fs::path& compute_source);
+    ShaderImpl(const fs::path& vertex_source, const fs::path& fragment_source);
+    ShaderImpl(const fs::path& vertex_source, const fs::path& geometry_source, const fs::path& fragment_source);
+    virtual ~ShaderImpl();
 
     // prevent copies and moves, since GL buffers aren't reference counted
-    Shader(const Shader&) = delete;
-    Shader& operator=(const Shader&) = delete;
-    Shader& operator=(const Shader&&) = delete;
+    ShaderImpl(const ShaderImpl&) = delete;
+    ShaderImpl(const ShaderImpl&&) = delete; // TODO allow moves?
+    ShaderImpl& operator=(const ShaderImpl&) = delete;
+    ShaderImpl& operator=(const ShaderImpl&&) = delete; // TODO allow moves?
 
     explicit inline operator bool() const  { return glIsProgram(id); }
     inline operator GLuint() const { return id; }
@@ -73,7 +77,6 @@ public:
     // management/reload
     void clear();
     void reload_if_modified();
-    static void reload_modified();
 
     // data
     GLuint id;
@@ -81,7 +84,14 @@ public:
     std::map<GLenum, fs::file_time_type> timestamps;
 };
 
-// variadic alias for std::make_shared<>(...)
-template <class... Args> std::shared_ptr<Shader> make_shader(Args&&... args) {
-    return std::make_shared<Shader>(args...);
+// ------------------------------------------
+// Shader
+
+class ShaderImpl;
+
+typedef NamedHandle<ShaderImpl> Shader;
+
+inline void reload_modified_shaders() {
+    for (auto& pair : Shader::map)
+        pair.second->reload_if_modified();
 }

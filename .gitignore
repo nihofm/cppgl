@@ -122,3 +122,5 @@ $RECYCLE.BIN/
 ### Ninja ###
 .ninja_deps
 .ninja_log
+.vscode/launch.json
+.vscode/settings.json

@@ -2,20 +2,11 @@
 #include "camera.h"
 #include <iostream>
 
-Drawelement::Drawelement(const std::string& name) : NamedMap(name), model(glm::mat4(1)) {}
+DrawelementImpl::DrawelementImpl(const Mesh& mesh, const Shader& shader) : model(glm::mat4(1)), shader(shader), mesh(mesh) {}
 
-Drawelement::Drawelement(const std::string& name, const Shader& shader) : Drawelement(name) {
-    this->shader = shader;
-}
+DrawelementImpl::~DrawelementImpl() {}
 
-Drawelement::Drawelement(const std::string& name, const Shader& shader, const Mesh& mesh) : Drawelement(name) {
-    this->shader = shader;
-    this->mesh = mesh;
-}
-
-Drawelement::~Drawelement() {}
-
-void Drawelement::bind() const {
+void DrawelementImpl::bind() const {
     if (shader) {
         shader->bind();
         if (mesh) mesh->bind(shader);
@@ -26,11 +17,12 @@ void Drawelement::bind() const {
     }
 }
 
-void Drawelement::unbind() const {
+void DrawelementImpl::unbind() const {
     if (mesh) mesh->unbind();
     if (shader) shader->unbind();
 }
 
-void Drawelement::draw() const {
-    mesh->draw();
+void DrawelementImpl::draw() const {
+    if (mesh)
+        mesh->draw();
 }

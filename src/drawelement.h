@@ -1,18 +1,22 @@
 #pragma once
 
-#include "named_map.h"
+#include "named_handle.h"
 #include "mesh.h"
 #include "shader.h"
 
-// -----------------------------------------------
-// Drawelement (object instance for rendering)
+// ------------------------------------------
+// Drawelement
 
-class Drawelement : public NamedMap<Drawelement> {
+class DrawelementImpl;
+using Drawelement = NamedHandle<DrawelementImpl>;
+
+// -----------------------------------------------
+// DrawelementImpl (object instance for rendering)
+
+class DrawelementImpl {
 public:
-    Drawelement(const std::string& name);
-    Drawelement(const std::string& name, const Shader& shader);
-    Drawelement(const std::string& name, const Shader& shader, const Mesh& mesh);
-    virtual ~Drawelement();
+    DrawelementImpl(const Mesh& mesh = Mesh(), const Shader& shader = Shader());
+    virtual ~DrawelementImpl();
 
     void bind() const;
     void draw() const;
@@ -22,8 +26,3 @@ public:
     Shader shader;
     Mesh mesh;
 };
-
-// variadic alias for std::make_shared<>(...)
-template <class... Args> std::shared_ptr<Drawelement> make_drawelement(Args&&... args) {
-    return std::make_shared<Drawelement>(args...);
-}

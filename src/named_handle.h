@@ -2,6 +2,7 @@
 
 #include <map>
 #include <string>
+#include <iostream>
 #include <memory>
 #include <stdexcept>
 
@@ -14,6 +15,8 @@ public:
     // create new object and store handle in map for later retrieval
     template <class... Args>
     NamedHandle(const std::string& name, Args&&... args) : name(name), ptr(std::make_shared<T>(args...)) {
+        if (map.count(name))
+            std::cerr << "WARN: NamedHandle<" <<  typeid(T).name() << ">: overwriting previous mapping for: " << name << std::endl;
         map[name] = *this;
     }
     template <class... Args>
@@ -36,9 +39,6 @@ public:
     inline const T* operator->() const { return ptr.operator->(); }
     inline T& operator*() { return *ptr; }
     inline const T& operator*() const { return *ptr; }
-    // TODO implicit conversions?
-    // inline operator std::shared_ptr<T>&() { return ptr; }
-    // inline operator const std::shared_ptr<T>&() const { return ptr; }
 
     // check if mapping for given name exists
     static bool valid(const std::string& name) { return map.count(name); }

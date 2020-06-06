@@ -11,7 +11,7 @@
 #include "imgui/imgui.h"
 #include "material.h"
 #include "mesh.h"
-#include "named_map.h"
+#include "named_handle.h"
 #include "quad.h"
 #include "query.h"
 #include "shader.h"

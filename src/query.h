@@ -6,13 +6,12 @@
 #include <GL/glew.h>
 #include <GL/gl.h>
 #include <chrono>
-#include "named_map.h"
+#include "named_handle.h"
 
 // -------------------------------------------------------
-// (CPU) Timer
+// helper structs / funcs
 
-class Timer {
-public:
+struct Timer {
 	inline Timer() { start(); }
 
 	inline void start() {
@@ -27,9 +26,6 @@ public:
     // data
 	std::chrono::time_point<std::chrono::system_clock> start_time;
 };
-
-// -------------------------------------------------------
-// Ring buffer
 
 template <typename T> struct RingBuffer {
     RingBuffer(size_t N) : N(N), curr(0), data(N, T(0)) {}
@@ -70,12 +66,18 @@ template <typename T> struct RingBuffer {
 };
 
 // -------------------------------------------------------
-// CPU timer query
+// (CPU) TimerQuery
 
-class TimerQuery : public NamedMap<TimerQuery> {
+class TimerQueryImpl;
+using TimerQuery = NamedHandle<TimerQueryImpl>;
+
+// -------------------------------------------------------
+// (CPU) TimerQueryImpl
+
+class TimerQueryImpl {
 public:
-    TimerQuery(const std::string& name, size_t samples = 256);
-    virtual ~TimerQuery();
+    TimerQueryImpl(size_t samples = 256);
+    virtual ~TimerQueryImpl();
 
     void start();
     void end();
@@ -87,17 +89,23 @@ public:
 };
 
 // -------------------------------------------------------
-// GPU timer query
+// (GPU) TimerQueryGL
 
-class TimerQueryGL : public NamedMap<TimerQueryGL> {
+class TimerQueryGLImpl;
+using TimerQueryGL = NamedHandle<TimerQueryGLImpl>;
+
+// -------------------------------------------------------
+// (GPU) TimerQueryGLImpl
+
+class TimerQueryGLImpl {
 public:
-    TimerQueryGL(const std::string& name, size_t samples = 256);
-    virtual ~TimerQueryGL();
+    TimerQueryGLImpl(size_t samples = 256);
+    virtual ~TimerQueryGLImpl();
 
     // prevent copies and moves, since GL buffers aren't reference counted
-    TimerQueryGL(const TimerQueryGL&) = delete;
-    TimerQueryGL& operator=(const TimerQueryGL&) = delete;
-    TimerQueryGL& operator=(const TimerQueryGL&&) = delete;
+    TimerQueryGLImpl(const TimerQueryGLImpl&) = delete;
+    TimerQueryGLImpl& operator=(const TimerQueryGLImpl&) = delete;
+    TimerQueryGLImpl& operator=(const TimerQueryGLImpl&&) = delete;
 
     void start();
     void end();

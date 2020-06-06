@@ -11,6 +11,7 @@
 class CameraImpl;
 using Camera = NamedHandle<CameraImpl>;
 
+// TODO move this back to Camera::current()?
 Camera current_camera();
 void make_camera_current(const Camera& cam);
 

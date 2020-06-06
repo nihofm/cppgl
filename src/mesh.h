@@ -18,19 +18,15 @@ namespace fs = std::filesystem;
 class MeshImpl;
 using Mesh = NamedHandle<MeshImpl>;
 
-std::vector<Mesh> load_meshes(const fs::path& path);
+// TODO move this to Mesh::load()?
+std::vector<Mesh> load_meshes(const fs::path& path, bool normalize = false);
 
 // ------------------------------------------
 // MeshImpl
 
 class MeshImpl {
 public:
-    // construct empty mesh
-    MeshImpl();
-    // construct from geometry
-    MeshImpl(const Geometry& geometry);
-    // construct from geometry and material
-    MeshImpl(const Geometry& geometry, const Material& material);
+    MeshImpl(const Geometry& geometry = Geometry(), const Material& material = Material());
     virtual ~MeshImpl();
 
     // TODO refactor
@@ -55,6 +51,12 @@ public:
     void add_index_buffer(uint32_t num_indices, const uint32_t* data, GLenum hint = GL_STATIC_DRAW);
     void update_vertex_buffer(uint32_t buf_id, const void* data); // assumes matching size for buffer buf_id from add_vertex_buffer()
     void set_primitive_type(GLenum type); // default: GL_TRIANGLES
+
+    // map/unmap from GPU mem (https://www.seas.upenn.edu/~pcozzi/OpenGLInsights/OpenGLInsights-AsynchronousBufferTransfers.pdf)
+    void* map_vbo(uint32_t buf_id, GLenum access = GL_READ_WRITE) const;
+    void unmap_vbo(uint32_t buf_id) const;
+    void* map_ibo(GLenum access = GL_READ_WRITE) const;
+    void unmap_ibo() const;
 
     // CPU data
     Geometry geometry;

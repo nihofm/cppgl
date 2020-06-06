@@ -30,14 +30,14 @@ static void (*user_resize_callback)(int w, int h) = 0;
 static void (*user_gui_callback)(void) = 0;
 
 static void glfw_key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
-    if (key == GLFW_KEY_ESCAPE)
-        glfwSetWindowShouldClose(window, 1);
     if (key == GLFW_KEY_F1 && action == GLFW_PRESS)
         show_gui = !show_gui;
     if (ImGui::GetIO().WantCaptureKeyboard) {
         ImGui_ImplGlfw_KeyCallback(window, key, scancode, action, mods);
         return;
     }
+    if (key == GLFW_KEY_ESCAPE)
+        glfwSetWindowShouldClose(window, 1);
     if (user_keyboard_callback)
         user_keyboard_callback(key, scancode, action, mods);
 }
@@ -148,7 +148,7 @@ Context::Context() {
     ImGui::StyleColorsDark();
     ImGui_ImplGlfw_InitForOpenGL(glfw_window, false);
     ImGui_ImplOpenGL3_Init("#version 130");
-    ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+    // ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
     // load custom font?
     if (fs::exists(parameters.font_ttf_filename)) {
         ImFontConfig config;
@@ -171,9 +171,9 @@ Context::Context() {
 
     // setup timer
     last_t = curr_t = glfwGetTime();
-    cpu_timer = std::make_shared<TimerQuery>("CPU-time");
-    frame_timer = std::make_shared<TimerQuery>("Frame-time");
-    gpu_timer = std::make_shared<TimerQueryGL>("GPU-time");
+    cpu_timer = TimerQuery("CPU-time");
+    frame_timer = TimerQuery("Frame-time");
+    gpu_timer = TimerQueryGL("GPU-time");
     cpu_timer->start();
     frame_timer->start();
     gpu_timer->start();
@@ -350,12 +350,12 @@ static void display_framebuffer(const Framebuffer& fbo) {
     ImGui::Unindent();
 }
 
-static void display_timer_buffer(RingBuffer<float>* buf, const char* label="") {
-    const float avg = buf->exp_avg;
-    const float lower = buf->min();
-    const float upper = buf->max();
+static void display_timer_buffer(const RingBuffer<float>& buf, const char* label="") {
+    const float avg = buf.exp_avg;
+    const float lower = buf.min();
+    const float upper = buf.max();
     ImGui::Text("avg: %.1fms, min: %.1fms, max: %.1fms", avg, lower, upper);
-    ImGui::PlotHistogram(label, buf->data.data(), buf->data.size(), buf->curr, 0, 0.f, std::max(buf->max(), 17.f), ImVec2(0, 30));
+    ImGui::PlotHistogram(label, buf.data.data(), buf.data.size(), buf.curr, 0, 0.f, std::max(buf.max(), 17.f), ImVec2(0, 30));
 }
 
 static void draw_gui() {
@@ -368,15 +368,15 @@ static void draw_gui() {
         ImGui::PushStyleVar(ImGuiStyleVar_Alpha, .9f);
         for (auto& entry : TimerQuery::map) {
             ImGui::Separator();
-            display_timer_buffer(&entry.second->buf, entry.second->name.c_str());
+            display_timer_buffer(entry.second->buf, entry.second.name.c_str());
         }
         for (auto& entry : TimerQueryGL::map) {
             ImGui::Separator();
-            display_timer_buffer(&entry.second->buf, entry.second->name.c_str());
+            display_timer_buffer(entry.second->buf, entry.second.name.c_str());
         }
         ImGui::PopStyleVar();
-        ImGui::End();
     }
+    ImGui::End();
 
     static bool gui_show_cameras = false;
     static bool gui_show_textures = false;
@@ -384,9 +384,25 @@ static void draw_gui() {
     static bool gui_show_shaders = false;
 
     if (ImGui::BeginMainMenuBar()) {
-        ImGui::Checkbox("cameras", &gui_show_cameras);
+        // camera menu
+        if (ImGui::BeginMenu(std::string("Cameras (" + std::to_string(Camera::map.size()) + ")").c_str())) {
+            ImGui::Text("Current: %s", current_camera().name.c_str());
+            for (auto& entry : Camera::map) {
+                if (ImGui::CollapsingHeader(entry.first.c_str()))
+                    display_camera(entry.second);
+            }
+            ImGui::EndMenu();
+        }
+
         ImGui::Separator();
-        ImGui::Checkbox("textures", &gui_show_textures);
+        // ImGui::Checkbox("textures", &gui_show_textures);
+        if (ImGui::BeginMenu(std::string("Textures (" + std::to_string(Texture2D::map.size()) + ")").c_str())) {
+            for (auto& entry : Texture2D::map) {
+                if (ImGui::CollapsingHeader(entry.first.c_str()))
+                    display_texture(entry.second, ImVec2(300, 300));
+            }
+            ImGui::EndMenu();
+        }
         ImGui::Separator();
         ImGui::Checkbox("fbos", &gui_show_fbos);
         ImGui::Separator();

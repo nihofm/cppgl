@@ -1,4 +1,5 @@
 #include <geometry.h>
+#include <glm/gtc/matrix_transform.hpp>
 #include <iostream>
 
 GeometryImpl::GeometryImpl() : bb_min(FLT_MAX), bb_max(FLT_MIN) {}
@@ -13,29 +14,6 @@ GeometryImpl::GeometryImpl(const std::vector<glm::vec3>& positions, const std::v
 }
 
 GeometryImpl::~GeometryImpl() {}
-
-void GeometryImpl::normalize() {
-    // make sure the AABB is correct
-    recompute_aabb();
-    // compute offset to translate to origin
-    const glm::vec3 center = (bb_min + bb_max) * .5f;
-    // compute scale factor to scale to [-1, 1]
-    const glm::vec3 min(-1), max(1);
-    const glm::vec3 scale_v = (max - min) / (bb_max - bb_min);
-    const float scale_f = std::min(scale_v.x, std::min(scale_v.y, scale_v.z));
-    // apply
-    for (uint32_t i = 0; i < positions.size(); ++i)
-        positions[i] = (positions[i] - center) * scale_f;
-}
-
-void GeometryImpl::recompute_aabb() {
-    bb_min = glm::vec3(FLT_MAX);
-    bb_max = glm::vec3(FLT_MIN);;
-    for (const auto& pos : positions) {
-        bb_min = glm::min(bb_min, pos);
-        bb_max = glm::max(bb_max, pos);
-    }
-}
 
 void GeometryImpl::add(const aiMesh* mesh_ai) {
     // conversion helper
@@ -59,9 +37,9 @@ void GeometryImpl::add(const aiMesh* mesh_ai) {
     for (uint32_t i = 0; i < mesh_ai->mNumFaces; ++i) {
         const aiFace &face = mesh_ai->mFaces[i];
         if (face.mNumIndices == 3) {
-            indices.push_back(face.mIndices[0]);
-            indices.push_back(face.mIndices[1]);
-            indices.push_back(face.mIndices[2]);
+            indices.emplace_back(face.mIndices[0]);
+            indices.emplace_back(face.mIndices[1]);
+            indices.emplace_back(face.mIndices[2]);
         } else
             std::cerr << "WARN: Geometry: skipping non-triangle face!" << std::endl;
     }
@@ -99,4 +77,49 @@ void GeometryImpl::clear() {
     indices.clear();
     normals.clear();
     texcoords.clear();
+}
+
+void GeometryImpl::recompute_aabb() {
+    bb_min = glm::vec3(FLT_MAX);
+    bb_max = glm::vec3(FLT_MIN);;
+    for (const auto& pos : positions) {
+        bb_min = glm::min(bb_min, pos);
+        bb_max = glm::max(bb_max, pos);
+    }
+}
+
+void GeometryImpl::fit_into_aabb(const glm::vec3& aabb_min, const glm::vec3& aabb_max) {
+    // compute offset to origin and scale factor
+    const glm::vec3 center = (bb_min + bb_max) * .5f;
+    const glm::vec3 scale_v = (aabb_max - aabb_min) / (bb_max - bb_min);
+    const float scale_f = std::min(scale_v.x, std::min(scale_v.y, scale_v.z));
+    // apply
+    for (uint32_t i = 0; i < positions.size(); ++i)
+        positions[i] = (positions[i] - center) * scale_f;
+}
+
+void GeometryImpl::translate(const glm::vec3& by) {
+    for (uint32_t i = 0; i < positions.size(); ++i)
+        positions[i] += by;
+}
+
+void GeometryImpl::scale(const glm::vec3& by) {
+    // scale positions
+    for (uint32_t i = 0; i < positions.size(); ++i)
+        positions[i] *= by;
+    // scale normals
+    const glm::mat4 mat_norm = glm::transpose(glm::inverse(glm::scale(glm::mat4(1), by)));
+    for (uint32_t i = 0; i < normals.size(); ++i)
+        normals[i] = glm::normalize(glm::vec3(mat_norm * glm::vec4(normals[i], 0)));
+}
+
+void GeometryImpl::rotate(float angle_degrees, const glm::vec3& axis) {
+    // rotate positions
+    const glm::mat4 rot = glm::rotate(glm::mat4(1), glm::radians(angle_degrees), axis);
+    for (uint32_t i = 0; i < positions.size(); ++i)
+        positions[i] = glm::vec3(rot * glm::vec4(positions[i], 1));
+    // rotate normals
+    const glm::mat4 rot_inv_tra = glm::transpose(glm::inverse(rot));
+    for (uint32_t i = 0; i < normals.size(); ++i)
+        normals[i] = glm::normalize(glm::vec3(rot_inv_tra * glm::vec4(normals[i], 0)));
 }

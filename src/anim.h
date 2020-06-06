@@ -4,14 +4,25 @@
 #include <vector>
 #include <glm/glm.hpp>
 #include <glm/gtc/quaternion.hpp>
-#include "named_map.h"
+#include "named_handle.h"
 
-// TODO import/export (json?)
+// ------------------------------------------
+// Animation
 
-class Animation : public NamedMap<Animation> {
+class AnimationImpl;
+using Animation = NamedHandle<AnimationImpl>;
+
+// TODO move this to Animation::current()?
+Animation current_animation();
+void make_animation_current(const Animation& anim);
+
+// ------------------------------------------
+// AnimationImpl
+
+class AnimationImpl {
 public:
-    Animation(const std::string& name);
-    virtual ~Animation();
+    AnimationImpl();
+    virtual ~AnimationImpl();
 
     // step animation and apply to Camera::current() if running
     void update(float dt_ms);
@@ -44,11 +55,14 @@ public:
     glm::vec3 eval_vec3(const std::string& name) const;
     glm::vec4 eval_vec4(const std::string& name) const;
 
+    // TODO json import/export
+
     // data
     float time;
     float ms_between_nodes;
     bool running;
     std::vector<std::pair<glm::vec3, glm::quat>> camera_path;
+    // TODO generic variables (as in optix)?
     std::map<std::string, std::vector<int>> data_int;
     std::map<std::string, std::vector<float>> data_float;
     std::map<std::string, std::vector<glm::vec2>> data_vec2;
@@ -56,7 +70,3 @@ public:
     std::map<std::string, std::vector<glm::vec4>> data_vec4;
 };
 
-// variadic alias for std::make_shared<>(...)
-template <class... Args> std::shared_ptr<Animation> make_animation(Args&&... args) {
-    return std::make_shared<Animation>(args...);
-}

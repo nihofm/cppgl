@@ -24,9 +24,6 @@ public:
 
     explicit inline operator bool() const  { return positions.size() > 0 && indices.size() > 0; }
 
-    void normalize(); // map positions into [-1, 1]
-    void recompute_aabb(); // recompute bb_min and bb_max
-
     void add(const aiMesh* mesh_ai);
     void add(const GeometryImpl& other);
     void add(const std::vector<glm::vec3>& positions, const std::vector<uint32_t>& indices,
@@ -35,6 +32,13 @@ public:
 
     inline bool has_normals() const { return !normals.empty(); }
     inline bool has_texcoords() const { return !texcoords.empty(); }
+
+    // O(n) geometry operations
+    void recompute_aabb();
+    void fit_into_aabb(const glm::vec3& aabb_min, const glm::vec3& aabb_max);
+    void translate(const glm::vec3& by);
+    void scale(const glm::vec3& by);
+    void rotate(float angle_degrees, const glm::vec3& axis);
 
     // data
     glm::vec3 bb_min, bb_max;

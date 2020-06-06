@@ -73,6 +73,6 @@ public:
     // data
     GLFWwindow* glfw_window;
     double last_t, curr_t;
-    std::shared_ptr<TimerQuery> cpu_timer, frame_timer;
-    std::shared_ptr<TimerQueryGL> gpu_timer;
+    TimerQuery cpu_timer, frame_timer;
+    TimerQueryGL gpu_timer;
 };

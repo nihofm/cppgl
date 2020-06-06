@@ -33,8 +33,9 @@ CameraImpl::CameraImpl() : pos(0, 0, 0), dir(1, 0, 0), up(0, 1, 0), fov_degree(7
 }
 
 CameraImpl::~CameraImpl() {
-    if (current_camera() && current_camera().ptr.get() == this) // reset
-        current_cam = Camera();
+    // TODO debug segfault on reset
+    // if (current_camera().ptr.get() == this) // reset
+        // current_cam = Camera();
 }
 
 

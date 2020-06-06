@@ -11,8 +11,6 @@
 // ------------------------------------------
 // Framebuffer
 
-class FramebufferImpl;
-using Framebuffer = NamedHandle<FramebufferImpl>;
 
 // ------------------------------------------
 // FramebufferImpl
@@ -46,3 +44,5 @@ public:
     Texture2D depth_texture;
     GLint prev_vp[4];
 };
+
+using Framebuffer = NamedHandle<FramebufferImpl>;

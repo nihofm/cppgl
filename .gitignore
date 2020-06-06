@@ -118,3 +118,7 @@ $RECYCLE.BIN/
 *.lnk
 
 # End of https://www.gitignore.io/api/vim,c++,linux,cmake,windows
+
+### Ninja ###
+.ninja_deps
+.ninja_log

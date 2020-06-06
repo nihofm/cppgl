@@ -13,7 +13,7 @@ public:
 
     // create new object and store handle in map for later retrieval
     template <class... Args>
-    NamedHandle(const std::string& name, Args&&... args) : NamedHandle(name, std::make_shared<T>(args...)) {
+    NamedHandle(const std::string& name, Args&&... args) : name(name), ptr(std::make_shared<T>(args...)) {
         map[name] = *this;
     }
     template <class... Args>
@@ -34,9 +34,9 @@ public:
     inline explicit operator bool() const { return ptr.operator bool(); }
     inline T* operator->() { return ptr.operator->(); }
     inline const T* operator->() const { return ptr.operator->(); }
-    // TODO implicit conversion?
-    // inline operator T&() { return *ptr; }
-    // inline operator const T&() const { return *ptr; }
+    inline T& operator*() { return *ptr; }
+    inline const T& operator*() const { return *ptr; }
+    // TODO implicit conversions?
     // inline operator std::shared_ptr<T>&() { return ptr; }
     // inline operator const std::shared_ptr<T>&() const { return ptr; }
 

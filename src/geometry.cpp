@@ -1,20 +1,20 @@
 #include <geometry.h>
 #include <iostream>
 
-Geometry::Geometry(const std::string& name) : NamedMap(name), bb_min(FLT_MAX), bb_max(FLT_MIN) {}
+GeometryImpl::GeometryImpl() : bb_min(FLT_MAX), bb_max(FLT_MIN) {}
 
-Geometry::Geometry(const std::string& name, const aiMesh* mesh_ai) : Geometry(name) {
+GeometryImpl::GeometryImpl(const aiMesh* mesh_ai) : GeometryImpl() {
     add(mesh_ai);
 }
 
-Geometry::Geometry(const std::string& name, const std::vector<glm::vec3>& positions, const std::vector<uint32_t>& indices,
-            const std::vector<glm::vec3>& normals, const std::vector<glm::vec2>& texcoords) : Geometry(name) {
+GeometryImpl::GeometryImpl(const std::vector<glm::vec3>& positions, const std::vector<uint32_t>& indices,
+            const std::vector<glm::vec3>& normals, const std::vector<glm::vec2>& texcoords) : GeometryImpl() {
     add(positions, indices, normals, texcoords);
 }
 
-Geometry::~Geometry() {}
+GeometryImpl::~GeometryImpl() {}
 
-void Geometry::normalize() {
+void GeometryImpl::normalize() {
     // make sure the AABB is correct
     recompute_aabb();
     // compute offset to translate to origin
@@ -28,7 +28,7 @@ void Geometry::normalize() {
         positions[i] = (positions[i] - center) * scale_f;
 }
 
-void Geometry::recompute_aabb() {
+void GeometryImpl::recompute_aabb() {
     bb_min = glm::vec3(FLT_MAX);
     bb_max = glm::vec3(FLT_MIN);;
     for (const auto& pos : positions) {
@@ -37,7 +37,7 @@ void Geometry::recompute_aabb() {
     }
 }
 
-void Geometry::add(const aiMesh* mesh_ai) {
+void GeometryImpl::add(const aiMesh* mesh_ai) {
     // conversion helper
     const auto to_glm = [](const aiVector3D& v) { return glm::vec3(v.x, v.y, v.z); };
     // extract vertices, normals and texture coords
@@ -67,11 +67,11 @@ void Geometry::add(const aiMesh* mesh_ai) {
     }
 }
 
-void Geometry::add(const Geometry& other) {
+void GeometryImpl::add(const GeometryImpl& other) {
     add(other.positions, other.indices, other.normals, other.texcoords);
 }
 
-void Geometry::add(const std::vector<glm::vec3>& positions, const std::vector<uint32_t>& indices,
+void GeometryImpl::add(const std::vector<glm::vec3>& positions, const std::vector<uint32_t>& indices,
         const std::vector<glm::vec3>& normals, const std::vector<glm::vec2>& texcoords) {
     // add vertices, normals and texture coords
     this->positions.reserve(this->positions.size() + positions.size());
@@ -93,7 +93,7 @@ void Geometry::add(const std::vector<glm::vec3>& positions, const std::vector<ui
         this->indices.emplace_back(indices[i]);
 }
 
-void Geometry::clear() {
+void GeometryImpl::clear() {
     bb_min = bb_max = glm::vec3(0);
     positions.clear();
     indices.clear();

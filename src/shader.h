@@ -13,6 +13,14 @@ namespace fs = std::filesystem;
 #include "texture.h"
 
 // ------------------------------------------
+// Shader
+
+class ShaderImpl;
+using Shader = NamedHandle<ShaderImpl>;
+
+void reload_modified_shaders();
+
+// ------------------------------------------
 // ShaderImpl
 
 class ShaderImpl {
@@ -68,11 +76,7 @@ public:
     void uniform(const std::string& name, const glm::mat3& val) const;
     void uniform(const std::string& name, const glm::mat4& val) const;
     void uniform(const std::string& name, const Texture2D& tex, uint32_t unit) const;
-    void uniform(const std::string& name, const Texture2D* tex, uint32_t unit) const;
-    void uniform(const std::string& name, const std::shared_ptr<Texture2D>& tex, uint32_t unit) const;
     void uniform(const std::string& name, const Texture3D& tex, uint32_t unit) const;
-    void uniform(const std::string& name, const Texture3D* tex, uint32_t unit) const;
-    void uniform(const std::string& name, const std::shared_ptr<Texture3D>& tex, uint32_t unit) const;
 
     // management/reload
     void clear();
@@ -83,15 +87,3 @@ public:
     std::map<GLenum, fs::path> source_files;
     std::map<GLenum, fs::file_time_type> timestamps;
 };
-
-// ------------------------------------------
-// Shader
-
-class ShaderImpl;
-
-typedef NamedHandle<ShaderImpl> Shader;
-
-inline void reload_modified_shaders() {
-    for (auto& pair : Shader::map)
-        pair.second->reload_if_modified();
-}

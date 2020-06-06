@@ -120,6 +120,11 @@ static GLuint compile_shader(GLenum type, std::map<GLenum, fs::path>& source_fil
     return shader;
 }
 
+void reload_modified_shaders() {
+    for (auto& pair : Shader::map)
+        pair.second->reload_if_modified();
+}
+
 // ----------------------------------------------------
 // ShaderImpl
 
@@ -340,30 +345,14 @@ void ShaderImpl::uniform(const std::string& name, const glm::mat4& val) const {
 
 void ShaderImpl::uniform(const std::string& name, const Texture2D& tex, uint32_t unit) const {
     int loc = glGetUniformLocation(id, name.c_str());
-    tex.bind(unit);
+    tex->bind(unit);
     glUniform1i(loc, unit);
-}
-
-void ShaderImpl::uniform(const std::string& name, const Texture2D* tex, uint32_t unit) const {
-    uniform(name, *tex, unit);
-}
-
-void ShaderImpl::uniform(const std::string &name, const std::shared_ptr<Texture2D>& tex, uint32_t unit) const {
-    uniform(name, *tex, unit);
 }
 
 void ShaderImpl::uniform(const std::string& name, const Texture3D& tex, uint32_t unit) const {
     int loc = glGetUniformLocation(id, name.c_str());
-    tex.bind(unit);
+    tex->bind(unit);
     glUniform1i(loc, unit);
-}
-
-void ShaderImpl::uniform(const std::string& name, const Texture3D* tex, uint32_t unit) const {
-    uniform(name, *tex, unit);
-}
-
-void ShaderImpl::uniform(const std::string &name, const std::shared_ptr<Texture3D>& tex, uint32_t unit) const {
-    uniform(name, *tex, unit);
 }
 
 void ShaderImpl::reload_if_modified() {

@@ -25,7 +25,7 @@ inline GLint channels_to_ubyte_format(uint32_t channels) {
 // ----------------------------------------------------
 // Texture2D
 
-Texture2D::Texture2D(const std::string& name, const fs::path& path, bool mipmap) : NamedMap(name), id(0) {
+Texture2DImpl::Texture2DImpl(const fs::path& path, bool mipmap) : id(0) {
     // load image from disk
     stbi_set_flip_vertically_on_load(1);
     int channels;
@@ -57,8 +57,8 @@ Texture2D::Texture2D(const std::string& name, const fs::path& path, bool mipmap)
     stbi_image_free(data);
 }
 
-Texture2D::Texture2D(const std::string& name, uint32_t w, uint32_t h, GLint internal_format, GLenum format, GLenum type, const void* data, bool mipmap)
-    : NamedMap(name), id(0), w(w), h(h), internal_format(internal_format), format(format), type(type) {
+Texture2DImpl::Texture2DImpl(uint32_t w, uint32_t h, GLint internal_format, GLenum format, GLenum type, const void* data, bool mipmap)
+    : id(0), w(w), h(h), internal_format(internal_format), format(format), type(type) {
     // init GL texture
     glGenTextures(1, &id);
     glBindTexture(GL_TEXTURE_2D, id);
@@ -72,12 +72,12 @@ Texture2D::Texture2D(const std::string& name, uint32_t w, uint32_t h, GLint inte
     glBindTexture(GL_TEXTURE_2D, 0);
 }
 
-Texture2D::~Texture2D() {
+Texture2DImpl::~Texture2DImpl() {
     if (glIsTexture(id))
         glDeleteTextures(1, &id);
 }
 
-void Texture2D::resize(uint32_t w, uint32_t h) {
+void Texture2DImpl::resize(uint32_t w, uint32_t h) {
     this->w = w;
     this->h = h;
     glBindTexture(GL_TEXTURE_2D, id);
@@ -85,24 +85,24 @@ void Texture2D::resize(uint32_t w, uint32_t h) {
     glBindTexture(GL_TEXTURE_2D, 0);
 }
 
-void Texture2D::bind(uint32_t unit) const {
+void Texture2DImpl::bind(uint32_t unit) const {
     glActiveTexture(GL_TEXTURE0 + unit);
     glBindTexture(GL_TEXTURE_2D, id);
 }
 
-void Texture2D::unbind() const {
+void Texture2DImpl::unbind() const {
     glBindTexture(GL_TEXTURE_2D, 0);
 }
 
-void Texture2D::bind_image(uint32_t unit, GLenum access, GLenum format) const {
+void Texture2DImpl::bind_image(uint32_t unit, GLenum access, GLenum format) const {
     glBindImageTexture(unit, id, 0, GL_FALSE, 0, access, format);
 }
 
-void Texture2D::unbind_image(uint32_t unit) const {
+void Texture2DImpl::unbind_image(uint32_t unit) const {
     glBindImageTexture(unit, 0, 0, GL_FALSE, 0, GL_READ_ONLY, GL_RGBA8);
 }
 
-void Texture2D::save_png(const fs::path& path, bool flip) const {
+void Texture2DImpl::save_png(const fs::path& path, bool flip) const {
     stbi_flip_vertically_on_write(flip);
     std::vector<uint8_t> pixels(w * h * format_to_channels(format));
     glBindTexture(GL_TEXTURE_2D, id);
@@ -112,7 +112,7 @@ void Texture2D::save_png(const fs::path& path, bool flip) const {
     std::cout << path << " written." << std::endl;
 }
 
-void Texture2D::save_jpg(const fs::path& path, int quality, bool flip) const {
+void Texture2DImpl::save_jpg(const fs::path& path, int quality, bool flip) const {
     stbi_flip_vertically_on_write(flip);
     std::vector<uint8_t> pixels(w * h * format_to_channels(format));
     glBindTexture(GL_TEXTURE_2D, id);
@@ -125,8 +125,8 @@ void Texture2D::save_jpg(const fs::path& path, int quality, bool flip) const {
 // ----------------------------------------------------
 // Texture3D
 
-Texture3D::Texture3D(const std::string& name, uint32_t w, uint32_t h, uint32_t d, GLint internal_format, GLenum format, GLenum type, const void* data, bool mipmap)
-    : NamedMap(name), id(0), w(w), h(h), d(d), internal_format(internal_format), format(format), type(type) {
+Texture3DImpl::Texture3DImpl(uint32_t w, uint32_t h, uint32_t d, GLint internal_format, GLenum format, GLenum type, const void* data, bool mipmap)
+    : id(0), w(w), h(h), d(d), internal_format(internal_format), format(format), type(type) {
     // init GL texture
     glGenTextures(1, &id);
     glBindTexture(GL_TEXTURE_3D, id);
@@ -141,12 +141,12 @@ Texture3D::Texture3D(const std::string& name, uint32_t w, uint32_t h, uint32_t d
     glBindTexture(GL_TEXTURE_3D, 0);
 }
 
-Texture3D::~Texture3D() {
+Texture3DImpl::~Texture3DImpl() {
     if (glIsTexture(id))
         glDeleteTextures(1, &id);
 }
 
-void Texture3D::resize(uint32_t w, uint32_t h, uint32_t d) {
+void Texture3DImpl::resize(uint32_t w, uint32_t h, uint32_t d) {
     this->w = w;
     this->h = h;
     this->d = d;
@@ -155,19 +155,19 @@ void Texture3D::resize(uint32_t w, uint32_t h, uint32_t d) {
     glBindTexture(GL_TEXTURE_3D, 0);
 }
 
-void Texture3D::bind(uint32_t unit) const {
+void Texture3DImpl::bind(uint32_t unit) const {
     glActiveTexture(GL_TEXTURE0 + unit);
     glBindTexture(GL_TEXTURE_3D, id);
 }
 
-void Texture3D::unbind() const {
+void Texture3DImpl::unbind() const {
     glBindTexture(GL_TEXTURE_3D, 0);
 }
 
-void Texture3D::bind_image(uint32_t unit, GLenum access, GLenum format) const {
+void Texture3DImpl::bind_image(uint32_t unit, GLenum access, GLenum format) const {
     glBindImageTexture(unit, id, 0, GL_FALSE, 0, access, format);
 }
 
-void Texture3D::unbind_image(uint32_t unit) const {
+void Texture3DImpl::unbind_image(uint32_t unit) const {
     glBindImageTexture(unit, 0, 0, GL_FALSE, 0, GL_READ_ONLY, GL_RGBA8);
 }

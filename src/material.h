@@ -9,28 +9,34 @@ namespace fs = std::filesystem;
 #include <GL/gl.h>
 #include <glm/glm.hpp>
 #include <assimp/material.h>
-#include "named_map.h"
+#include "named_handle.h"
 #include "shader.h"
 #include "texture.h"
 
-class Material : public NamedMap<Material> {
+// ------------------------------------------
+// Material
+
+class MaterialImpl;
+using Material = NamedHandle<MaterialImpl>;
+
+// ------------------------------------------
+// MaterialImpl
+
+class MaterialImpl {
 public:
-    Material(const std::string& name);
-    Material(const std::string& name, const fs::path& base_path, const aiMaterial* mat_ai);
-    virtual ~Material();
+    MaterialImpl();
+    MaterialImpl(const fs::path& base_path, const aiMaterial* mat_ai);
+    virtual ~MaterialImpl();
 
     void bind(const Shader& shader) const;
     void unbind() const;
 
-    void add_texture(const std::string& uniform_name, const std::shared_ptr<Texture2D>& texture);
     bool has_texture(const std::string& uniform_name) const;
-    std::shared_ptr<Texture2D> get_texture(const std::string& uniform_name) const;
+    void add_texture(const std::string& uniform_name, const Texture2D& texture);
+    Texture2D get_texture(const std::string& uniform_name) const;
 
     // data
-    std::map<std::string, std::shared_ptr<Texture2D>> texture_map;
+    // TODO add more data: int/float/vec2/vec3/vec4
+    std::map<std::string, Texture2D> texture_map;
 };
 
-// variadic alias for std::make_shared<>(...)
-template <class... Args> std::shared_ptr<Material> make_material(Args&&... args) {
-    return std::make_shared<Material>(args...);
-}

@@ -57,7 +57,7 @@ Animation::~Animation() {}
 void Animation::update(float dt_ms) {
     if (running && time < camera_path.size() && !camera_path.empty()) {
         // update camera and advance time
-        Camera::current()->load(eval_pos(), eval_rot());
+        current_camera()->load(eval_pos(), eval_rot());
         time = glm::min(time + dt_ms / ms_between_nodes, float(camera_path.size()));
     } else
         running = false;

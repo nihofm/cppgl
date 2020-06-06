@@ -3,16 +3,24 @@
 #include <string>
 #include <memory>
 #include <glm/glm.hpp>
-#include "named_map.h"
+#include "named_handle.h"
 
-class Camera : public NamedMap<Camera> {
+// ----------------------------------------------------
+// Camera
+
+class CameraImpl;
+using Camera = NamedHandle<CameraImpl>;
+
+Camera current_camera();
+void make_camera_current(const Camera& cam);
+
+// ----------------------------------------------------
+// CameraImpl
+
+class CameraImpl {
 public:
-    Camera(const std::string& name);
-    virtual ~Camera();
-
-    // current camera pointer (raw, non-ownership) used for rendering
-    static Camera* current();
-    void make_current();
+    CameraImpl();
+    virtual ~CameraImpl();
 
     void update();
 
@@ -48,8 +56,3 @@ public:
     bool fix_up_vector;                 // keep up vector fixed to avoid camera drift
     glm::mat4 view, view_normal, proj;  // camera matrices (computed via a call update())
 };
-
-// variadic alias for std::make_shared<>(...)
-template <class... Args> std::shared_ptr<Camera> make_camera(Args&&... args) {
-    return std::make_shared<Camera>(args...);
-}

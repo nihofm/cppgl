@@ -10,30 +10,35 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/quaternion.hpp>
 
-static Camera* current_camera = 0;
-float Camera::default_camera_movement_speed = 0.005;
+static Camera current_cam;
 
-Camera::Camera(const std::string& name) : NamedMap(name), pos(0, 0, 0), dir(1, 0, 0), up(0, 1, 0),
-    fov_degree(70), near(0.01), far(1000), left(-100), right(100), bottom(-100), top(100),
+Camera current_camera() {
+    static Camera default_cam("default");
+    return current_cam ? current_cam : default_cam;
+}
+
+void make_camera_current(const Camera& cam) {
+    current_cam = cam;
+}
+
+// ----------------------------------------------------
+// CameraImpl
+
+float CameraImpl::default_camera_movement_speed = 0.005;
+
+CameraImpl::CameraImpl() : pos(0, 0, 0), dir(1, 0, 0), up(0, 1, 0), fov_degree(70),
+    near(0.01), far(1000), left(-100), right(100), bottom(-100), top(100),
     perspective(true), fix_up_vector(true) {
     update();
 }
 
-Camera::~Camera() {
-    if (current_camera == this) // reset current ptr
-        current_camera = 0;
+CameraImpl::~CameraImpl() {
+    if (current_camera() && current_camera().ptr.get() == this) // reset
+        current_cam = Camera();
 }
 
-Camera* Camera::current() {
-    static Camera default_cam("default");
-    return current_camera ? current_camera : &default_cam;
-}
 
-void Camera::make_current() {
-    current_camera = this;
-}
-
-void Camera::update() {
+void CameraImpl::update() {
     dir = glm::normalize(dir);
     up = glm::normalize(up);
     view = glm::lookAt(pos, pos + dir, up);
@@ -41,72 +46,72 @@ void Camera::update() {
     proj = perspective ? glm::perspective(fov_degree * float(M_PI / 180), aspect_ratio(), near, far) : glm::ortho(left, right, bottom, top, near, far);
 }
 
-void Camera::forward(float by) { pos += by * dir; }
-void Camera::backward(float by) { pos -= by * dir; }
-void Camera::leftward(float by) { pos -= by * glm::cross(dir, up); }
-void Camera::rightward(float by) { pos += by * glm::cross(dir, up); }
-void Camera::upward(float by) { pos += by * glm::normalize(glm::cross(glm::cross(dir, up), dir)); }
-void Camera::downward(float by) { pos -= by * glm::normalize(glm::cross(glm::cross(dir, up), dir)); }
+void CameraImpl::forward(float by) { pos += by * dir; }
+void CameraImpl::backward(float by) { pos -= by * dir; }
+void CameraImpl::leftward(float by) { pos -= by * glm::cross(dir, up); }
+void CameraImpl::rightward(float by) { pos += by * glm::cross(dir, up); }
+void CameraImpl::upward(float by) { pos += by * glm::normalize(glm::cross(glm::cross(dir, up), dir)); }
+void CameraImpl::downward(float by) { pos -= by * glm::normalize(glm::cross(glm::cross(dir, up), dir)); }
 
-void Camera::yaw(float angle) { dir = glm::normalize(glm::rotate(dir, angle * float(M_PI) / 180.f, up)); }
-void Camera::pitch(float angle) {
+void CameraImpl::yaw(float angle) { dir = glm::normalize(glm::rotate(dir, angle * float(M_PI) / 180.f, up)); }
+void CameraImpl::pitch(float angle) {
     dir = glm::normalize(glm::rotate(dir, angle * float(M_PI) / 180.f, glm::normalize(glm::cross(dir, up))));
     if (not fix_up_vector) up = glm::normalize(glm::cross(glm::cross(dir, up), dir));
 }
-void Camera::roll(float angle) { up = glm::normalize(glm::rotate(up, angle * float(M_PI) / 180.f, dir)); }
+void CameraImpl::roll(float angle) { up = glm::normalize(glm::rotate(up, angle * float(M_PI) / 180.f, dir)); }
 
-void Camera::store(glm::vec3& pos, glm::quat& rot) const {
+void CameraImpl::store(glm::vec3& pos, glm::quat& rot) const {
     pos = this->pos;
     rot = glm::quat_cast(view);
 }
 
-void Camera::load(const glm::vec3& pos, const glm::quat& rot) {
+void CameraImpl::load(const glm::vec3& pos, const glm::quat& rot) {
     this->pos = pos;
     this->view = glm::mat4_cast(rot);
     this->dir = -glm::vec3(view[0][2], view[1][2], view[2][2]);
     this->up = glm::vec3(view[0][1], view[1][1], view[2][1]);
 }
 
-float Camera::aspect_ratio() {
+float CameraImpl::aspect_ratio() {
     GLint xywh[4];
     glGetIntegerv(GL_VIEWPORT, xywh);
     return xywh[2] / (float)xywh[3];
 }
 
-bool Camera::default_input_handler(double dt_ms) {
+bool CameraImpl::default_input_handler(double dt_ms) {
     bool moved = false;
     if (not ImGui::GetIO().WantCaptureKeyboard) {
         // keyboard
         if (Context::key_pressed(GLFW_KEY_W)) {
-            current()->forward(dt_ms * default_camera_movement_speed);
+            current_camera()->forward(dt_ms * default_camera_movement_speed);
             moved = true;
         }
         if (Context::key_pressed(GLFW_KEY_S)) {
-            current()->backward(dt_ms * default_camera_movement_speed);
+            current_camera()->backward(dt_ms * default_camera_movement_speed);
             moved = true;
         }
         if (Context::key_pressed(GLFW_KEY_A)) {
-            current()->leftward(dt_ms * default_camera_movement_speed);
+            current_camera()->leftward(dt_ms * default_camera_movement_speed);
             moved = true;
         }
         if (Context::key_pressed(GLFW_KEY_D)) {
-            current()->rightward(dt_ms * default_camera_movement_speed);
+            current_camera()->rightward(dt_ms * default_camera_movement_speed);
             moved = true;
         }
         if (Context::key_pressed(GLFW_KEY_R)) {
-            current()->upward(dt_ms * default_camera_movement_speed);
+            current_camera()->upward(dt_ms * default_camera_movement_speed);
             moved = true;
         }
         if (Context::key_pressed(GLFW_KEY_F)) {
-            current()->downward(dt_ms * default_camera_movement_speed);
+            current_camera()->downward(dt_ms * default_camera_movement_speed);
             moved = true;
         }
         if (Context::key_pressed(GLFW_KEY_Q)) {
-            Camera::current()->roll(dt_ms * -0.1);
+            current_camera()->roll(dt_ms * -0.1);
             moved = true;
         }
         if (Context::key_pressed(GLFW_KEY_E)) {
-            Camera::current()->roll(dt_ms * 0.1);
+            current_camera()->roll(dt_ms * 0.1);
             moved = true;
         }
     }
@@ -118,8 +123,8 @@ bool Camera::default_input_handler(double dt_ms) {
     const glm::vec2 diff = last_pos - curr_pos;
     if (not ImGui::GetIO().WantCaptureMouse && Context::mouse_button_pressed(GLFW_MOUSE_BUTTON_LEFT)) {
         if (glm::length(diff) > 0.01) {
-            current()->pitch(diff.y * rot_speed);
-            current()->yaw(diff.x * rot_speed);
+            current_camera()->pitch(diff.y * rot_speed);
+            current_camera()->yaw(diff.x * rot_speed);
             moved = true;
         }
     }

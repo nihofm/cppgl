@@ -30,35 +30,62 @@ inline uint32_t type_to_bytes(GLenum type) {
     }
 }
 
-// ------------------------------------------
-// Mesh class
+std::vector<Mesh> load_meshes(const fs::path& path) {
+    // load from disk
+    Assimp::Importer importer;
+    std::cout << "Loading: " << path << "..." << std::endl;
+    const aiScene* scene_ai = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_GenNormals);// | aiProcess_FlipUVs);
+    if (!scene_ai) // handle error
+        throw std::runtime_error("ERROR: Failed to load file: " + path.string() + "!");
+    // load materials
+    std::vector<Material> materials;
+    const std::string base_name = path.filename().replace_extension("");
+    for (uint32_t i = 0; i < scene_ai->mNumMaterials; ++i) {
+        aiString name_ai;
+        scene_ai->mMaterials[i]->Get(AI_MATKEY_NAME, name_ai);
+        materials.push_back(Material(base_name + "_" + name_ai.C_Str(), path.parent_path(), scene_ai->mMaterials[i]));
+    }
+    // load meshes
+    std::vector<Mesh> meshes;
+    for (uint32_t i = 0; i < scene_ai->mNumMeshes; ++i) {
+        const aiMesh* ai_mesh = scene_ai->mMeshes[i];
+        // build geometry and fetch corresponding material
+        auto geometry = Geometry(base_name + "_" + ai_mesh->mName.C_Str() + "_" + std::to_string(i), ai_mesh);
+        auto material = materials[scene_ai->mMeshes[i]->mMaterialIndex];
+        meshes.push_back(Mesh(geometry.name + "_" + material.name, geometry, material));
+    }
+    return meshes;
+}
 
-Mesh::Mesh(const std::string& name) : NamedMap(name), vao(0), ibo(0), num_vertices(0), num_indices(0), primitive_type(GL_TRIANGLES) {
+// ------------------------------------------
+// MeshImpl
+
+MeshImpl::MeshImpl() : vao(0), ibo(0), num_vertices(0), num_indices(0), primitive_type(GL_TRIANGLES) {
     glGenVertexArrays(1, &vao);
 }
 
-Mesh::Mesh(const std::string& name, const std::shared_ptr<Geometry>& geometry) : Mesh(name) {
+MeshImpl::MeshImpl(const Geometry& geometry) : MeshImpl() {
     this->geometry = geometry;
     upload_gpu();
 }
 
-Mesh::Mesh(const std::string& name, const std::shared_ptr<Geometry>& geometry, const std::shared_ptr<Material>& material) : Mesh(name) {
+MeshImpl::MeshImpl(const Geometry& geometry, const Material& material) : MeshImpl() {
     this->geometry = geometry;
     this->material = material;
     upload_gpu();
 }
 
-Mesh::~Mesh() {
+MeshImpl::~MeshImpl() {
     clear_gpu();
     glDeleteVertexArrays(1, &vao);
 }
 
-void Mesh::clear_gpu() {
+void MeshImpl::clear_gpu() {
     if (ibo) glDeleteBuffers(1, &ibo);
     glDeleteBuffers(vbo_ids.size(), vbo_ids.data());
 }
 
-void Mesh::upload_gpu() {
+void MeshImpl::upload_gpu() {
     // free gpu resources
     clear_gpu();
     // upload data to GL
@@ -70,9 +97,9 @@ void Mesh::upload_gpu() {
     add_index_buffer(geometry->indices.size(), geometry->indices.data());
 }
 
-uint32_t Mesh::add_vertex_buffer(GLenum type, uint32_t element_dim, uint32_t num_vertices, const void* data, GLenum hint) {
+uint32_t MeshImpl::add_vertex_buffer(GLenum type, uint32_t element_dim, uint32_t num_vertices, const void* data, GLenum hint) {
     if (this->num_vertices && this->num_vertices != num_vertices)
-        throw std::runtime_error("Mesh " + name + ": vertex buffer size mismatch!");
+        throw std::runtime_error("Mesh: vertex buffer size mismatch!");
     this->num_vertices = num_vertices;
     const uint32_t buf_id = vbo_ids.size();
     vbo_ids.push_back(0); // dummy
@@ -99,7 +126,7 @@ uint32_t Mesh::add_vertex_buffer(GLenum type, uint32_t element_dim, uint32_t num
     return buf_id;
 }
 
-void Mesh::add_index_buffer(uint32_t num_indices, const uint32_t* data, GLenum hint) {
+void MeshImpl::add_index_buffer(uint32_t num_indices, const uint32_t* data, GLenum hint) {
     if (!ibo) glGenBuffers(1, &ibo);
     this->num_indices = num_indices;
     // setup ibo
@@ -110,62 +137,32 @@ void Mesh::add_index_buffer(uint32_t num_indices, const uint32_t* data, GLenum h
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
-void Mesh::update_vertex_buffer(uint32_t buf_id, const void* data) {
+void MeshImpl::update_vertex_buffer(uint32_t buf_id, const void* data) {
     if (buf_id >= vbo_ids.size())
-        throw std::runtime_error("Mesh " + name + ": buffer id out of range!");
+        throw std::runtime_error("Mesh: buffer id out of range!");
     glBindBuffer(GL_ARRAY_BUFFER, vbo_ids[buf_id]);
     const size_t stride = type_to_bytes(vbo_types[buf_id]) * vbo_dims[buf_id];
     glBufferSubData(GL_ARRAY_BUFFER, 0, stride * num_vertices, data);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
-void Mesh::set_primitive_type(GLenum primitive_type) { this->primitive_type = primitive_type; }
+void MeshImpl::set_primitive_type(GLenum primitive_type) { this->primitive_type = primitive_type; }
 
-void Mesh::bind(const Shader& shader) const {
+void MeshImpl::bind(const Shader& shader) const {
     glBindVertexArray(vao);
     if (material)
         material->bind(shader);
 }
 
-void Mesh::unbind() const {
+void MeshImpl::unbind() const {
     glBindVertexArray(0);
     if (material)
         material->unbind();
 }
 
-void Mesh::draw() const {
+void MeshImpl::draw() const {
     if (ibo)
         glDrawElements(primitive_type, num_indices, GL_UNSIGNED_INT, 0);
     else
         glDrawArrays(primitive_type, 0, num_vertices);
 }
-
-std::vector<std::shared_ptr<Mesh>> Mesh::load(const fs::path& path) {
-    // load from disk
-    Assimp::Importer importer;
-    std::cout << "Loading: " << path << "..." << std::endl;
-    const aiScene* scene_ai = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_GenNormals);// | aiProcess_FlipUVs);
-    if (!scene_ai) // handle error
-        throw std::runtime_error("ERROR: Failed to load file: " + path.string() + "!");
-    // load materials
-    std::vector<std::shared_ptr<Material>> materials;
-    const std::string base_name = path.filename().replace_extension("");
-    for (uint32_t i = 0; i < scene_ai->mNumMaterials; ++i) {
-        aiString name_ai;
-        scene_ai->mMaterials[i]->Get(AI_MATKEY_NAME, name_ai);
-        materials.push_back(make_material(base_name + "_" + name_ai.C_Str(), path.parent_path(), scene_ai->mMaterials[i]));
-    }
-    // load meshes
-    std::vector<std::shared_ptr<Mesh>> meshes;
-    for (uint32_t i = 0; i < scene_ai->mNumMeshes; ++i) {
-        const aiMesh* ai_mesh = scene_ai->mMeshes[i];
-        // build geometry and fetch corresponding material
-        auto geometry = make_geometry(base_name + "_" + ai_mesh->mName.C_Str() + "_" + std::to_string(i), ai_mesh);
-        auto material = materials[scene_ai->mMeshes[i]->mMaterialIndex];
-        meshes.push_back(make_mesh(geometry->name + "_" + material->name, geometry, material));
-    }
-    return meshes;
-}
-
-// ------------------------------------------
-// Mesh class

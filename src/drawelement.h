@@ -11,7 +11,7 @@ class Drawelement : public NamedMap<Drawelement> {
 public:
     Drawelement(const std::string& name);
     Drawelement(const std::string& name, const Shader& shader);
-    Drawelement(const std::string& name, const Shader& shader, const std::shared_ptr<Mesh>& mesh);
+    Drawelement(const std::string& name, const Shader& shader, const Mesh& mesh);
     virtual ~Drawelement();
 
     void bind() const;
@@ -20,7 +20,7 @@ public:
 
     glm::mat4 model;
     Shader shader;
-    std::shared_ptr<Mesh> mesh;
+    Mesh mesh;
 };
 
 // variadic alias for std::make_shared<>(...)

@@ -1,25 +1,27 @@
 #pragma once
 
-#include <string>
-#include <memory>
-#include <vector>
 #include <GL/glew.h>
 #include <GL/gl.h>
-#include "named_map.h"
+#include "named_handle.h"
 
 // ----------------------------------------------------
-// Shader storage buffer (std430, binding = unit)
+// SSBO
 
-class SSBO : public NamedMap<SSBO> {
+class SSBOImpl;
+using SSBO = NamedHandle<SSBOImpl>;
+
+// ----------------------------------------------------
+// Shader storage buffer implementation (std430, binding = unit)
+
+class SSBOImpl {
 public:
-    SSBO(const std::string& name);
-    SSBO(const std::string& name, size_t size_bytes);
-    virtual ~SSBO();
+    SSBOImpl(size_t size_bytes = 0);
+    virtual ~SSBOImpl();
 
     // prevent copies and moves, since GL buffers aren't reference counted
-    SSBO(const SSBO&) = delete;
-    SSBO& operator=(const SSBO&) = delete;
-    SSBO& operator=(const SSBO&&) = delete;
+    SSBOImpl(const SSBOImpl&) = delete;
+    SSBOImpl& operator=(const SSBOImpl&) = delete;
+    SSBOImpl& operator=(const SSBOImpl&&) = delete;
 
     explicit inline operator bool() const { return glIsBuffer(id) && size_bytes > 0; }
     inline operator GLuint() const { return id; }
@@ -40,24 +42,24 @@ public:
     size_t size_bytes;
 };
 
-// variadic alias for std::make_shared<>(...)
-template <class... Args> std::shared_ptr<SSBO> make_ssbo(Args&&... args) {
-    return std::make_shared<SSBO>(args...);
-}
+// ----------------------------------------------------
+// UBO
+
+class UBOImpl;
+using UBO = NamedHandle<UBOImpl>;
 
 // ----------------------------------------------------
-// Uniform buffer (std140, binding = unit) TODO test
+// Uniform buffer implementation (std140, binding = unit) TODO test
 
-class UBO : public NamedMap<UBO> {
+class UBOImpl {
 public:
-    UBO(const std::string& name);
-    UBO(const std::string& name, size_t size_bytes);
-    virtual ~UBO();
+    UBOImpl(size_t size_bytes);
+    virtual ~UBOImpl();
 
     // prevent copies and moves, since GL buffers aren't reference counted
-    UBO(const UBO&) = delete;
-    UBO& operator=(const UBO&) = delete;
-    UBO& operator=(const UBO&&) = delete;
+    UBOImpl(const UBOImpl&) = delete;
+    UBOImpl& operator=(const UBOImpl&) = delete;
+    UBOImpl& operator=(const UBOImpl&&) = delete;
 
     explicit inline operator bool() const { return glIsBuffer(id) && size_bytes > 0; }
     inline operator GLuint() const { return id; }
@@ -77,8 +79,3 @@ public:
     GLuint id;
     size_t size_bytes;
 };
-
-// variadic alias for std::make_shared<>(...)
-template <class... Args> std::shared_ptr<UBO> make_ubo(Args&&... args) {
-    return std::make_shared<UBO>(args...);
-}

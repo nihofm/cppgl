@@ -5,23 +5,29 @@
 namespace fs = std::filesystem;
 #include <GL/glew.h>
 #include <GL/gl.h>
-#include "named_map.h"
+#include "named_handle.h"
 
 // ----------------------------------------------------
 // Texture2D
 
-class Texture2D : public NamedMap<Texture2D> {
+class Texture2DImpl;
+using Texture2D = NamedHandle<Texture2DImpl>;
+
+// ------------------------------------------
+// Texture2DImpl
+
+class Texture2DImpl {
 public:
     // construct from image on disk
-    Texture2D(const std::string& name, const fs::path& path, bool mipmap = true);
+    Texture2DImpl(const fs::path& path, bool mipmap = true);
     // construct empty texture or from raw data
-    Texture2D(const std::string& name, uint32_t w, uint32_t h, GLint internal_format, GLenum format, GLenum type, const void *data = 0, bool mipmap = false);
-    virtual ~Texture2D();
+    Texture2DImpl(uint32_t w, uint32_t h, GLint internal_format, GLenum format, GLenum type, const void *data = 0, bool mipmap = false);
+    virtual ~Texture2DImpl();
 
     // prevent copies and moves, since GL buffers aren't reference counted
-    Texture2D(const Texture2D&) = delete;
-    Texture2D& operator=(const Texture2D&) = delete;
-    Texture2D& operator=(const Texture2D&&) = delete;
+    Texture2DImpl(const Texture2DImpl&) = delete;
+    Texture2DImpl& operator=(const Texture2DImpl&) = delete;
+    Texture2DImpl& operator=(const Texture2DImpl&&) = delete;
 
     explicit inline operator bool() const  { return w > 0 && h > 0 && glIsTexture(id); }
     inline operator GLuint() const { return id; }
@@ -48,25 +54,26 @@ public:
     GLenum format, type;
 };
 
-// variadic alias for std::make_shared<>(...)
-template <class... Args> std::shared_ptr<Texture2D> make_texture2D(Args&&... args) {
-    return std::make_shared<Texture2D>(args...);
-}
-
 // ----------------------------------------------------
 // Texture3D
 
-class Texture3D : public NamedMap<Texture3D> {
+class Texture3DImpl;
+using Texture3D = NamedHandle<Texture3DImpl>;
+
+// ----------------------------------------------------
+// Texture3DImpl
+
+class Texture3DImpl {
 public:
     // construct empty texture or from raw data
-    Texture3D(const std::string& name, uint32_t w, uint32_t h, uint32_t d, GLint internal_format, GLenum format, GLenum type,
+    Texture3DImpl(uint32_t w, uint32_t h, uint32_t d, GLint internal_format, GLenum format, GLenum type,
             const void *data = 0, bool mipmap = false);
-    virtual ~Texture3D();
+    virtual ~Texture3DImpl();
 
     // prevent copies and moves, since GL buffers aren't reference counted
-    Texture3D(const Texture3D&) = delete;
-    Texture3D& operator=(const Texture3D&) = delete;
-    Texture3D& operator=(const Texture3D&&) = delete;
+    Texture3DImpl(const Texture3DImpl&) = delete;
+    Texture3DImpl& operator=(const Texture3DImpl&) = delete;
+    Texture3DImpl& operator=(const Texture3DImpl&&) = delete;
 
     explicit inline operator bool() const  { return w > 0 && h > 0 && d > 0 && glIsTexture(id); }
     inline operator GLuint() const { return id; }
@@ -88,8 +95,3 @@ public:
     GLint internal_format;
     GLenum format, type;
 };
-
-// variadic alias for std::make_shared<>(...)
-template <class... Args> std::shared_ptr<Texture3D> make_texture3D(Args&&... args) {
-    return std::make_shared<Texture3D>(args...);
-}

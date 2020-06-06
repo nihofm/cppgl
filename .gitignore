@@ -1,5 +1,6 @@
-# Created by https://www.gitignore.io/api/vim,c++,linux,cmake,windows
-# Edit at https://www.gitignore.io/?templates=vim,c++,linux,cmake,windows
+
+# Created by https://www.toptal.com/developers/gitignore/api/c++,linux,windows,cmake,ninja,visualstudiocode,vim
+# Edit at https://www.toptal.com/developers/gitignore?templates=c++,linux,windows,cmake,ninja,visualstudiocode,vim
 
 ### C++ ###
 # Prerequisites
@@ -67,6 +68,10 @@ _deps
 # .nfs files are created when an open file is removed but is still being accessed
 .nfs*
 
+### Ninja ###
+.ninja_deps
+.ninja_log
+
 ### Vim ###
 # Swap
 [._]*.s[a-v][a-z]
@@ -77,24 +82,28 @@ _deps
 
 # Session
 Session.vim
-Sessionx.vim
 
 # Temporary
 .netrwhist
-
 # Auto-generated tag files
 tags
-
 # Persistent undo
 [._]*.un~
 
-# Coc configuration directory
-.vim
+### VisualStudioCode ###
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+### VisualStudioCode Patch ###
+# Ignore all local history of files
+.history
 
 ### Windows ###
 # Windows thumbnail cache files
 Thumbs.db
-Thumbs.db:encryptable
 ehthumbs.db
 ehthumbs_vista.db
 
@@ -117,10 +126,4 @@ $RECYCLE.BIN/
 # Windows shortcuts
 *.lnk
 
-# End of https://www.gitignore.io/api/vim,c++,linux,cmake,windows
-
-### Ninja ###
-.ninja_deps
-.ninja_log
-.vscode/launch.json
-.vscode/settings.json
+# End of https://www.toptal.com/developers/gitignore/api/c++,linux,windows,cmake,ninja,visualstudiocode,vim

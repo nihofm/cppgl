@@ -5,7 +5,6 @@
 #include <iostream>
 #include <memory>
 #include <stdexcept>
-#include <cassert>
 
 template <typename T> class NamedHandle {
 public:
@@ -35,11 +34,11 @@ public:
     inline NamedHandle<T>& operator=(NamedHandle<T>&& other) = default;
 
     // operators for pointer-like usage
-    inline explicit operator bool() const { assert(ptr); return ptr.operator bool(); }
-    inline T* operator->() { assert(ptr); return ptr.operator->(); }
-    inline const T* operator->() const { assert(ptr); return ptr.operator->(); }
-    inline T& operator*() { assert(ptr); return *ptr; }
-    inline const T& operator*() const { assert(ptr); return *ptr; }
+    inline explicit operator bool() const { return ptr.operator bool(); }
+    inline T* operator->() { return ptr.operator->(); }
+    inline const T* operator->() const { return ptr.operator->(); }
+    inline T& operator*() { return *ptr; }
+    inline const T& operator*() const { return *ptr; }
 
     // check if mapping for given name exists
     static bool valid(const std::string& name) { return map.count(name); }

@@ -378,6 +378,7 @@ static void draw_gui() {
     }
     ImGui::End();
 
+    // TODO update GUI
     static bool gui_show_cameras = false;
     static bool gui_show_textures = false;
     static bool gui_show_fbos = false;

@@ -13,6 +13,11 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}")
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}")
 
 # ---------------------------------------------------------------------
+# cmake options
+
+option(BUILD_EXAMPLES OFF)
+
+# ---------------------------------------------------------------------
 # compiler options
 
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -36,4 +41,7 @@ set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 
 include_directories(src)
 add_subdirectory(src)
-add_subdirectory(examples)
+
+if (BUILD_EXAMPLES)
+    add_subdirectory(examples)
+endif()

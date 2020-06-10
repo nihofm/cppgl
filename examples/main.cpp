@@ -8,15 +8,15 @@
 // ------------------------------------------
 // state / variables / settings
 
-static ShaderPtr draw_shader;
-static FramebufferPtr fbo;
-static std::vector<DrawelementPtr> drawelements;
+static Shader draw_shader;
+static Framebuffer fbo;
+static std::vector<Drawelement> drawelements;
 
 // ------------------------------------------
 // helper funcs and callbacks
 
-void blit(const Texture2DPtr& tex) {
-    static ShaderPtr blit_shader = ShaderPtr("blit", "shader/quad.vs", "shader/blit.fs");
+void blit(const Texture2D& tex) {
+    static Shader blit_shader = Shader("blit", "shader/quad.vs", "shader/blit.fs");
     blit_shader->bind();
     blit_shader->uniform("tex", tex, 0);
     Quad::draw();
@@ -62,7 +62,7 @@ int main(int argc, char** argv) {
     Context::set_gui_callback(gui_callback);
 
     // setup draw shader
-    draw_shader = ShaderPtr("draw", "shader/draw.vs", "shader/draw.fs");
+    draw_shader = Shader("draw", "shader/draw.vs", "shader/draw.fs");
 
     // parse cmd line args
     for (int i = 1; i < argc; ++i) {
@@ -83,15 +83,15 @@ int main(int argc, char** argv) {
             current_camera()->fov_degree = std::stof(argv[++i]);
         else {
             for (auto& mesh : load_meshes(argv[i], true))
-                drawelements.push_back(DrawelementPtr(mesh.name, mesh, draw_shader));
+                drawelements.push_back(Drawelement(mesh.name, mesh, draw_shader));
         }
     }
 
     // setup fbo
     const glm::ivec2 res = Context::resolution();
-    fbo = FramebufferPtr("fbo", res.x, res.y);
-    fbo->attach_depthbuffer(Texture2DPtr("fbo/depth", res.x, res.y, GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT, GL_FLOAT));
-    fbo->attach_colorbuffer(Texture2DPtr("fbo/col", res.x, res.y, GL_RGBA32F, GL_RGBA, GL_FLOAT));
+    fbo = Framebuffer("fbo", res.x, res.y);
+    fbo->attach_depthbuffer(Texture2D("fbo/depth", res.x, res.y, GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT, GL_FLOAT));
+    fbo->attach_colorbuffer(Texture2D("fbo/col", res.x, res.y, GL_RGBA32F, GL_RGBA, GL_FLOAT));
     fbo->check();
 
     // run

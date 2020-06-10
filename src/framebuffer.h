@@ -29,16 +29,16 @@ public:
     void check() const;
     void resize(uint32_t w, uint32_t h);
 
-    void attach_depthbuffer(Texture2DPtr tex = Texture2DPtr());
-    void attach_colorbuffer(const Texture2DPtr& tex);
+    void attach_depthbuffer(Texture2D tex = Texture2D());
+    void attach_colorbuffer(const Texture2D& tex);
 
     // data
     GLuint id;
     uint32_t w, h;
-    std::vector<Texture2DPtr> color_textures;
+    std::vector<Texture2D> color_textures;
     std::vector<GLenum> color_targets;
-    Texture2DPtr depth_texture;
+    Texture2D depth_texture;
     GLint prev_vp[4];
 };
 
-using FramebufferPtr = NamedHandle<FramebufferImpl>;
+using Framebuffer = NamedHandle<FramebufferImpl>;

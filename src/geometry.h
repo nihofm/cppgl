@@ -42,4 +42,4 @@ public:
     std::vector<glm::vec2> texcoords;
 };
 
-using GeometryPtr = NamedHandle<GeometryImpl>;
+using Geometry = NamedHandle<GeometryImpl>;

@@ -91,7 +91,7 @@ public:
     Timer timer;
 };
 
-using TimerQueryPtr = NamedHandle<TimerQueryImpl>;
+using TimerQuery = NamedHandle<TimerQueryImpl>;
 
 // -------------------------------------------------------
 // (GPU) TimerQueryGL (in ms)
@@ -114,7 +114,7 @@ public:
     GLuint64 start_time, stop_time;
 };
 
-using TimerQueryGLPtr = NamedHandle<TimerQueryGLImpl>;
+using TimerQueryGL = NamedHandle<TimerQueryGLImpl>;
 
 // -------------------------------------------------------
 // (GPU) PrimitiveQueryGL
@@ -137,7 +137,7 @@ public:
     GLuint64 start_time, stop_time;
 };
 
-using PrimitiveQueryGLPtr = NamedHandle<PrimitiveQueryGLImpl>;
+using PrimitiveQueryGL = NamedHandle<PrimitiveQueryGLImpl>;
 
 // -------------------------------------------------------
 // (GPU) FragmentQueryGL
@@ -160,4 +160,4 @@ public:
     GLuint64 start_time, stop_time;
 };
 
-using FragmentQueryGLPtr = NamedHandle<FragmentQueryGLImpl>;
+using FragmentQueryGL = NamedHandle<FragmentQueryGLImpl>;

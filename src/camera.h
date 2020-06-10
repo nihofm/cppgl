@@ -48,8 +48,8 @@ public:
     glm::mat4 view, view_normal, proj;  // camera matrices (computed via a call update())
 };
 
-using CameraPtr = NamedHandle<CameraImpl>;
+using Camera = NamedHandle<CameraImpl>;
 
 // TODO move to CameraImpl::current()
-CameraPtr current_camera();
-void make_camera_current(const CameraPtr& cam);
+Camera current_camera();
+void make_camera_current(const Camera& cam);

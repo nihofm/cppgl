@@ -9,7 +9,7 @@
 
 class DrawelementImpl {
 public:
-    DrawelementImpl(const MeshPtr& mesh = MeshPtr(), const ShaderPtr& shader = ShaderPtr());
+    DrawelementImpl(const Mesh& mesh = Mesh(), const Shader& shader = Shader());
     virtual ~DrawelementImpl();
 
     void bind() const;
@@ -17,8 +17,8 @@ public:
     void unbind() const;
 
     glm::mat4 model;
-    ShaderPtr shader;
-    MeshPtr mesh;
+    Shader shader;
+    Mesh mesh;
 };
 
-using DrawelementPtr = NamedHandle<DrawelementImpl>;
+using Drawelement = NamedHandle<DrawelementImpl>;

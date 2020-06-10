@@ -121,7 +121,7 @@ static GLuint compile_shader(GLenum type, std::map<GLenum, fs::path>& source_fil
 }
 
 void reload_modified_shaders() {
-    for (auto& pair : ShaderPtr::map)
+    for (auto& pair : Shader::map)
         pair.second->reload_if_modified();
 }
 
@@ -343,13 +343,13 @@ void ShaderImpl::uniform(const std::string& name, const glm::mat4& val) const {
     glUniformMatrix4fv(loc, 1, GL_FALSE, glm::value_ptr(val));
 }
 
-void ShaderImpl::uniform(const std::string& name, const Texture2DPtr& tex, uint32_t unit) const {
+void ShaderImpl::uniform(const std::string& name, const Texture2D& tex, uint32_t unit) const {
     int loc = glGetUniformLocation(id, name.c_str());
     tex->bind(unit);
     glUniform1i(loc, unit);
 }
 
-void ShaderImpl::uniform(const std::string& name, const Texture3DPtr& tex, uint32_t unit) const {
+void ShaderImpl::uniform(const std::string& name, const Texture3D& tex, uint32_t unit) const {
     int loc = glGetUniformLocation(id, name.c_str());
     tex->bind(unit);
     glUniform1i(loc, unit);

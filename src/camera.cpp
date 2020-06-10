@@ -10,14 +10,14 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/quaternion.hpp>
 
-static CameraPtr current_cam;
+static Camera current_cam;
 
-CameraPtr current_camera() {
-    static CameraPtr default_cam("default");
+Camera current_camera() {
+    static Camera default_cam("default");
     return current_cam ? current_cam : default_cam;
 }
 
-void make_camera_current(const CameraPtr& cam) {
+void make_camera_current(const Camera& cam) {
     current_cam = cam;
 }
 

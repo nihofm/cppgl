@@ -1,14 +1,14 @@
 #include "anim.h"
 #include "camera.h"
 
-static AnimationPtr current_anim;
+static Animation current_anim;
 
-AnimationPtr current_animation() {
-    static AnimationPtr default_anim("default");
+Animation current_animation() {
+    static Animation default_anim("default");
     return current_anim ? current_anim : default_anim;
 }
 
-void make_animation_current(const AnimationPtr& anim) {
+void make_animation_current(const Animation& anim) {
     current_anim = anim;
 }
 

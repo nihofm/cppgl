@@ -65,17 +65,17 @@ public:
 // ----------------------------------------------------
 // Specialized GL buffers
 
-using VBOPtr = NamedHandle<GLBufferImpl<GL_ARRAY_BUFFER>>;
-using IBOPtr = NamedHandle<GLBufferImpl<GL_ELEMENT_ARRAY_BUFFER>>;
-using UBOPtr = NamedHandle<GLBufferImpl<GL_UNIFORM_BUFFER>>;
-using SSBOPtr = NamedHandle<GLBufferImpl<GL_SHADER_STORAGE_BUFFER>>;
-using TBOPtr = NamedHandle<GLBufferImpl<GL_TEXTURE_BUFFER>>;
-using QBOPtr = NamedHandle<GLBufferImpl<GL_QUERY_BUFFER>>;
-using ACBOPtr = NamedHandle<GLBufferImpl<GL_ATOMIC_COUNTER_BUFFER>>;
-using DIBOPtr = NamedHandle<GLBufferImpl<GL_DRAW_INDIRECT_BUFFER>>;
-using CIBOPtr = NamedHandle<GLBufferImpl<GL_DISPATCH_INDIRECT_BUFFER>>;
-using TFBOPtr = NamedHandle<GLBufferImpl<GL_TRANSFORM_FEEDBACK_BUFFER>>;
-using PUBOPtr = NamedHandle<GLBufferImpl<GL_PIXEL_UNPACK_BUFFER>>;
-using PPBOPtr = NamedHandle<GLBufferImpl<GL_PIXEL_PACK_BUFFER>>;
-using CRBOPtr = NamedHandle<GLBufferImpl<GL_COPY_READ_BUFFER>>;
-using CWBOPtr = NamedHandle<GLBufferImpl<GL_COPY_WRITE_BUFFER>>;
+using VBO = NamedHandle<GLBufferImpl<GL_ARRAY_BUFFER>>;
+using IBO = NamedHandle<GLBufferImpl<GL_ELEMENT_ARRAY_BUFFER>>;
+using UBO = NamedHandle<GLBufferImpl<GL_UNIFORM_BUFFER>>;
+using SSBO = NamedHandle<GLBufferImpl<GL_SHADER_STORAGE_BUFFER>>;
+using TBO = NamedHandle<GLBufferImpl<GL_TEXTURE_BUFFER>>;
+using QBO = NamedHandle<GLBufferImpl<GL_QUERY_BUFFER>>;
+using ACBO = NamedHandle<GLBufferImpl<GL_ATOMIC_COUNTER_BUFFER>>;
+using DIBO = NamedHandle<GLBufferImpl<GL_DRAW_INDIRECT_BUFFER>>;
+using CIBO = NamedHandle<GLBufferImpl<GL_DISPATCH_INDIRECT_BUFFER>>;
+using TFBO = NamedHandle<GLBufferImpl<GL_TRANSFORM_FEEDBACK_BUFFER>>;
+using PUBO = NamedHandle<GLBufferImpl<GL_PIXEL_UNPACK_BUFFER>>;
+using PPBO = NamedHandle<GLBufferImpl<GL_PIXEL_PACK_BUFFER>>;
+using CRBO = NamedHandle<GLBufferImpl<GL_COPY_READ_BUFFER>>;
+using CWBO = NamedHandle<GLBufferImpl<GL_COPY_WRITE_BUFFER>>;

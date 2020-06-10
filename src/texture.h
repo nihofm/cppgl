@@ -48,7 +48,7 @@ public:
     GLenum format, type;
 };
 
-using Texture2DPtr = NamedHandle<Texture2DImpl>;
+using Texture2D = NamedHandle<Texture2DImpl>;
 
 // ----------------------------------------------------
 // Texture3D
@@ -86,4 +86,4 @@ public:
     GLenum format, type;
 };
 
-using Texture3DPtr = NamedHandle<Texture3DImpl>;
+using Texture3D = NamedHandle<Texture3DImpl>;

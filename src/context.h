@@ -73,8 +73,8 @@ public:
     // data
     GLFWwindow* glfw_window;
     double last_t, curr_t;
-    TimerQueryPtr cpu_timer, frame_timer;
-    TimerQueryGLPtr gpu_timer;
-    PrimitiveQueryGLPtr prim_count;
-    FragmentQueryGLPtr frag_count;
+    TimerQuery cpu_timer, frame_timer;
+    TimerQueryGL gpu_timer;
+    PrimitiveQueryGL prim_count;
+    FragmentQueryGL frag_count;
 };

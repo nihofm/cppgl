@@ -170,11 +170,11 @@ Context::Context() {
 
     // setup timer
     last_t = curr_t = glfwGetTime();
-    cpu_timer = TimerQueryPtr("CPU-time");
-    frame_timer = TimerQueryPtr("Frame-time");
-    gpu_timer = TimerQueryGLPtr("GPU-time");
-    prim_count = PrimitiveQueryGLPtr("#Primitives");
-    frag_count = FragmentQueryGLPtr("#Fragments");
+    cpu_timer = TimerQuery("CPU-time");
+    frame_timer = TimerQuery("Frame-time");
+    gpu_timer = TimerQueryGL("GPU-time");
+    prim_count = PrimitiveQueryGL("#Primitives");
+    frag_count = FragmentQueryGL("#Fragments");
     cpu_timer->begin();
     frame_timer->begin();
     gpu_timer->begin();
@@ -293,7 +293,7 @@ void Context::set_gui_callback(void (*fn)(void)) { user_gui_callback = fn; }
 // -------------------------------------------
 // GUI
 
-static void display_camera(CameraPtr& cam) {
+static void display_camera(Camera& cam) {
     ImGui::Indent();
     ImGui::DragFloat3(("pos##" + cam.name).c_str(), &cam->pos.x, 0.001f);
     ImGui::DragFloat3(("dir##" + cam.name).c_str(), &cam->dir.x, 0.001f);
@@ -314,7 +314,7 @@ static void display_camera(CameraPtr& cam) {
     ImGui::Unindent();
 }
 
-static void display_texture(const Texture2DPtr& tex, ImVec2 size = ImVec2(300, 300)) {
+static void display_texture(const Texture2D& tex, ImVec2 size = ImVec2(300, 300)) {
     ImGui::Indent();
     ImGui::Text("ID: %u, size: %ux%u", tex->id, tex->w, tex->h);
     ImGui::Text("internal_format: %u, format %u, type: %u", tex->internal_format, tex->format, tex->type);
@@ -325,7 +325,7 @@ static void display_texture(const Texture2DPtr& tex, ImVec2 size = ImVec2(300, 3
     ImGui::Unindent();
 }
 
-static void display_shader(ShaderPtr& shader) {
+static void display_shader(Shader& shader) {
     ImGui::Indent();
     ImGui::Text("ID: %u", shader->id);
     if (shader->source_files.count(GL_VERTEX_SHADER))
@@ -345,7 +345,7 @@ static void display_shader(ShaderPtr& shader) {
     ImGui::Unindent();
 }
 
-static void display_framebuffer(const FramebufferPtr& fbo) {
+static void display_framebuffer(const Framebuffer& fbo) {
     ImGui::Indent();
     ImGui::Text("ID: %u", fbo->id);
     ImGui::Text("size: %ux%u", fbo->w, fbo->h);
@@ -385,19 +385,19 @@ static void draw_gui() {
     ImGui::SetNextWindowSize(ImVec2(350, 500));
     if (ImGui::Begin("CPU/GPU Timer", 0, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoBackground)) {
         ImGui::PushStyleVar(ImGuiStyleVar_Alpha, .9f);
-        for (const auto& entry : TimerQueryPtr::map) {
+        for (const auto& entry : TimerQuery::map) {
             ImGui::Separator();
             display_query_timer(*entry.second, entry.second.name.c_str());
         }
-        for (const auto& entry : TimerQueryGLPtr::map) {
+        for (const auto& entry : TimerQueryGL::map) {
             ImGui::Separator();
             display_query_timer(*entry.second, entry.second.name.c_str());
         }
-        for (const auto& entry : PrimitiveQueryGLPtr::map) {
+        for (const auto& entry : PrimitiveQueryGL::map) {
             ImGui::Separator();
             display_query_counter(*entry.second, entry.second.name.c_str());
         }
-        for (const auto& entry : FragmentQueryGLPtr::map) {
+        for (const auto& entry : FragmentQueryGL::map) {
             ImGui::Separator();
             display_query_counter(*entry.second, entry.second.name.c_str());
         }
@@ -413,9 +413,9 @@ static void draw_gui() {
 
     if (ImGui::BeginMainMenuBar()) {
         // camera menu
-        if (ImGui::BeginMenu(std::string("Cameras (" + std::to_string(CameraPtr::map.size()) + ")").c_str())) {
+        if (ImGui::BeginMenu(std::string("Cameras (" + std::to_string(Camera::map.size()) + ")").c_str())) {
             ImGui::Text("Current: %s", current_camera().name.c_str());
-            for (auto& entry : CameraPtr::map) {
+            for (auto& entry : Camera::map) {
                 if (ImGui::CollapsingHeader(entry.first.c_str()))
                     display_camera(entry.second);
             }
@@ -424,8 +424,8 @@ static void draw_gui() {
 
         ImGui::Separator();
         // ImGui::Checkbox("textures", &gui_show_textures);
-        if (ImGui::BeginMenu(std::string("Textures (" + std::to_string(Texture2DPtr::map.size()) + ")").c_str())) {
-            for (auto& entry : Texture2DPtr::map) {
+        if (ImGui::BeginMenu(std::string("Textures (" + std::to_string(Texture2D::map.size()) + ")").c_str())) {
+            for (auto& entry : Texture2D::map) {
                 if (ImGui::CollapsingHeader(entry.first.c_str()))
                     display_texture(entry.second, ImVec2(300, 300));
             }
@@ -442,9 +442,9 @@ static void draw_gui() {
     }
 
     if (gui_show_cameras) {
-        if (ImGui::Begin(std::string("Cameras (" + std::to_string(CameraPtr::map.size()) + ")").c_str(), &gui_show_cameras)) {
+        if (ImGui::Begin(std::string("Cameras (" + std::to_string(Camera::map.size()) + ")").c_str(), &gui_show_cameras)) {
             ImGui::Text("Current: %s", current_camera().name.c_str());
-            for (auto& entry : CameraPtr::map) {
+            for (auto& entry : Camera::map) {
                 if (ImGui::CollapsingHeader(entry.first.c_str()))
                     display_camera(entry.second);
             }
@@ -453,8 +453,8 @@ static void draw_gui() {
     }
 
     if (gui_show_textures) {
-        if (ImGui::Begin(std::string("Textures (" + std::to_string(Texture2DPtr::map.size()) + ")").c_str(), &gui_show_textures)) {
-            for (auto& entry : Texture2DPtr::map) {
+        if (ImGui::Begin(std::string("Textures (" + std::to_string(Texture2D::map.size()) + ")").c_str(), &gui_show_textures)) {
+            for (auto& entry : Texture2D::map) {
                 if (ImGui::CollapsingHeader(entry.first.c_str()))
                     display_texture(entry.second, ImVec2(300, 300));
             }
@@ -463,8 +463,8 @@ static void draw_gui() {
     }
 
     if (gui_show_shaders) {
-        if (ImGui::Begin(std::string("Shaders (" + std::to_string(ShaderPtr::map.size()) + ")").c_str(), &gui_show_shaders)) {
-            for (auto& entry : ShaderPtr::map)
+        if (ImGui::Begin(std::string("Shaders (" + std::to_string(Shader::map.size()) + ")").c_str(), &gui_show_shaders)) {
+            for (auto& entry : Shader::map)
                 if (ImGui::CollapsingHeader(entry.first.c_str()))
                     display_shader(entry.second);
             if (ImGui::Button("Reload modified")) reload_modified_shaders();
@@ -473,8 +473,8 @@ static void draw_gui() {
     }
 
     if (gui_show_fbos) {
-        if (ImGui::Begin(std::string("Framebuffers (" + std::to_string(FramebufferPtr::map.size()) + ")").c_str(), &gui_show_fbos)) {
-            for (auto& entry : FramebufferPtr::map)
+        if (ImGui::Begin(std::string("Framebuffers (" + std::to_string(Framebuffer::map.size()) + ")").c_str(), &gui_show_fbos)) {
+            for (auto& entry : Framebuffer::map)
                 if (ImGui::CollapsingHeader(entry.first.c_str()))
                     display_framebuffer(entry.second);
         }

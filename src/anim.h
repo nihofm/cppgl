@@ -60,8 +60,8 @@ public:
     std::map<std::string, std::vector<glm::vec4>> data_vec4;
 };
 
-using AnimationPtr = NamedHandle<AnimationImpl>;
+using Animation = NamedHandle<AnimationImpl>;
 
 // TODO move this to AnimationImpl::current()
-AnimationPtr current_animation();
-void make_animation_current(const AnimationPtr& anim);
+Animation current_animation();
+void make_animation_current(const Animation& anim);

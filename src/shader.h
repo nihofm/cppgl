@@ -15,14 +15,6 @@ namespace fs = std::filesystem;
 // ------------------------------------------
 // Shader
 
-class ShaderImpl;
-using Shader = NamedHandle<ShaderImpl>;
-
-void reload_modified_shaders();
-
-// ------------------------------------------
-// ShaderImpl
-
 class ShaderImpl {
 public:
     ShaderImpl();
@@ -75,8 +67,8 @@ public:
     void uniform(const std::string& name, const glm::uvec4& val) const;
     void uniform(const std::string& name, const glm::mat3& val) const;
     void uniform(const std::string& name, const glm::mat4& val) const;
-    void uniform(const std::string& name, const Texture2D& tex, uint32_t unit) const;
-    void uniform(const std::string& name, const Texture3D& tex, uint32_t unit) const;
+    void uniform(const std::string& name, const Texture2DPtr& tex, uint32_t unit) const;
+    void uniform(const std::string& name, const Texture3DPtr& tex, uint32_t unit) const;
 
     // management/reload
     void clear();
@@ -87,3 +79,7 @@ public:
     std::map<GLenum, fs::path> source_files;
     std::map<GLenum, fs::file_time_type> timestamps;
 };
+
+using ShaderPtr = NamedHandle<ShaderImpl>;
+
+void reload_modified_shaders();

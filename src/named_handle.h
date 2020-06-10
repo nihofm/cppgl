@@ -6,6 +6,13 @@
 #include <memory>
 #include <stdexcept>
 
+/*
+// TODO name in Impl -> static_assert(HasName<T>)
+#include <type_traits>
+template <typename T, typename = int> struct HasName : std::false_type {};
+template <typename T> struct HasName <T, decltype((void) T::name, 0)> : std::true_type {};
+*/
+
 template <typename T> class NamedHandle {
 public:
     // "default" construct
@@ -13,14 +20,12 @@ public:
     NamedHandle(const std::string& name, const std::shared_ptr<T>& ptr) : name(name), ptr(ptr) {}
 
     // create new object and store handle in map for later retrieval
-    template <class... Args>
-    NamedHandle(const std::string& name, Args&&... args) : name(name), ptr(std::make_shared<T>(args...)) {
+    template <class... Args> NamedHandle(const std::string& name, Args&&... args) : name(name), ptr(std::make_shared<T>(args...)) {
         if (map.count(name))
             std::cerr << "WARN: NamedHandle<" <<  typeid(T).name() << ">: overwriting previous mapping for: " << name << std::endl;
         map[name] = *this;
     }
-    template <class... Args>
-    static NamedHandle<T> create(const std::string& name, Args&&... args) {
+    template <class... Args> static NamedHandle<T> create(const std::string& name, Args&&... args) {
         map[name] = NamedHandle<T>(name, std::make_shared<T>(args...));
         return map[name];
     }
@@ -42,9 +47,9 @@ public:
 
     // check if mapping for given name exists
     static bool valid(const std::string& name) { return map.count(name); }
-    // return shared pointer to mapping for given name
+    // return mapped handle for given name
     static NamedHandle<T> find(const std::string& name) { return map[name]; }
-    // clear saved handles to possibly free unsused memory
+    // clear saved handles and free unsused memory
     static void clear() { map.clear(); }
 
     // iterators to iterate over all entries

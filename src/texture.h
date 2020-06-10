@@ -10,12 +10,6 @@ namespace fs = std::filesystem;
 // ----------------------------------------------------
 // Texture2D
 
-class Texture2DImpl;
-using Texture2D = NamedHandle<Texture2DImpl>;
-
-// ------------------------------------------
-// Texture2DImpl
-
 class Texture2DImpl {
 public:
     // construct from image on disk
@@ -54,14 +48,10 @@ public:
     GLenum format, type;
 };
 
+using Texture2DPtr = NamedHandle<Texture2DImpl>;
+
 // ----------------------------------------------------
 // Texture3D
-
-class Texture3DImpl;
-using Texture3D = NamedHandle<Texture3DImpl>;
-
-// ----------------------------------------------------
-// Texture3DImpl
 
 class Texture3DImpl {
 public:
@@ -95,3 +85,5 @@ public:
     GLint internal_format;
     GLenum format, type;
 };
+
+using Texture3DPtr = NamedHandle<Texture3DImpl>;

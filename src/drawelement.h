@@ -4,18 +4,12 @@
 #include "mesh.h"
 #include "shader.h"
 
-// ------------------------------------------
-// Drawelement
-
-class DrawelementImpl;
-using Drawelement = NamedHandle<DrawelementImpl>;
-
 // -----------------------------------------------
-// DrawelementImpl (object instance for rendering)
+// Drawelement (object instance for rendering)
 
 class DrawelementImpl {
 public:
-    DrawelementImpl(const Mesh& mesh = Mesh(), const Shader& shader = Shader());
+    DrawelementImpl(const MeshPtr& mesh = MeshPtr(), const ShaderPtr& shader = ShaderPtr());
     virtual ~DrawelementImpl();
 
     void bind() const;
@@ -23,6 +17,8 @@ public:
     void unbind() const;
 
     glm::mat4 model;
-    Shader shader;
-    Mesh mesh;
+    ShaderPtr shader;
+    MeshPtr mesh;
 };
+
+using DrawelementPtr = NamedHandle<DrawelementImpl>;

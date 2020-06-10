@@ -11,10 +11,6 @@
 // ------------------------------------------
 // Framebuffer
 
-
-// ------------------------------------------
-// FramebufferImpl
-
 class FramebufferImpl {
 public:
     FramebufferImpl(uint32_t w, uint32_t h);
@@ -33,16 +29,16 @@ public:
     void check() const;
     void resize(uint32_t w, uint32_t h);
 
-    void attach_depthbuffer(Texture2D tex = Texture2D());
-    void attach_colorbuffer(const Texture2D& tex);
+    void attach_depthbuffer(Texture2DPtr tex = Texture2DPtr());
+    void attach_colorbuffer(const Texture2DPtr& tex);
 
     // data
     GLuint id;
     uint32_t w, h;
-    std::vector<Texture2D> color_textures;
+    std::vector<Texture2DPtr> color_textures;
     std::vector<GLenum> color_targets;
-    Texture2D depth_texture;
+    Texture2DPtr depth_texture;
     GLint prev_vp[4];
 };
 
-using Framebuffer = NamedHandle<FramebufferImpl>;
+using FramebufferPtr = NamedHandle<FramebufferImpl>;

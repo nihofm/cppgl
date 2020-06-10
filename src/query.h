@@ -9,12 +9,12 @@
 #include "named_handle.h"
 
 // -------------------------------------------------------
-// helper structs / funcs
+// simple cpu timer struct
 
 struct Timer {
-	inline Timer() { start(); }
+	inline Timer() { begin(); }
 
-	inline void start() {
+	inline void begin() {
         start_time = std::chrono::system_clock::now();
 	}
 
@@ -27,32 +27,43 @@ struct Timer {
 	std::chrono::time_point<std::chrono::system_clock> start_time;
 };
 
-template <typename T> struct RingBuffer {
-    RingBuffer(size_t N) : N(N), curr(0), data(N, T(0)) {}
+// -------------------------------------------------------
+// Query interface (with ring buffer)
 
-    void put(const T& val) {
+class Query {
+public:
+    Query(size_t N = 256) : N(N), curr(0), data(N, 0.f), exp_avg(0.f), last_val(0.f) {}
+    virtual ~Query() {}
+
+    virtual void begin() = 0;
+    virtual void end() = 0;
+
+    void put(float val) {
         data[curr] = val;
         curr = (curr + 1) % N;
         const float f = 0.1f;
         exp_avg = f * val + (1 - f) * exp_avg;
+        last_val = val;
     }
 
-    T min() const {
-        T t(FLT_MAX);
+    float last() { return last_val; }
+
+    float min() const {
+        float t = FLT_MAX;
         for (const auto& val : data)
             t = std::min(t, val);
         return t;
     }
 
-    T max() const {
-        T t(FLT_MIN);
+    float max() const {
+        float t = FLT_MIN;
         for (const auto& val : data)
             t = std::max(t, val);
         return t;
     }
 
-    T avg() const {
-        T t(0);
+    float avg() const {
+        float t = 0;
         for (const auto& val : data)
             t += val;
         return t / N;
@@ -61,43 +72,31 @@ template <typename T> struct RingBuffer {
     // data
     const size_t N;
     size_t curr;
-    std::vector<T> data;
-    T exp_avg;
+    std::vector<float> data;
+    float exp_avg, last_val;
 };
 
 // -------------------------------------------------------
-// (CPU) TimerQuery
+// (CPU) TimerQuery (in ms)
 
-class TimerQueryImpl;
-using TimerQuery = NamedHandle<TimerQueryImpl>;
-
-// -------------------------------------------------------
-// (CPU) TimerQueryImpl
-
-class TimerQueryImpl {
+class TimerQueryImpl : public Query {
 public:
     TimerQueryImpl(size_t samples = 256);
     virtual ~TimerQueryImpl();
 
-    void start();
+    void begin();
     void end();
-    float get() const; // milliseconds
 
+    // data
     Timer timer;
-    RingBuffer<float> buf;
-    std::chrono::time_point<std::chrono::system_clock> start_time;
 };
 
-// -------------------------------------------------------
-// (GPU) TimerQueryGL
-
-class TimerQueryGLImpl;
-using TimerQueryGL = NamedHandle<TimerQueryGLImpl>;
+using TimerQueryPtr = NamedHandle<TimerQueryImpl>;
 
 // -------------------------------------------------------
-// (GPU) TimerQueryGLImpl
+// (GPU) TimerQueryGL (in ms)
 
-class TimerQueryGLImpl {
+class TimerQueryGLImpl : public Query {
 public:
     TimerQueryGLImpl(size_t samples = 256);
     virtual ~TimerQueryGLImpl();
@@ -107,11 +106,58 @@ public:
     TimerQueryGLImpl& operator=(const TimerQueryGLImpl&) = delete;
     TimerQueryGLImpl& operator=(const TimerQueryGLImpl&&) = delete;
 
-    void start();
+    void begin();
     void end();
-    float get() const; // milliseconds
 
-    RingBuffer<float> buf;
+    // data
     GLuint query_ids[2][2];
     GLuint64 start_time, stop_time;
 };
+
+using TimerQueryGLPtr = NamedHandle<TimerQueryGLImpl>;
+
+// -------------------------------------------------------
+// (GPU) PrimitiveQueryGL
+
+class PrimitiveQueryGLImpl : public Query {
+public:
+    PrimitiveQueryGLImpl(size_t samples = 256);
+    virtual ~PrimitiveQueryGLImpl();
+
+    // prevent copies and moves, since GL buffers aren't reference counted
+    PrimitiveQueryGLImpl(const PrimitiveQueryGLImpl&) = delete;
+    PrimitiveQueryGLImpl& operator=(const PrimitiveQueryGLImpl&) = delete;
+    PrimitiveQueryGLImpl& operator=(const PrimitiveQueryGLImpl&&) = delete;
+
+    void begin();
+    void end();
+
+    // data
+    GLuint query_ids[2];
+    GLuint64 start_time, stop_time;
+};
+
+using PrimitiveQueryGLPtr = NamedHandle<PrimitiveQueryGLImpl>;
+
+// -------------------------------------------------------
+// (GPU) FragmentQueryGL
+
+class FragmentQueryGLImpl : public Query {
+public:
+    FragmentQueryGLImpl(size_t samples = 256);
+    virtual ~FragmentQueryGLImpl();
+
+    // prevent copies and moves, since GL buffers aren't reference counted
+    FragmentQueryGLImpl(const FragmentQueryGLImpl&) = delete;
+    FragmentQueryGLImpl& operator=(const FragmentQueryGLImpl&) = delete;
+    FragmentQueryGLImpl& operator=(const FragmentQueryGLImpl&&) = delete;
+
+    void begin();
+    void end();
+
+    // data
+    GLuint query_ids[2];
+    GLuint64 start_time, stop_time;
+};
+
+using FragmentQueryGLPtr = NamedHandle<FragmentQueryGLImpl>;

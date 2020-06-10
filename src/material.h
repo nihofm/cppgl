@@ -16,27 +16,22 @@ namespace fs = std::filesystem;
 // ------------------------------------------
 // Material
 
-class MaterialImpl;
-using Material = NamedHandle<MaterialImpl>;
-
-// ------------------------------------------
-// MaterialImpl
-
 class MaterialImpl {
 public:
     MaterialImpl();
     MaterialImpl(const fs::path& base_path, const aiMaterial* mat_ai);
     virtual ~MaterialImpl();
 
-    void bind(const Shader& shader) const;
+    void bind(const ShaderPtr& shader) const;
     void unbind() const;
 
     bool has_texture(const std::string& uniform_name) const;
-    void add_texture(const std::string& uniform_name, const Texture2D& texture);
-    Texture2D get_texture(const std::string& uniform_name) const;
+    void add_texture(const std::string& uniform_name, const Texture2DPtr& texture);
+    Texture2DPtr get_texture(const std::string& uniform_name) const;
 
     // data
     // TODO add more data: int/float/vec2/vec3/vec4
-    std::map<std::string, Texture2D> texture_map;
+    std::map<std::string, Texture2DPtr> texture_map;
 };
 
+using MaterialPtr = NamedHandle<MaterialImpl>;

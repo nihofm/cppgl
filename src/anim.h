@@ -9,22 +9,12 @@
 // ------------------------------------------
 // Animation
 
-class AnimationImpl;
-using Animation = NamedHandle<AnimationImpl>;
-
-// TODO move this to Animation::current()?
-Animation current_animation();
-void make_animation_current(const Animation& anim);
-
-// ------------------------------------------
-// AnimationImpl
-
 class AnimationImpl {
 public:
     AnimationImpl();
     virtual ~AnimationImpl();
 
-    // step animation and apply to Camera::current() if running
+    // step animation and apply to CameraPtr::current() if running
     void update(float dt_ms);
 
     void clear();
@@ -70,3 +60,8 @@ public:
     std::map<std::string, std::vector<glm::vec4>> data_vec4;
 };
 
+using AnimationPtr = NamedHandle<AnimationImpl>;
+
+// TODO move this to AnimationImpl::current()
+AnimationPtr current_animation();
+void make_animation_current(const AnimationPtr& anim);

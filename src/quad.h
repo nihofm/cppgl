@@ -8,11 +8,11 @@
 
 class Quad {
 public:
-    inline virtual ~Quad();
     inline static void draw();
 
 private:
     inline Quad();
+    inline virtual ~Quad();
     inline void draw_internal() const;
     GLuint vao, vbo, ibo;
 };

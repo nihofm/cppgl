@@ -1,28 +1,24 @@
 #include "query.h"
 
 // -------------------------------------------------------
-// CPU timer query
+// (CPU) TimerQuery (in ms)
 
-TimerQueryImpl::TimerQueryImpl(size_t samples) : buf(samples) {}
+TimerQueryImpl::TimerQueryImpl(size_t samples) : Query(samples) {}
 
 TimerQueryImpl::~TimerQueryImpl() {}
 
-void TimerQueryImpl::start() {
-    timer.start();
+void TimerQueryImpl::begin() {
+    timer.begin();
 }
 
 void TimerQueryImpl::end() {
-    buf.put(timer.look());
-}
-
-float TimerQueryImpl::get() const {
-    return buf.avg();
+    put(timer.look());
 }
 
 // -------------------------------------------------------
-// GPU timer query
+// (GPU) TimerQueryGL (in ms)
 
-TimerQueryGLImpl::TimerQueryGLImpl(size_t samples) : buf(samples) {
+TimerQueryGLImpl::TimerQueryGLImpl(size_t samples) : Query(samples) {
     glGenQueries(2, query_ids[0]);
     glGenQueries(2, query_ids[1]);
     glQueryCounter(query_ids[1][0], GL_TIMESTAMP);
@@ -34,7 +30,7 @@ TimerQueryGLImpl::~TimerQueryGLImpl() {
     glDeleteQueries(2, query_ids[1]);
 }
 
-void TimerQueryGLImpl::start() {
+void TimerQueryGLImpl::begin() {
     glQueryCounter(query_ids[0][0], GL_TIMESTAMP);
 }
 
@@ -43,9 +39,57 @@ void TimerQueryGLImpl::end() {
     std::swap(query_ids[0], query_ids[1]); // switch front/back buffer
     glGetQueryObjectui64v(query_ids[0][0], GL_QUERY_RESULT, &start_time);
     glGetQueryObjectui64v(query_ids[0][1], GL_QUERY_RESULT, &stop_time);
-    buf.put((stop_time - start_time) / 1000000.0);
+    put((stop_time - start_time) / 1000000.0);
 }
 
-float TimerQueryGLImpl::get() const {
-    return buf.avg();
+// -------------------------------------------------------
+// (GPU) PrimitiveQueryGL
+
+PrimitiveQueryGLImpl::PrimitiveQueryGLImpl(size_t samples) : Query(samples) {
+    glGenQueries(2, query_ids);
+    // avoid error on first run
+    begin();
+    end();
+}
+
+PrimitiveQueryGLImpl::~PrimitiveQueryGLImpl() {
+    glDeleteQueries(2, query_ids);
+}
+
+void PrimitiveQueryGLImpl::begin() {
+    glBeginQuery(GL_PRIMITIVES_GENERATED, query_ids[0]);
+}
+
+void PrimitiveQueryGLImpl::end() {
+    glEndQuery(GL_PRIMITIVES_GENERATED);
+    std::swap(query_ids[0], query_ids[1]); // switch front/back buffer
+    GLuint result;
+    glGetQueryObjectuiv(query_ids[0], GL_QUERY_RESULT, &result);
+    put(result);
+}
+
+// -------------------------------------------------------
+// (GPU) FragmentQueryGL
+
+FragmentQueryGLImpl::FragmentQueryGLImpl(size_t samples) : Query(samples) {
+    glGenQueries(2, query_ids);
+    // avoid error on first run
+    begin();
+    end();
+}
+
+FragmentQueryGLImpl::~FragmentQueryGLImpl() {
+    glDeleteQueries(2, query_ids);
+}
+
+void FragmentQueryGLImpl::begin() {
+    glBeginQuery(GL_SAMPLES_PASSED, query_ids[0]);
+}
+
+void FragmentQueryGLImpl::end() {
+    glEndQuery(GL_SAMPLES_PASSED);
+    std::swap(query_ids[0], query_ids[1]); // switch front/back buffer
+    GLuint result;
+    glGetQueryObjectuiv(query_ids[0], GL_QUERY_RESULT, &result);
+    put(result);
 }

@@ -15,23 +15,10 @@ namespace fs = std::filesystem;
 // ------------------------------------------
 // Mesh
 
-class MeshImpl;
-using Mesh = NamedHandle<MeshImpl>;
-
-// TODO move this to Mesh::load()?
-std::vector<Mesh> load_meshes(const fs::path& path, bool normalize = false);
-
-// ------------------------------------------
-// MeshImpl
-
 class MeshImpl {
 public:
-    MeshImpl(const Geometry& geometry = Geometry(), const Material& material = Material());
+    MeshImpl(const GeometryPtr& geometry = GeometryPtr(), const MaterialPtr& material = MaterialPtr());
     virtual ~MeshImpl();
-
-    // TODO refactor
-    // load mesh data from disk via assimp (obj, ply, ...)
-    static std::vector<Mesh> load(const fs::path& path);
 
     // prevent copies and moves, since GL buffers aren't reference counted
     MeshImpl(const MeshImpl&) = delete;
@@ -42,7 +29,7 @@ public:
     void clear_gpu(); // free gpu resources
     void upload_gpu(); // cpu -> gpu transfer
 
-    void bind(const Shader& shader) const;
+    void bind(const ShaderPtr& shader) const;
     void draw() const;
     void unbind() const;
 
@@ -59,8 +46,8 @@ public:
     void unmap_ibo() const;
 
     // CPU data
-    Geometry geometry;
-    Material material;
+    GeometryPtr geometry;
+    MaterialPtr material;
     // GPU data
     GLuint vao, ibo;
     uint32_t num_vertices;
@@ -70,3 +57,8 @@ public:
     std::vector<uint32_t> vbo_dims;
     GLenum primitive_type;
 };
+
+using MeshPtr = NamedHandle<MeshImpl>;
+
+// TODO move this to MeshPtr::load()?
+std::vector<MeshPtr> load_meshes(const fs::path& path, bool normalize = false);

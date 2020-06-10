@@ -30,7 +30,7 @@ inline uint32_t type_to_bytes(GLenum type) {
     }
 }
 
-std::vector<Mesh> load_meshes(const fs::path& path, bool normalize) {
+std::vector<MeshPtr> load_meshes(const fs::path& path, bool normalize) {
     // load from disk
     Assimp::Importer importer;
     std::cout << "Loading: " << path << "..." << std::endl;
@@ -39,10 +39,10 @@ std::vector<Mesh> load_meshes(const fs::path& path, bool normalize) {
         throw std::runtime_error("ERROR: Failed to load file: " + path.string() + "!");
     const std::string base_name = path.filename().replace_extension("");
     // load geometries
-    std::vector<Geometry> geometries;
+    std::vector<GeometryPtr> geometries;
     for (uint32_t i = 0; i < scene_ai->mNumMeshes; ++i) {
         const aiMesh* ai_mesh = scene_ai->mMeshes[i];
-        geometries.push_back(Geometry(base_name + "_" + ai_mesh->mName.C_Str() + "_" + std::to_string(i), ai_mesh));
+        geometries.push_back(GeometryPtr(base_name + "_" + ai_mesh->mName.C_Str() + "_" + std::to_string(i), ai_mesh));
     }
     // move and scale geometry to fit into [-1, 1]x3?
     if (normalize) {
@@ -61,19 +61,19 @@ std::vector<Mesh> load_meshes(const fs::path& path, bool normalize) {
         }
     }
     // load materials
-    std::vector<Material> materials;
+    std::vector<MaterialPtr> materials;
     for (uint32_t i = 0; i < scene_ai->mNumMaterials; ++i) {
         aiString name_ai;
         scene_ai->mMaterials[i]->Get(AI_MATKEY_NAME, name_ai);
-        materials.push_back(Material(base_name + "_" + name_ai.C_Str(), path.parent_path(), scene_ai->mMaterials[i]));
+        materials.push_back(MaterialPtr(base_name + "_" + name_ai.C_Str(), path.parent_path(), scene_ai->mMaterials[i]));
     }
     // build meshes
-    std::vector<Mesh> meshes;
+    std::vector<MeshPtr> meshes;
     for (uint32_t i = 0; i < scene_ai->mNumMeshes; ++i) {
         const aiMesh* ai_mesh = scene_ai->mMeshes[i];
         auto geometry = geometries[i];
         auto material = materials[scene_ai->mMeshes[i]->mMaterialIndex];
-        meshes.push_back(Mesh(geometry.name + "_" + material.name, geometry, material));
+        meshes.push_back(MeshPtr(geometry.name + "_" + material.name, geometry, material));
     }
 
     return meshes;
@@ -82,7 +82,7 @@ std::vector<Mesh> load_meshes(const fs::path& path, bool normalize) {
 // ------------------------------------------
 // MeshImpl
 
-MeshImpl::MeshImpl(const Geometry& geometry, const Material& material) : vao(0), ibo(0), num_vertices(0), num_indices(0), primitive_type(GL_TRIANGLES) {
+MeshImpl::MeshImpl(const GeometryPtr& geometry, const MaterialPtr& material) : vao(0), ibo(0), num_vertices(0), num_indices(0), primitive_type(GL_TRIANGLES) {
     glGenVertexArrays(1, &vao);
     this->geometry = geometry;
     this->material = material;
@@ -119,7 +119,7 @@ void MeshImpl::upload_gpu() {
     add_index_buffer(geometry->indices.size(), geometry->indices.data());
 }
 
-void MeshImpl::bind(const Shader& shader) const {
+void MeshImpl::bind(const ShaderPtr& shader) const {
     glBindVertexArray(vao);
     if (material)
         material->bind(shader);

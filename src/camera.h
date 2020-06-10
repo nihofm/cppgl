@@ -8,16 +8,6 @@
 // ----------------------------------------------------
 // Camera
 
-class CameraImpl;
-using Camera = NamedHandle<CameraImpl>;
-
-// TODO move this back to Camera::current()?
-Camera current_camera();
-void make_camera_current(const Camera& cam);
-
-// ----------------------------------------------------
-// CameraImpl
-
 class CameraImpl {
 public:
     CameraImpl();
@@ -57,3 +47,9 @@ public:
     bool fix_up_vector;                 // keep up vector fixed to avoid camera drift
     glm::mat4 view, view_normal, proj;  // camera matrices (computed via a call update())
 };
+
+using CameraPtr = NamedHandle<CameraImpl>;
+
+// TODO move to CameraImpl::current()
+CameraPtr current_camera();
+void make_camera_current(const CameraPtr& cam);

@@ -8,12 +8,6 @@
 // ------------------------------------------
 // Geometry
 
-class GeometryImpl;
-using Geometry = NamedHandle<GeometryImpl>;
-
-// ------------------------------------------
-// GeometryImpl
-
 class GeometryImpl {
 public:
     GeometryImpl();
@@ -47,3 +41,5 @@ public:
     std::vector<glm::vec3> normals;
     std::vector<glm::vec2> texcoords;
 };
+
+using GeometryPtr = NamedHandle<GeometryImpl>;

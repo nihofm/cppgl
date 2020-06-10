@@ -50,16 +50,16 @@ void FramebufferImpl::resize(uint32_t w, uint32_t h) {
         tex->resize(w, h);
 }
 
-void FramebufferImpl::attach_depthbuffer(Texture2D tex) {
+void FramebufferImpl::attach_depthbuffer(Texture2DPtr tex) {
     static std::atomic<uint32_t> depth_id(0);
-    if (!tex) tex = Texture2D("fbo_default_depthbuffer_" + std::to_string(depth_id++), w, h, GL_DEPTH_COMPONENT32F, GL_DEPTH_COMPONENT, GL_FLOAT);
+    if (!tex) tex = Texture2DPtr("fbo_default_depthbuffer_" + std::to_string(depth_id++), w, h, GL_DEPTH_COMPONENT32F, GL_DEPTH_COMPONENT, GL_FLOAT);
     glBindFramebuffer(GL_FRAMEBUFFER, id);
     depth_texture = tex;
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, tex->id, 0);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-void FramebufferImpl::attach_colorbuffer(const Texture2D& tex) {
+void FramebufferImpl::attach_colorbuffer(const Texture2DPtr& tex) {
     const GLenum target = GL_COLOR_ATTACHMENT0 + color_targets.size();
     glBindFramebuffer(GL_FRAMEBUFFER, id);
     glFramebufferTexture2D(GL_FRAMEBUFFER, target, GL_TEXTURE_2D, tex->id, 0);

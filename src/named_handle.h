@@ -1,9 +1,10 @@
 #pragma once
 
 #include <map>
+#include <mutex>
+#include <memory>
 #include <string>
 #include <iostream>
-#include <memory>
 #include <stdexcept>
 
 /*
@@ -21,13 +22,10 @@ public:
 
     // create new object and store handle in map for later retrieval
     template <class... Args> NamedHandle(const std::string& name, Args&&... args) : name(name), ptr(std::make_shared<T>(args...)) {
+        const std::lock_guard<std::mutex> lock(mutex);
         if (map.count(name))
             std::cerr << "WARN: NamedHandle<" <<  typeid(T).name() << ">: overwriting previous mapping for: " << name << std::endl;
         map[name] = *this;
-    }
-    template <class... Args> static NamedHandle<T> create(const std::string& name, Args&&... args) {
-        map[name] = NamedHandle<T>(name, std::make_shared<T>(args...));
-        return map[name];
     }
 
     virtual ~NamedHandle() {}
@@ -46,11 +44,20 @@ public:
     inline const T& operator*() const { return *ptr; }
 
     // check if mapping for given name exists
-    static bool valid(const std::string& name) { return map.count(name); }
+    static bool valid(const std::string& name) {
+        const std::lock_guard<std::mutex> lock(mutex);
+        return map.count(name);
+    }
     // return mapped handle for given name
-    static NamedHandle<T> find(const std::string& name) { return map[name]; }
+    static NamedHandle<T> find(const std::string& name) {
+        const std::lock_guard<std::mutex> lock(mutex);
+        return map[name];
+    }
     // clear saved handles and free unsused memory
-    static void clear() { map.clear(); }
+    static void clear() {
+        const std::lock_guard<std::mutex> lock(mutex);
+        map.clear();
+    }
 
     // iterators to iterate over all entries
     static typename std::map<std::string, NamedHandle<T>>::iterator begin() { return map.begin(); }
@@ -58,8 +65,10 @@ public:
 
     std::string name;    
     std::shared_ptr<T> ptr;
+    static std::mutex mutex;
     static std::map<std::string, NamedHandle<T>> map;
 };
 
-// definition of static member (compiler magic)
+// definition of static members (compiler magic)
+template <typename T> std::mutex NamedHandle<T>::mutex;
 template <typename T> std::map<std::string, NamedHandle<T>> NamedHandle<T>::map;

@@ -13,9 +13,9 @@ namespace fs = std::filesystem;
 class Texture2DImpl {
 public:
     // construct from image on disk
-    Texture2DImpl(const fs::path& path, bool mipmap = true);
+    Texture2DImpl(const std::string& name, const fs::path& path, bool mipmap = true);
     // construct empty texture or from raw data
-    Texture2DImpl(uint32_t w, uint32_t h, GLint internal_format, GLenum format, GLenum type, const void *data = 0, bool mipmap = false);
+    Texture2DImpl(const std::string& name, uint32_t w, uint32_t h, GLint internal_format, GLenum format, GLenum type, const void *data = 0, bool mipmap = false);
     virtual ~Texture2DImpl();
 
     // prevent copies and moves, since GL buffers aren't reference counted
@@ -42,6 +42,7 @@ public:
     void save_jpg(const fs::path& path, int quality = 100, bool flip = true) const; // quality: [1, 100]
 
     // data
+    const std::string name;
     GLuint id;
     int w, h;
     GLint internal_format;
@@ -56,7 +57,7 @@ using Texture2D = NamedHandle<Texture2DImpl>;
 class Texture3DImpl {
 public:
     // construct empty texture or from raw data
-    Texture3DImpl(uint32_t w, uint32_t h, uint32_t d, GLint internal_format, GLenum format, GLenum type,
+    Texture3DImpl(const std::string& name, uint32_t w, uint32_t h, uint32_t d, GLint internal_format, GLenum format, GLenum type,
             const void *data = 0, bool mipmap = false);
     virtual ~Texture3DImpl();
 
@@ -80,6 +81,7 @@ public:
     // TODO CPU <-> GPU data transfers
 
     // data
+    const std::string name;
     GLuint id;
     int w, h, d;
     GLint internal_format;

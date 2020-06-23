@@ -2,14 +2,14 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <iostream>
 
-GeometryImpl::GeometryImpl() : bb_min(FLT_MAX), bb_max(FLT_MIN) {}
+GeometryImpl::GeometryImpl(const std::string& name) : name(name), bb_min(FLT_MAX), bb_max(FLT_MIN) {}
 
-GeometryImpl::GeometryImpl(const aiMesh* mesh_ai) : GeometryImpl() {
+GeometryImpl::GeometryImpl(const std::string& name, const aiMesh* mesh_ai) : GeometryImpl(name) {
     add(mesh_ai);
 }
 
-GeometryImpl::GeometryImpl(const std::vector<glm::vec3>& positions, const std::vector<uint32_t>& indices,
-            const std::vector<glm::vec3>& normals, const std::vector<glm::vec2>& texcoords) : GeometryImpl() {
+GeometryImpl::GeometryImpl(const std::string& name, const std::vector<glm::vec3>& positions, const std::vector<uint32_t>& indices,
+            const std::vector<glm::vec3>& normals, const std::vector<glm::vec2>& texcoords) : GeometryImpl(name) {
     add(positions, indices, normals, texcoords);
 }
 

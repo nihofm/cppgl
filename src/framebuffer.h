@@ -13,7 +13,7 @@
 
 class FramebufferImpl {
 public:
-    FramebufferImpl(uint32_t w, uint32_t h);
+    FramebufferImpl(const std::string& name, uint32_t w, uint32_t h);
     virtual ~FramebufferImpl();
 
     // prevent copies and moves, since GL buffers aren't reference counted
@@ -33,6 +33,7 @@ public:
     void attach_colorbuffer(const Texture2D& tex);
 
     // data
+    const std::string name;
     GLuint id;
     uint32_t w, h;
     std::vector<Texture2D> color_textures;

@@ -295,22 +295,22 @@ void Context::set_gui_callback(void (*fn)(void)) { user_gui_callback = fn; }
 
 static void display_camera(Camera& cam) {
     ImGui::Indent();
-    ImGui::DragFloat3(("pos##" + cam.name).c_str(), &cam->pos.x, 0.001f);
-    ImGui::DragFloat3(("dir##" + cam.name).c_str(), &cam->dir.x, 0.001f);
-    ImGui::DragFloat3(("up##" + cam.name).c_str(), &cam->up.x, 0.001f);
-    ImGui::Checkbox(("fix_up_vector##" + cam.name).c_str(), &cam->fix_up_vector);
-    ImGui::Checkbox(("perspective##" + cam.name).c_str(), &cam->perspective);
+    ImGui::DragFloat3(("pos##" + cam->name).c_str(), &cam->pos.x, 0.001f);
+    ImGui::DragFloat3(("dir##" + cam->name).c_str(), &cam->dir.x, 0.001f);
+    ImGui::DragFloat3(("up##" + cam->name).c_str(), &cam->up.x, 0.001f);
+    ImGui::Checkbox(("fix_up_vector##" + cam->name).c_str(), &cam->fix_up_vector);
+    ImGui::Checkbox(("perspective##" + cam->name).c_str(), &cam->perspective);
     if (cam->perspective) {
-        ImGui::DragFloat(("fov##" + cam.name).c_str(), &cam->fov_degree, 0.01f);
-        ImGui::DragFloat(("near##" + cam.name).c_str(), &cam->near, 0.001f);
-        ImGui::DragFloat(("far##" + cam.name).c_str(), &cam->far, 0.001f);
+        ImGui::DragFloat(("fov##" + cam->name).c_str(), &cam->fov_degree, 0.01f);
+        ImGui::DragFloat(("near##" + cam->name).c_str(), &cam->near, 0.001f);
+        ImGui::DragFloat(("far##" + cam->name).c_str(), &cam->far, 0.001f);
     } else {
-        ImGui::DragFloat(("left##" + cam.name).c_str(), &cam->left, 0.001f);
-        ImGui::DragFloat(("right##" + cam.name).c_str(), &cam->right, 0.001f);
-        ImGui::DragFloat(("top##" + cam.name).c_str(), &cam->top, 0.001f);
-        ImGui::DragFloat(("bottom##" + cam.name).c_str(), &cam->bottom, 0.001f);
+        ImGui::DragFloat(("left##" + cam->name).c_str(), &cam->left, 0.001f);
+        ImGui::DragFloat(("right##" + cam->name).c_str(), &cam->right, 0.001f);
+        ImGui::DragFloat(("top##" + cam->name).c_str(), &cam->top, 0.001f);
+        ImGui::DragFloat(("bottom##" + cam->name).c_str(), &cam->bottom, 0.001f);
     }
-    if (ImGui::Button(("Make current##" + cam.name).c_str())) make_camera_current(cam);
+    if (ImGui::Button(("Make current##" + cam->name).c_str())) make_camera_current(cam);
     ImGui::Unindent();
 }
 
@@ -319,9 +319,9 @@ static void display_texture(const Texture2D& tex, ImVec2 size = ImVec2(300, 300)
     ImGui::Text("ID: %u, size: %ux%u", tex->id, tex->w, tex->h);
     ImGui::Text("internal_format: %u, format %u, type: %u", tex->internal_format, tex->format, tex->type);
     ImGui::Image((ImTextureID)tex->id, size, ImVec2(0, 1), ImVec2(1, 0), ImVec4(1, 1, 1, 1), ImVec4(1, 1, 1, 0.5));
-    if (ImGui::Button(("Save PNG##" + tex.name).c_str())) tex->save_png(fs::path(tex.name).replace_extension(".png"));
+    if (ImGui::Button(("Save PNG##" + tex->name).c_str())) tex->save_png(fs::path(tex->name).replace_extension(".png"));
     ImGui::SameLine();
-    if (ImGui::Button(("Save JPEG##" + tex.name).c_str())) tex->save_jpg(fs::path(tex.name).replace_extension(".jpg"));
+    if (ImGui::Button(("Save JPEG##" + tex->name).c_str())) tex->save_jpg(fs::path(tex->name).replace_extension(".jpg"));
     ImGui::Unindent();
 }
 
@@ -349,10 +349,10 @@ static void display_framebuffer(const Framebuffer& fbo) {
     ImGui::Indent();
     ImGui::Text("ID: %u", fbo->id);
     ImGui::Text("size: %ux%u", fbo->w, fbo->h);
-    if (ImGui::CollapsingHeader(("depth attachment##" + fbo.name).c_str()) && fbo->depth_texture)
+    if (ImGui::CollapsingHeader(("depth attachment##" + fbo->name).c_str()) && fbo->depth_texture)
         display_texture(fbo->depth_texture);
     for (uint32_t i = 0; i < fbo->color_textures.size(); ++i)
-        if (ImGui::CollapsingHeader(std::string("color attachment " + std::to_string(i) + "##" + fbo.name).c_str()))
+        if (ImGui::CollapsingHeader(std::string("color attachment " + std::to_string(i) + "##" + fbo->name).c_str()))
             display_texture(fbo->color_textures[i]);
     ImGui::Unindent();
 }
@@ -387,19 +387,19 @@ static void draw_gui() {
         ImGui::PushStyleVar(ImGuiStyleVar_Alpha, .9f);
         for (const auto& entry : TimerQuery::map) {
             ImGui::Separator();
-            display_query_timer(*entry.second, entry.second.name.c_str());
+            display_query_timer(*entry.second, entry.second->name.c_str());
         }
         for (const auto& entry : TimerQueryGL::map) {
             ImGui::Separator();
-            display_query_timer(*entry.second, entry.second.name.c_str());
+            display_query_timer(*entry.second, entry.second->name.c_str());
         }
         for (const auto& entry : PrimitiveQueryGL::map) {
             ImGui::Separator();
-            display_query_counter(*entry.second, entry.second.name.c_str());
+            display_query_counter(*entry.second, entry.second->name.c_str());
         }
         for (const auto& entry : FragmentQueryGL::map) {
             ImGui::Separator();
-            display_query_counter(*entry.second, entry.second.name.c_str());
+            display_query_counter(*entry.second, entry.second->name.c_str());
         }
         ImGui::PopStyleVar();
     }
@@ -414,7 +414,7 @@ static void draw_gui() {
     if (ImGui::BeginMainMenuBar()) {
         // camera menu
         if (ImGui::BeginMenu(std::string("Cameras (" + std::to_string(Camera::map.size()) + ")").c_str())) {
-            ImGui::Text("Current: %s", current_camera().name.c_str());
+            ImGui::Text("Current: %s", current_camera()->name.c_str());
             for (auto& entry : Camera::map) {
                 if (ImGui::CollapsingHeader(entry.first.c_str()))
                     display_camera(entry.second);
@@ -443,7 +443,7 @@ static void draw_gui() {
 
     if (gui_show_cameras) {
         if (ImGui::Begin(std::string("Cameras (" + std::to_string(Camera::map.size()) + ")").c_str(), &gui_show_cameras)) {
-            ImGui::Text("Current: %s", current_camera().name.c_str());
+            ImGui::Text("Current: %s", current_camera()->name.c_str());
             for (auto& entry : Camera::map) {
                 if (ImGui::CollapsingHeader(entry.first.c_str()))
                     display_camera(entry.second);

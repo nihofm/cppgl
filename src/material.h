@@ -18,8 +18,8 @@ namespace fs = std::filesystem;
 
 class MaterialImpl {
 public:
-    MaterialImpl();
-    MaterialImpl(const fs::path& base_path, const aiMaterial* mat_ai);
+    MaterialImpl(const std::string& name);
+    MaterialImpl(const std::string& name, const fs::path& base_path, const aiMaterial* mat_ai);
     virtual ~MaterialImpl();
 
     void bind(const Shader& shader) const;
@@ -30,6 +30,7 @@ public:
     Texture2D get_texture(const std::string& uniform_name) const;
 
     // data
+    const std::string name;
     // TODO add more data: int/float/vec2/vec3/vec4
     std::map<std::string, Texture2D> texture_map;
 };

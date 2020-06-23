@@ -1,7 +1,7 @@
 #include "framebuffer.h"
 #include <atomic>
 
-FramebufferImpl::FramebufferImpl(uint32_t w, uint32_t h) : id(0), w(w), h(h) {
+FramebufferImpl::FramebufferImpl(const std::string& name, uint32_t w, uint32_t h) : name(name), id(0), w(w), h(h) {
     glGenFramebuffers(1, &id);
 }
 
@@ -51,8 +51,7 @@ void FramebufferImpl::resize(uint32_t w, uint32_t h) {
 }
 
 void FramebufferImpl::attach_depthbuffer(Texture2D tex) {
-    static std::atomic<uint32_t> depth_id(0);
-    if (!tex) tex = Texture2D("fbo_default_depthbuffer_" + std::to_string(depth_id++), w, h, GL_DEPTH_COMPONENT32F, GL_DEPTH_COMPONENT, GL_FLOAT);
+    if (!tex) tex = Texture2D(name + "_default_depthbuffer", w, h, GL_DEPTH_COMPONENT32F, GL_DEPTH_COMPONENT, GL_FLOAT);
     glBindFramebuffer(GL_FRAMEBUFFER, id);
     depth_texture = tex;
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, tex->id, 0);

@@ -10,7 +10,7 @@
 
 class CameraImpl {
 public:
-    CameraImpl();
+    CameraImpl(const std::string& name);
     virtual ~CameraImpl();
 
     void update();
@@ -40,6 +40,7 @@ public:
     static bool default_input_handler(double dt_ms);
 
     // data
+    const std::string name;
     glm::vec3 pos, dir, up;             // camera coordinate system
     float fov_degree, near, far;        // perspective projection
     float left, right, bottom, top;     // orthographic projection

@@ -26,7 +26,7 @@ void make_camera_current(const Camera& cam) {
 
 float CameraImpl::default_camera_movement_speed = 0.005;
 
-CameraImpl::CameraImpl() : pos(0, 0, 0), dir(1, 0, 0), up(0, 1, 0), fov_degree(70),
+CameraImpl::CameraImpl(const std::string& name) : name(name), pos(0, 0, 0), dir(1, 0, 0), up(0, 1, 0), fov_degree(70),
     near(0.01), far(1000), left(-100), right(100), bottom(-100), top(100),
     perspective(true), fix_up_vector(true) {
     update();

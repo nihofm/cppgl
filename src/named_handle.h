@@ -4,28 +4,26 @@
 #include <mutex>
 #include <memory>
 #include <string>
+#include <cassert>
 #include <iostream>
 #include <stdexcept>
 
-/*
-// TODO name in Impl -> static_assert(HasName<T>)
 #include <type_traits>
 template <typename T, typename = int> struct HasName : std::false_type {};
 template <typename T> struct HasName <T, decltype((void) T::name, 0)> : std::true_type {};
-*/
 
 template <typename T> class NamedHandle {
 public:
     // "default" construct
     NamedHandle() {}
-    NamedHandle(const std::string& name, const std::shared_ptr<T>& ptr) : name(name), ptr(ptr) {}
+    //NamedHandle(const std::shared_ptr<T>& ptr) : ptr(ptr) {}
 
     // create new object and store handle in map for later retrieval
-    template <class... Args> NamedHandle(const std::string& name, Args&&... args) : name(name), ptr(std::make_shared<T>(args...)) {
+    template <class... Args> NamedHandle(const std::string& name, Args&&... args) : ptr(std::make_shared<T>(name, args...)) {
+        static_assert(HasName<T>::value, "Template type T is required to have a member \"name\" of type std::string!"); // TODO check type
+        assert(!map.count(ptr->name)); // check if key unique in NamedHandle<T>::map
         const std::lock_guard<std::mutex> lock(mutex);
-        if (map.count(name))
-            std::cerr << "WARN: NamedHandle<" <<  typeid(T).name() << ">: overwriting previous mapping for: " << name << std::endl;
-        map[name] = *this;
+        map[ptr->name] = *this;
     }
 
     virtual ~NamedHandle() {}
@@ -53,6 +51,10 @@ public:
         const std::lock_guard<std::mutex> lock(mutex);
         return map[name];
     }
+    // remove element from map for given name
+    static void erase(const std::string& name) {
+        map.erase(name);
+    }
     // clear saved handles and free unsused memory
     static void clear() {
         const std::lock_guard<std::mutex> lock(mutex);
@@ -63,7 +65,6 @@ public:
     static typename std::map<std::string, NamedHandle<T>>::iterator begin() { return map.begin(); }
     static typename std::map<std::string, NamedHandle<T>>::iterator end() { return map.end(); }
 
-    std::string name;    
     std::shared_ptr<T> ptr;
     static std::mutex mutex;
     static std::map<std::string, NamedHandle<T>> map;

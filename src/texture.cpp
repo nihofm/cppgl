@@ -25,7 +25,7 @@ inline GLint channels_to_ubyte_format(uint32_t channels) {
 // ----------------------------------------------------
 // Texture2D
 
-Texture2DImpl::Texture2DImpl(const fs::path& path, bool mipmap) : id(0) {
+Texture2DImpl::Texture2DImpl(const std::string& name, const fs::path& path, bool mipmap) : name(name), id(0) {
     // load image from disk
     stbi_set_flip_vertically_on_load(1);
     int channels;
@@ -57,8 +57,8 @@ Texture2DImpl::Texture2DImpl(const fs::path& path, bool mipmap) : id(0) {
     stbi_image_free(data);
 }
 
-Texture2DImpl::Texture2DImpl(uint32_t w, uint32_t h, GLint internal_format, GLenum format, GLenum type, const void* data, bool mipmap)
-    : id(0), w(w), h(h), internal_format(internal_format), format(format), type(type) {
+Texture2DImpl::Texture2DImpl(const std::string& name, uint32_t w, uint32_t h, GLint internal_format, GLenum format, GLenum type, const void* data, bool mipmap)
+    : name(name), id(0), w(w), h(h), internal_format(internal_format), format(format), type(type) {
     // init GL texture
     glGenTextures(1, &id);
     glBindTexture(GL_TEXTURE_2D, id);
@@ -125,8 +125,8 @@ void Texture2DImpl::save_jpg(const fs::path& path, int quality, bool flip) const
 // ----------------------------------------------------
 // Texture3D
 
-Texture3DImpl::Texture3DImpl(uint32_t w, uint32_t h, uint32_t d, GLint internal_format, GLenum format, GLenum type, const void* data, bool mipmap)
-    : id(0), w(w), h(h), d(d), internal_format(internal_format), format(format), type(type) {
+Texture3DImpl::Texture3DImpl(const std::string& name, uint32_t w, uint32_t h, uint32_t d, GLint internal_format, GLenum format, GLenum type, const void* data, bool mipmap)
+    : name(name), id(0), w(w), h(h), d(d), internal_format(internal_format), format(format), type(type) {
     // init GL texture
     glGenTextures(1, &id);
     glBindTexture(GL_TEXTURE_3D, id);

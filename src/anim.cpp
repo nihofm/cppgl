@@ -61,7 +61,7 @@ template <typename T> struct CentripedalCR : public CubicPolynomial<T> {
 // -------------------------------------------
 // Animation
 
-AnimationImpl::AnimationImpl() : time(0), ms_between_nodes(1000), running(false) {}
+AnimationImpl::AnimationImpl(const std::string& name) : name(name), time(0), ms_between_nodes(1000), running(false) {}
 
 AnimationImpl::~AnimationImpl() {}
 

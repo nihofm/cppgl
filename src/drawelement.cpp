@@ -2,7 +2,8 @@
 #include "camera.h"
 #include <iostream>
 
-DrawelementImpl::DrawelementImpl(const Mesh& mesh, const Shader& shader) : model(glm::mat4(1)), shader(shader), mesh(mesh) {}
+DrawelementImpl::DrawelementImpl(const std::string& name, const Shader& shader, const Mesh& mesh)
+    : name(name), model(glm::mat4(1)), shader(shader), mesh(mesh) {}
 
 DrawelementImpl::~DrawelementImpl() {}
 

@@ -17,7 +17,7 @@ namespace fs = std::filesystem;
 
 class MeshImpl {
 public:
-    MeshImpl(const Geometry& geometry = Geometry(), const Material& material = Material());
+    MeshImpl(const std::string& name, const Geometry& geometry = Geometry(), const Material& material = Material());
     virtual ~MeshImpl();
 
     // prevent copies and moves, since GL buffers aren't reference counted
@@ -46,6 +46,7 @@ public:
     void unmap_ibo() const;
 
     // CPU data
+    const std::string name;
     Geometry geometry;
     Material material;
     // GPU data

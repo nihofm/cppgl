@@ -1,37 +1,37 @@
 #include "material.h"
 #include <iostream>
 
-MaterialImpl::MaterialImpl() {}
+MaterialImpl::MaterialImpl(const std::string& name) : name(name) {}
 
-MaterialImpl::MaterialImpl(const fs::path& base_path, const aiMaterial* mat_ai) {
-    aiString name;
-    mat_ai->Get(AI_MATKEY_NAME, name);
+MaterialImpl::MaterialImpl(const std::string& name, const fs::path& base_path, const aiMaterial* mat_ai) : name(name) {
+    aiString name_ai;
+    mat_ai->Get(AI_MATKEY_NAME, name_ai);
     aiColor3D diff, spec;
     if (mat_ai->GetTextureCount(aiTextureType_DIFFUSE) > 0) {
         aiString path_ai;
         mat_ai->GetTexture(aiTextureType_DIFFUSE, 0, &path_ai);
-        add_texture("diffuse", Texture2D(std::string(name.C_Str()) + "_diffuse_" + fs::path(path_ai.C_Str()).filename().string(), base_path / path_ai.C_Str()));
+        add_texture("diffuse", Texture2D(name + "_diffuse_" + name_ai.C_Str(), base_path / path_ai.C_Str()));
     } else if (mat_ai->Get(AI_MATKEY_COLOR_DIFFUSE, diff) == AI_SUCCESS) {
         // 1x1 texture with diffuse color
-        add_texture("diffuse", Texture2D(std::string(name.C_Str()) + "_diffuse", 1, 1, GL_RGB32F, GL_RGB, GL_FLOAT, &diff.r));
+        add_texture("diffuse", Texture2D(name + "_diffuse_" + name_ai.C_Str(), 1, 1, GL_RGB32F, GL_RGB, GL_FLOAT, &diff.r));
     }
     if (mat_ai->GetTextureCount(aiTextureType_SPECULAR) > 0) {
         aiString path_ai;
         mat_ai->GetTexture(aiTextureType_SPECULAR, 0, &path_ai);
-        add_texture("specular", Texture2D(std::string(name.C_Str()) + "_specular_" + fs::path(path_ai.C_Str()).filename().string(), base_path / path_ai.C_Str()));
+        add_texture("specular", Texture2D(name + "_specular_" + name_ai.C_Str(), base_path / path_ai.C_Str()));
     } else if (mat_ai->Get(AI_MATKEY_COLOR_SPECULAR, spec) == AI_SUCCESS) {
         // 1x1 texture with specular color
-        add_texture("specular", Texture2D(std::string(name.C_Str()) + "_specular", 1, 1, GL_RGB32F, GL_RGB, GL_FLOAT, &spec.r));
+        add_texture("specular", Texture2D(name + "_specular_" + name_ai.C_Str(), 1, 1, GL_RGB32F, GL_RGB, GL_FLOAT, &spec.r));
     }
     if (mat_ai->GetTextureCount(aiTextureType_HEIGHT) > 0) {
         aiString path_ai;
         mat_ai->GetTexture(aiTextureType_HEIGHT, 0, &path_ai);
-        add_texture("normalmap", Texture2D(std::string(name.C_Str()) + "_normalmap_" + fs::path(path_ai.C_Str()).filename().string(), base_path / path_ai.C_Str()));
+        add_texture("normalmap", Texture2D(name + "_normalmap_" + name_ai.C_Str(), base_path / path_ai.C_Str()));
     }
     if (mat_ai->GetTextureCount(aiTextureType_OPACITY) > 0) {
         aiString path_ai;
         mat_ai->GetTexture(aiTextureType_OPACITY, 0, &path_ai);
-        add_texture("alphamap", Texture2D(std::string(name.C_Str()) + "_alphamap_" + fs::path(path_ai.C_Str()).filename().string(), base_path / path_ai.C_Str()));
+        add_texture("alphamap", Texture2D(name + "_alphamap_" + name_ai.C_Str(), base_path / path_ai.C_Str()));
     }
 }
 

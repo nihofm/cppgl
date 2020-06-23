@@ -10,9 +10,9 @@
 
 class GeometryImpl {
 public:
-    GeometryImpl();
-    GeometryImpl(const aiMesh* mesh_ai);
-    GeometryImpl(const std::vector<glm::vec3>& positions, const std::vector<uint32_t>& indices,
+    GeometryImpl(const std::string& name);
+    GeometryImpl(const std::string& name, const aiMesh* mesh_ai);
+    GeometryImpl(const std::string& name, const std::vector<glm::vec3>& positions, const std::vector<uint32_t>& indices,
             const std::vector<glm::vec3>& normals = std::vector<glm::vec3>(), const std::vector<glm::vec2>& texcoords = std::vector<glm::vec2>());
     virtual ~GeometryImpl();
 
@@ -35,6 +35,7 @@ public:
     void rotate(float angle_degrees, const glm::vec3& axis);
 
     // data
+    const std::string name;
     glm::vec3 bb_min, bb_max;
     std::vector<glm::vec3> positions;
     std::vector<uint32_t> indices;

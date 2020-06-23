@@ -73,7 +73,7 @@ std::vector<Mesh> load_meshes(const fs::path& path, bool normalize) {
         const aiMesh* ai_mesh = scene_ai->mMeshes[i];
         auto geometry = geometries[i];
         auto material = materials[scene_ai->mMeshes[i]->mMaterialIndex];
-        meshes.push_back(Mesh(geometry.name + "_" + material.name, geometry, material));
+        meshes.push_back(Mesh(geometry->name + "/" + material->name, geometry, material));
     }
 
     return meshes;
@@ -82,10 +82,9 @@ std::vector<Mesh> load_meshes(const fs::path& path, bool normalize) {
 // ------------------------------------------
 // MeshImpl
 
-MeshImpl::MeshImpl(const Geometry& geometry, const Material& material) : vao(0), ibo(0), num_vertices(0), num_indices(0), primitive_type(GL_TRIANGLES) {
+MeshImpl::MeshImpl(const std::string& name, const Geometry& geometry, const Material& material)
+    : name(name), geometry(geometry), material(material), vao(0), ibo(0), num_vertices(0), num_indices(0), primitive_type(GL_TRIANGLES) {
     glGenVertexArrays(1, &vao);
-    this->geometry = geometry;
-    this->material = material;
     upload_gpu();
 }
 

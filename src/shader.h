@@ -17,10 +17,10 @@ namespace fs = std::filesystem;
 
 class ShaderImpl {
 public:
-    ShaderImpl();
-    ShaderImpl(const fs::path& compute_source);
-    ShaderImpl(const fs::path& vertex_source, const fs::path& fragment_source);
-    ShaderImpl(const fs::path& vertex_source, const fs::path& geometry_source, const fs::path& fragment_source);
+    ShaderImpl(const std::string& name);
+    ShaderImpl(const std::string& name, const fs::path& compute_source);
+    ShaderImpl(const std::string& name, const fs::path& vertex_source, const fs::path& fragment_source);
+    ShaderImpl(const std::string& name, const fs::path& vertex_source, const fs::path& geometry_source, const fs::path& fragment_source);
     virtual ~ShaderImpl();
 
     // prevent copies and moves, since GL buffers aren't reference counted
@@ -75,6 +75,7 @@ public:
     void reload_if_modified();
 
     // data
+    const std::string name;
     GLuint id;
     std::map<GLenum, fs::path> source_files;
     std::map<GLenum, fs::file_time_type> timestamps;

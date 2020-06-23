@@ -32,7 +32,7 @@ struct Timer {
 
 class Query {
 public:
-    Query(size_t N = 256) : N(N), curr(0), data(N, 0.f), exp_avg(0.f), last_val(0.f) {}
+    Query(const std::string& name, size_t N = 256) : name(name), N(N), curr(0), data(N, 0.f), exp_avg(0.f), last_val(0.f) {}
     virtual ~Query() {}
 
     virtual void begin() = 0;
@@ -70,6 +70,7 @@ public:
     }
 
     // data
+    const std::string name;
     const size_t N;
     size_t curr;
     std::vector<float> data;
@@ -81,7 +82,7 @@ public:
 
 class TimerQueryImpl : public Query {
 public:
-    TimerQueryImpl(size_t samples = 256);
+    TimerQueryImpl(const std::string& name, size_t samples = 256);
     virtual ~TimerQueryImpl();
 
     void begin();
@@ -98,7 +99,7 @@ using TimerQuery = NamedHandle<TimerQueryImpl>;
 
 class TimerQueryGLImpl : public Query {
 public:
-    TimerQueryGLImpl(size_t samples = 256);
+    TimerQueryGLImpl(const std::string& name, size_t samples = 256);
     virtual ~TimerQueryGLImpl();
 
     // prevent copies and moves, since GL buffers aren't reference counted
@@ -121,7 +122,7 @@ using TimerQueryGL = NamedHandle<TimerQueryGLImpl>;
 
 class PrimitiveQueryGLImpl : public Query {
 public:
-    PrimitiveQueryGLImpl(size_t samples = 256);
+    PrimitiveQueryGLImpl(const std::string& name, size_t samples = 256);
     virtual ~PrimitiveQueryGLImpl();
 
     // prevent copies and moves, since GL buffers aren't reference counted
@@ -144,7 +145,7 @@ using PrimitiveQueryGL = NamedHandle<PrimitiveQueryGLImpl>;
 
 class FragmentQueryGLImpl : public Query {
 public:
-    FragmentQueryGLImpl(size_t samples = 256);
+    FragmentQueryGLImpl(const std::string& name, size_t samples = 256);
     virtual ~FragmentQueryGLImpl();
 
     // prevent copies and moves, since GL buffers aren't reference counted

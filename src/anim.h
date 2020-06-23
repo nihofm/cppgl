@@ -11,7 +11,7 @@
 
 class AnimationImpl {
 public:
-    AnimationImpl();
+    AnimationImpl(const std::string& name);
     virtual ~AnimationImpl();
 
     // step animation and apply to CameraPtr::current() if running
@@ -45,9 +45,10 @@ public:
     glm::vec3 eval_vec3(const std::string& name) const;
     glm::vec4 eval_vec4(const std::string& name) const;
 
-    // TODO json import/export
+    // TODO serialization
 
     // data
+    const std::string name;
     float time;
     float ms_between_nodes;
     bool running;
@@ -62,6 +63,6 @@ public:
 
 using Animation = NamedHandle<AnimationImpl>;
 
-// TODO move this to AnimationImpl::current()
+// TODO move this to own module
 Animation current_animation();
 void make_animation_current(const Animation& anim);

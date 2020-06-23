@@ -128,20 +128,20 @@ void reload_modified_shaders() {
 // ----------------------------------------------------
 // ShaderImpl
 
-ShaderImpl::ShaderImpl() : id(0) {}
+ShaderImpl::ShaderImpl(const std::string& name) : name(name), id(0) {}
 
-ShaderImpl::ShaderImpl(const fs::path& compute_source) : id(0) {
+ShaderImpl::ShaderImpl(const std::string& name, const fs::path& compute_source) : name(name), id(0) {
     set_compute_source(compute_source);
     compile();
 }
 
-ShaderImpl::ShaderImpl(const fs::path& vertex_source, const fs::path& fragment_source) : id(0)  {
+ShaderImpl::ShaderImpl(const std::string& name, const fs::path& vertex_source, const fs::path& fragment_source) : name(name), id(0)  {
     set_vertex_source(vertex_source);
     set_fragment_source(fragment_source);
     compile();
 }
 
-ShaderImpl::ShaderImpl(const fs::path& vertex_source, const fs::path& geometry_source, const fs::path& fragment_source) : id(0)  {
+ShaderImpl::ShaderImpl(const std::string& name, const fs::path& vertex_source, const fs::path& geometry_source, const fs::path& fragment_source) : name(name), id(0)  {
     set_vertex_source(vertex_source);
     set_geometry_source(geometry_source);
     set_fragment_source(fragment_source);

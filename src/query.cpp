@@ -3,7 +3,7 @@
 // -------------------------------------------------------
 // (CPU) TimerQuery (in ms)
 
-TimerQueryImpl::TimerQueryImpl(size_t samples) : Query(samples) {}
+TimerQueryImpl::TimerQueryImpl(const std::string& name, size_t samples) : Query(name, samples) {}
 
 TimerQueryImpl::~TimerQueryImpl() {}
 
@@ -18,7 +18,7 @@ void TimerQueryImpl::end() {
 // -------------------------------------------------------
 // (GPU) TimerQueryGL (in ms)
 
-TimerQueryGLImpl::TimerQueryGLImpl(size_t samples) : Query(samples) {
+TimerQueryGLImpl::TimerQueryGLImpl(const std::string& name, size_t samples) : Query(name, samples) {
     glGenQueries(2, query_ids[0]);
     glGenQueries(2, query_ids[1]);
     glQueryCounter(query_ids[1][0], GL_TIMESTAMP);
@@ -45,7 +45,7 @@ void TimerQueryGLImpl::end() {
 // -------------------------------------------------------
 // (GPU) PrimitiveQueryGL
 
-PrimitiveQueryGLImpl::PrimitiveQueryGLImpl(size_t samples) : Query(samples) {
+PrimitiveQueryGLImpl::PrimitiveQueryGLImpl(const std::string& name, size_t samples) : Query(name, samples) {
     glGenQueries(2, query_ids);
     // avoid error on first run
     begin();
@@ -71,7 +71,7 @@ void PrimitiveQueryGLImpl::end() {
 // -------------------------------------------------------
 // (GPU) FragmentQueryGL
 
-FragmentQueryGLImpl::FragmentQueryGLImpl(size_t samples) : Query(samples) {
+FragmentQueryGLImpl::FragmentQueryGLImpl(const std::string& name, size_t samples) : Query(name, samples) {
     glGenQueries(2, query_ids);
     // avoid error on first run
     begin();

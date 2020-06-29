@@ -57,7 +57,7 @@ void CameraImpl::downward(float by) { pos -= by * glm::normalize(glm::cross(glm:
 void CameraImpl::yaw(float angle) { dir = glm::normalize(glm::rotate(dir, angle * float(M_PI) / 180.f, up)); }
 void CameraImpl::pitch(float angle) {
     dir = glm::normalize(glm::rotate(dir, angle * float(M_PI) / 180.f, glm::normalize(glm::cross(dir, up))));
-    if (not fix_up_vector) up = glm::normalize(glm::cross(glm::cross(dir, up), dir));
+    if (!fix_up_vector) up = glm::normalize(glm::cross(glm::cross(dir, up), dir));
 }
 void CameraImpl::roll(float angle) { up = glm::normalize(glm::rotate(up, angle * float(M_PI) / 180.f, dir)); }
 
@@ -81,7 +81,7 @@ float CameraImpl::aspect_ratio() {
 
 bool CameraImpl::default_input_handler(double dt_ms) {
     bool moved = false;
-    if (not ImGui::GetIO().WantCaptureKeyboard) {
+    if (!ImGui::GetIO().WantCaptureKeyboard) {
         // keyboard
         if (Context::key_pressed(GLFW_KEY_W)) {
             current_camera()->forward(dt_ms * default_camera_movement_speed);
@@ -122,7 +122,7 @@ bool CameraImpl::default_input_handler(double dt_ms) {
     const glm::vec2 curr_pos = Context::mouse_pos();
     if (last_pos == glm::vec2(-1)) last_pos = curr_pos;
     const glm::vec2 diff = last_pos - curr_pos;
-    if (not ImGui::GetIO().WantCaptureMouse && Context::mouse_button_pressed(GLFW_MOUSE_BUTTON_LEFT)) {
+    if (!ImGui::GetIO().WantCaptureMouse && Context::mouse_button_pressed(GLFW_MOUSE_BUTTON_LEFT)) {
         if (glm::length(diff) > 0.01) {
             current_camera()->pitch(diff.y * rot_speed);
             current_camera()->yaw(diff.x * rot_speed);

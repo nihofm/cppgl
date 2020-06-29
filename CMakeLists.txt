@@ -28,6 +28,7 @@ if(UNIX)
     add_compile_options(-pthread -march=native)
     add_compile_options(-Wall -Wno-unused-parameter -Wno-unused-variable -Wno-int-to-pointer-cast)
 else()
+    set(DEPDIR "${CMAKE_SOURCE_DIR}/thirdparty")
     add_definitions(-DNOMINMAX)
     add_definitions(-D_USE_MATH_DEFINES)
     add_definitions(-D_SILENCE_EXPERIMENTAL_FILESYSTEM_DEPRECATION_WARNING) # wtf

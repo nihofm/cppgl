@@ -22,19 +22,30 @@ find_package(OpenGL REQUIRED)
 target_include_directories(${TARGET} PUBLIC ${OPENGL_INCLUDE_DIR})
 target_link_libraries(${TARGET} ${OPENGL_LIBRARIES})
 
-# glew
-find_package(GLEW REQUIRED)
-target_include_directories(${TARGET} PUBLIC ${GLEW_INCLUDE_DIR})
-target_link_libraries(${TARGET} ${GLEW_LIBRARIES})
+if(UNIX)
 
-# glfw3
-find_package(glfw3 REQUIRED)
-target_link_libraries(${TARGET} glfw)
+	# glew
+	find_package(GLEW REQUIRED)
+	target_include_directories(${TARGET} PUBLIC ${GLEW_INCLUDE_DIR})
+	target_link_libraries(${TARGET} ${GLEW_LIBRARIES})
 
-# ass-imp
-find_package(ASSIMP REQUIRED)
-include_directories(${ASSIMP_INCLUDE_DIRS})
-target_link_libraries(cppgl ${ASSIMP_LIBRARIES})
+	# glfw3
+	find_package(glfw3 REQUIRED)
+	target_link_libraries(${TARGET} glfw)
 
-# std::filesystem
-target_link_libraries(${TARGET} stdc++fs)
+	# ass-imp
+	find_package(ASSIMP REQUIRED)
+	include_directories(${ASSIMP_INCLUDE_DIRS})
+	target_link_libraries(cppgl ${ASSIMP_LIBRARIES})
+
+	# std::filesystem
+	target_link_libraries(${TARGET} stdc++fs)
+else()
+	find_library(ASSIMP assimp PATHS ${DEPDIR}/lib NO_DEFAULT_PATH)
+	find_library(GLEW glew32 PATHS ${DEPDIR}/lib)
+    find_library(GLFW glfw3 PATHS ${DEPDIR}/lib)
+
+    target_link_libraries(${TARGET} ${GLEW} ${GLFW} ${ASSIMP})
+	include_directories(${TARGET} ${DEPDIR}/include)
+
+endif()

@@ -7,6 +7,7 @@
 #include <GL/gl.h>
 #include <chrono>
 #include "named_handle.h"
+#include <algorithm>
 
 // -------------------------------------------------------
 // simple cpu timer struct

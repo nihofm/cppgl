@@ -14,9 +14,11 @@ install(TARGETS ${TARGET} DESTINATION bin)
 
 # ----------------------------------------------------------
 # dependencies
-
+if(UNIX)
 # std::filesystem
-target_link_libraries(${TARGET} stdc++fs)
-
+	target_link_libraries(${TARGET} stdc++fs)
+else()
+	add_custom_command(TARGET ${TARGET} POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy_directory "${DEPDIR}/bin" $<TARGET_FILE_DIR:${TARGET}>)
+endif()
 # built libs
 target_link_libraries(${TARGET} cppgl)

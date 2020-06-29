@@ -1,5 +1,6 @@
 #include "anim.h"
 #include "camera.h"
+#include <algorithm>
 
 static Animation current_anim;
 

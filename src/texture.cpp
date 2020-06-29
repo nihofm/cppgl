@@ -30,13 +30,13 @@ Texture2DImpl::Texture2DImpl(const std::string& name, const fs::path& path, bool
     stbi_set_flip_vertically_on_load(1);
     int channels;
     uint8_t* data = 0;
-    if (stbi_is_hdr(path.c_str())) {
-        data = (uint8_t*)stbi_loadf(path.c_str(), &w, &h, &channels, 0);
+    if (stbi_is_hdr(path.string().c_str())) {
+        data = (uint8_t*)stbi_loadf(path.string().c_str(), &w, &h, &channels, 0);
         internal_format = channels_to_float_format(channels);
         format = channels_to_format(channels);
         type = GL_FLOAT;
     } else {
-        data = stbi_load(path.c_str(), &w, &h, &channels, 0);
+        data = stbi_load(path.string().c_str(), &w, &h, &channels, 0);
         internal_format = channels_to_ubyte_format(channels);
         format = channels_to_format(channels);
         type = GL_UNSIGNED_BYTE;
@@ -108,7 +108,7 @@ void Texture2DImpl::save_png(const fs::path& path, bool flip) const {
     glBindTexture(GL_TEXTURE_2D, id);
     glGetTexImage(GL_TEXTURE_2D, 0, format, GL_UNSIGNED_BYTE, &pixels[0]);
     glBindTexture(GL_TEXTURE_2D, 0);
-    stbi_write_png(path.c_str(), w, h, format_to_channels(format), pixels.data(), 0);
+    stbi_write_png(path.string().c_str(), w, h, format_to_channels(format), pixels.data(), 0);
     std::cout << path << " written." << std::endl;
 }
 
@@ -118,7 +118,7 @@ void Texture2DImpl::save_jpg(const fs::path& path, int quality, bool flip) const
     glBindTexture(GL_TEXTURE_2D, id);
     glGetTexImage(GL_TEXTURE_2D, 0, format, GL_UNSIGNED_BYTE, &pixels[0]);
     glBindTexture(GL_TEXTURE_2D, 0);
-    stbi_write_jpg(path.c_str(), w, h, format_to_channels(format), pixels.data(), quality);
+    stbi_write_jpg(path.string().c_str(), w, h, format_to_channels(format), pixels.data(), quality);
     std::cout << path << " written." << std::endl;
 }
 

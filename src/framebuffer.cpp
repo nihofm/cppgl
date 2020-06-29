@@ -22,7 +22,7 @@ void FramebufferImpl::unbind() {
 }
 
 void FramebufferImpl::check() const {
-    if (not (depth_texture && *depth_texture))
+    if (!(depth_texture && *depth_texture))
         throw std::runtime_error("ERROR: Framebuffer: depth buffer not present or invalid!");
     glBindFramebuffer(GL_FRAMEBUFFER, id);
     const GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);

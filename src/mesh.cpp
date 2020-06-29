@@ -34,10 +34,10 @@ std::vector<Mesh> load_meshes(const fs::path& path, bool normalize) {
     // load from disk
     Assimp::Importer importer;
     std::cout << "Loading: " << path << "..." << std::endl;
-    const aiScene* scene_ai = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_GenNormals);// | aiProcess_FlipUVs);
+    const aiScene* scene_ai = importer.ReadFile(path.string(), aiProcess_Triangulate | aiProcess_GenNormals);// | aiProcess_FlipUVs);
     if (!scene_ai) // handle error
         throw std::runtime_error("ERROR: Failed to load file: " + path.string() + "!");
-    const std::string base_name = path.filename().replace_extension("");
+    const std::string base_name = path.filename().replace_extension("").string();
     // load geometries
     std::vector<Geometry> geometries;
     for (uint32_t i = 0; i < scene_ai->mNumMeshes; ++i) {

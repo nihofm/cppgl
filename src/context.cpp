@@ -155,7 +155,7 @@ Context::Context() {
         config.OversampleV = 3;
         std::cout << "Loading: " << parameters.font_ttf_filename << "..." << std::endl;
         ImGui::GetIO().FontDefault = ImGui::GetIO().Fonts->AddFontFromFileTTF(
-                parameters.font_ttf_filename.c_str(), parameters.font_size_pixels, &config);
+                parameters.font_ttf_filename.string().c_str(), parameters.font_size_pixels, &config);
     }
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplGlfw_NewFrame();
@@ -235,14 +235,14 @@ void Context::screenshot(const fs::path& path) {
     glReadPixels(0, 0, size.x, size.y, GL_RGB, GL_UNSIGNED_BYTE, pixels.data());
     // check file extension
     if (path.extension() == ".png") {
-        stbi_write_png(path.c_str(), size.x, size.y, 3, pixels.data(), 0);
+        stbi_write_png(path.string().c_str(), size.x, size.y, 3, pixels.data(), 0);
         std::cout << path << " written." << std::endl;
     } else if (path.extension() == ".jpg") {
-        stbi_write_jpg(path.c_str(), size.x, size.y, 3, pixels.data(), 0);
+        stbi_write_jpg(path.string().c_str(), size.x, size.y, 3, pixels.data(), 0);
         std::cout << path << " written." << std::endl;
     } else {
         std::cerr << "WARN: Context::screenshot: unknown extension, changing to .png!" << std::endl;
-        stbi_write_png(fs::path(path).replace_extension(".png").c_str(), size.x, size.y, 3, pixels.data(), 0);
+        stbi_write_png(fs::path(path).replace_extension(".png").string().c_str(), size.x, size.y, 3, pixels.data(), 0);
         std::cout << fs::path(path).replace_extension(".png") << " written." << std::endl;
     }
 }

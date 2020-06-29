@@ -1,4 +1,21 @@
 #include "debug.h"
+
+
+#ifdef _WIN32
+
+//NOT IMPLEMENTED 
+
+void enable_strack_trace_on_crash() {}
+void disable_stack_trace_on_crash() {}
+
+void enable_gl_debug_output() {}
+void disable_gl_debug_output() {}
+
+void enable_gl_notifications() {}
+void disable_gl_notifications() {}
+
+
+#else
 #include <GL/glew.h>
 #include <GL/gl.h>
 #include <execinfo.h>
@@ -201,3 +218,4 @@ void print_stack_trace(FILE *out, unsigned int offset) {
     free(symbollist);
 }
 
+#endif

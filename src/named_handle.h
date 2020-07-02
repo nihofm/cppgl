@@ -20,7 +20,7 @@ public:
     // create new object and store handle in map for later retrieval
     template <class... Args> NamedHandle(const std::string& name, Args&&... args) : ptr(std::make_shared<T>(name, args...)) {
         static_assert(HasName<T>::value, "Template type T is required to have a member \"name\"!");
-        //static_assert(std::is_same<decltype(T::name), std::string>::value, "bad type bro"); // TODO check type of name
+        static_assert(std::is_same<decltype(T::name), std::string>::value || std::is_same<decltype(T::name), const std::string>::value, "bad type bro");
         assert(!map.count(ptr->name)); // check if key unique in NamedHandle<T>::map
         const std::lock_guard<std::mutex> lock(mutex);
         map[ptr->name] = *this;

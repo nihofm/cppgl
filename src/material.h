@@ -25,13 +25,17 @@ public:
     void bind(const Shader& shader) const;
     void unbind() const;
 
-    bool has_texture(const std::string& uniform_name) const;
-    void add_texture(const std::string& uniform_name, const Texture2D& texture);
-    Texture2D get_texture(const std::string& uniform_name) const;
+    inline bool has_texture(const std::string& uniform_name) const { return texture_map.count(uniform_name); }
+    inline Texture2D get_texture(const std::string& uniform_name) const { return texture_map.at(uniform_name); }
+    inline void add_texture(const std::string& uniform_name, const Texture2D& texture) { texture_map[uniform_name] = texture; }
 
     // data
     const std::string name;
-    // TODO add more data: int/float/vec2/vec3/vec4
+    std::map<std::string, int> int_map;
+    std::map<std::string, float> float_map;
+    std::map<std::string, glm::vec2> vec2_map;
+    std::map<std::string, glm::vec3> vec3_map;
+    std::map<std::string, glm::vec4> vec4_map;
     std::map<std::string, Texture2D> texture_map;
 };
 

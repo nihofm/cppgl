@@ -38,9 +38,6 @@ else()
     add_definitions(-D_SILENCE_EXPERIMENTAL_FILESYSTEM_DEPRECATION_WARNING) # wtf
 endif()
 
-include(GenerateExportHeader)
-set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
-
 
 # ---------------------------------------------------------------------
 # traverse source tree

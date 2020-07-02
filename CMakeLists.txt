@@ -24,15 +24,16 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_INTERPROCEDURAL_OPTIMIZATION ON)
 
+# setup for included dependencies
+set(CMAKE_INCLUDE_DIRECTORIES_BEFORE ON)
+set(CMAKE_LINK_DIRECTORIES_BEFORE ON)
+set(DEPDIR "${CMAKE_SOURCE_DIR}/thirdparty")
+include_directories(${DEPDIR}/include)
+
 if(UNIX)
     add_compile_options(-pthread -march=native)
     add_compile_options(-Wall -Wno-unused-parameter -Wno-unused-variable -Wno-int-to-pointer-cast)
 else()
-    # setup for included dependencies
-    set(CMAKE_INCLUDE_DIRECTORIES_BEFORE ON)
-    set(CMAKE_LINK_DIRECTORIES_BEFORE ON)
-    set(DEPDIR "${CMAKE_SOURCE_DIR}/thirdparty")
-    include_directories(${DEPDIR}/include)
     add_definitions(-DNOMINMAX)
     add_definitions(-D_USE_MATH_DEFINES)
     add_definitions(-D_SILENCE_EXPERIMENTAL_FILESYSTEM_DEPRECATION_WARNING) # wtf

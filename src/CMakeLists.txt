@@ -23,30 +23,15 @@ target_include_directories(${TARGET} PUBLIC ${OPENGL_INCLUDE_DIR})
 target_link_libraries(${TARGET} ${OPENGL_LIBRARIES})
 
 if(UNIX)
-
-	# glew
-	find_package(GLEW REQUIRED)
-	target_include_directories(${TARGET} PUBLIC ${GLEW_INCLUDE_DIR})
-	target_link_libraries(${TARGET} ${GLEW_LIBRARIES})
-
-	# glfw3
-	find_package(glfw3 REQUIRED)
-	target_link_libraries(${TARGET} glfw)
-
-	# ass-imp
-	find_package(ASSIMP REQUIRED)
-	include_directories(${ASSIMP_INCLUDE_DIRS})
-	target_link_libraries(cppgl ${ASSIMP_LIBRARIES})
-
-	# std::filesystem
-	target_link_libraries(${TARGET} stdc++fs)
+    find_library(GLEW GLEW PATHS ${DEPDIR}/lin/lib NO_DEFAULT_PATH)
+    find_library(GLFW glfw PATHS ${DEPDIR}/lin/lib NO_DEFAULT_PATH)
+	find_library(ASSIMP assimp PATHS ${DEPDIR}/lin/lib NO_DEFAULT_PATH)
+	target_link_libraries(${TARGET} stdc++fs) # required for std::filesystem
 else()
-
-	find_library(ASSIMP assimp PATHS ${DEPDIR}/lib NO_DEFAULT_PATH)
-	find_library(GLEW glew32 PATHS ${DEPDIR}/lib)
-    find_library(GLFW glfw3 PATHS ${DEPDIR}/lib)
+	find_library(GLEW glew32 PATHS ${DEPDIR}/win/lib NO_DEFAULT_PATH)
+    find_library(GLFW glfw3 PATHS ${DEPDIR}/win/lib NO_DEFAULT_PATH)
+	find_library(ASSIMP assimp PATHS ${DEPDIR}/win/lib NO_DEFAULT_PATH)
 	target_compile_definitions(${TARGET} PUBLIC -DNNG_STATIC_LIB)
-
-    target_link_libraries(${TARGET} ${GLEW} ${GLFW} ${ASSIMP})
-
 endif()
+
+target_link_libraries(${TARGET} ${GLEW} ${GLFW} ${ASSIMP})

@@ -56,6 +56,7 @@ int main(int argc, char** argv) {
 
     // setup draw shader
     Shader("draw", "shader/draw.vs", "shader/draw.fs");
+    Shader fallbackShader = Shader("fallback", "shader/quad.vs", "shader/fallback.fs");
 
     // parse cmd line args
     for (int i = 1; i < argc; ++i) {
@@ -107,6 +108,14 @@ int main(int argc, char** argv) {
             drawelement->draw();
             drawelement->unbind();
         }
+        // render tc as fallback if no objects are rendered
+        if (Drawelement::map.empty()) {
+            fallbackShader->bind();
+            Quad::draw();
+            fallbackShader->unbind();
+        }
+
+
         fbo->unbind();
 
         // draw

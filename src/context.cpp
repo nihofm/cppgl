@@ -4,6 +4,7 @@
 #include "shader.h"
 #include "texture.h"
 #include "framebuffer.h"
+#include "material.h"
 #include "query.h"
 #include "stb_image_write.h"
 #include "imgui/imgui.h"
@@ -295,6 +296,7 @@ void Context::set_gui_callback(void (*fn)(void)) { user_gui_callback = fn; }
 
 static void display_camera(Camera& cam) {
     ImGui::Indent();
+    ImGui::Text("name: %s", cam->name.c_str());
     ImGui::DragFloat3(("pos##" + cam->name).c_str(), &cam->pos.x, 0.001f);
     ImGui::DragFloat3(("dir##" + cam->name).c_str(), &cam->dir.x, 0.001f);
     ImGui::DragFloat3(("up##" + cam->name).c_str(), &cam->up.x, 0.001f);
@@ -316,6 +318,7 @@ static void display_camera(Camera& cam) {
 
 static void display_texture(const Texture2D& tex, ImVec2 size = ImVec2(300, 300)) {
     ImGui::Indent();
+    ImGui::Text("name: %s", tex->name.c_str());
     ImGui::Text("ID: %u, size: %ux%u", tex->id, tex->w, tex->h);
     ImGui::Text("internal_format: %u, format %u, type: %u", tex->internal_format, tex->format, tex->type);
     ImGui::Image((ImTextureID)tex->id, size, ImVec2(0, 1), ImVec2(1, 0), ImVec4(1, 1, 1, 1), ImVec4(1, 1, 1, 0.5));
@@ -327,6 +330,7 @@ static void display_texture(const Texture2D& tex, ImVec2 size = ImVec2(300, 300)
 
 static void display_shader(Shader& shader) {
     ImGui::Indent();
+    ImGui::Text("name: %s", shader->name.c_str());
     ImGui::Text("ID: %u", shader->id);
     if (shader->source_files.count(GL_VERTEX_SHADER))
         ImGui::Text("vertex source: %s", shader->source_files[GL_VERTEX_SHADER].c_str());
@@ -347,6 +351,7 @@ static void display_shader(Shader& shader) {
 
 static void display_framebuffer(const Framebuffer& fbo) {
     ImGui::Indent();
+    ImGui::Text("name: %s", fbo->name.c_str());
     ImGui::Text("ID: %u", fbo->id);
     ImGui::Text("size: %ux%u", fbo->w, fbo->h);
     if (ImGui::CollapsingHeader(("depth attachment##" + fbo->name).c_str()) && fbo->depth_texture)
@@ -354,6 +359,51 @@ static void display_framebuffer(const Framebuffer& fbo) {
     for (uint32_t i = 0; i < fbo->color_textures.size(); ++i)
         if (ImGui::CollapsingHeader(std::string("color attachment " + std::to_string(i) + "##" + fbo->name).c_str()))
             display_texture(fbo->color_textures[i]);
+    ImGui::Unindent();
+}
+
+static void display_material(const Material& mat) {
+    ImGui::Indent();
+    ImGui::Text("name: %s", mat->name.c_str());
+
+    ImGui::Text("int params: %lu", mat->int_map.size());
+    ImGui::Indent();
+    for (const auto& entry : mat->int_map)
+        ImGui::Text("%s: %i", entry.first.c_str(), entry.second);
+    ImGui::Unindent();
+
+    ImGui::Text("float params: %lu", mat->float_map.size());
+    ImGui::Indent();
+    for (const auto& entry : mat->float_map)
+        ImGui::Text("%s: %f", entry.first.c_str(), entry.second);
+    ImGui::Unindent();
+
+    ImGui::Text("vec2 params: %lu", mat->vec2_map.size());
+    ImGui::Indent();
+    for (const auto& entry : mat->vec2_map)
+        ImGui::Text("%s: (%f, %f)", entry.first.c_str(), entry.second.x, entry.second.y);
+    ImGui::Unindent();
+
+    ImGui::Text("vec3 params: %lu", mat->vec3_map.size());
+    ImGui::Indent();
+    for (const auto& entry : mat->vec3_map)
+        ImGui::Text("%s: (%f, %f, %f)", entry.first.c_str(), entry.second.x, entry.second.y, entry.second.z);
+    ImGui::Unindent();
+
+    ImGui::Text("vec4 params: %lu", mat->vec4_map.size());
+    ImGui::Indent();
+    for (const auto& entry : mat->vec4_map)
+        ImGui::Text("%s: (%f, %f, %f, %.f)", entry.first.c_str(), entry.second.x, entry.second.y, entry.second.z, entry.second.w);
+    ImGui::Unindent();
+
+    ImGui::Text("textures: %lu", mat->texture_map.size());
+    ImGui::Indent();
+    for (const auto& entry : mat->texture_map) {
+        ImGui::Text("%s:", entry.first.c_str());
+        display_texture(entry.second);
+    }
+    ImGui::Unindent();
+
     ImGui::Unindent();
 }
 
@@ -405,36 +455,24 @@ static void draw_gui() {
     }
     ImGui::End();
 
-    // TODO update GUI
+    // TODO update GUI (add drawelements, geometry, meshes?)
     static bool gui_show_cameras = false;
     static bool gui_show_textures = false;
     static bool gui_show_fbos = false;
     static bool gui_show_shaders = false;
+    static bool gui_show_materials = false;
 
     if (ImGui::BeginMainMenuBar()) {
         // camera menu
-        if (ImGui::BeginMenu(std::string("Cameras (" + std::to_string(Camera::map.size()) + ")").c_str())) {
-            ImGui::Text("Current: %s", current_camera()->name.c_str());
-            for (auto& entry : Camera::map) {
-                if (ImGui::CollapsingHeader(entry.first.c_str()))
-                    display_camera(entry.second);
-            }
-            ImGui::EndMenu();
-        }
-
+        ImGui::Checkbox("cameras", &gui_show_cameras);
         ImGui::Separator();
-        // ImGui::Checkbox("textures", &gui_show_textures);
-        if (ImGui::BeginMenu(std::string("Textures (" + std::to_string(Texture2D::map.size()) + ")").c_str())) {
-            for (auto& entry : Texture2D::map) {
-                if (ImGui::CollapsingHeader(entry.first.c_str()))
-                    display_texture(entry.second, ImVec2(300, 300));
-            }
-            ImGui::EndMenu();
-        }
+        ImGui::Checkbox("textures", &gui_show_textures);
         ImGui::Separator();
         ImGui::Checkbox("fbos", &gui_show_fbos);
         ImGui::Separator();
         ImGui::Checkbox("shaders", &gui_show_shaders);
+        ImGui::Separator();
+        ImGui::Checkbox("materials", &gui_show_materials);
         ImGui::Separator();
         if (ImGui::Button("Screenshot"))
             Context::screenshot("screenshot.png");
@@ -477,6 +515,15 @@ static void draw_gui() {
             for (auto& entry : Framebuffer::map)
                 if (ImGui::CollapsingHeader(entry.first.c_str()))
                     display_framebuffer(entry.second);
+        }
+        ImGui::End();
+    }
+
+    if (gui_show_materials) {
+        if (ImGui::Begin(std::string("Materials (" + std::to_string(Material::map.size()) + ")").c_str(), &gui_show_materials)) {
+            for (auto& entry : Material::map)
+                if (ImGui::CollapsingHeader(entry.first.c_str()))
+                    display_material(entry.second);
         }
         ImGui::End();
     }

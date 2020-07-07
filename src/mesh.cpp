@@ -30,55 +30,6 @@ inline uint32_t type_to_bytes(GLenum type) {
     }
 }
 
-std::vector<Mesh> load_meshes(const fs::path& path, bool normalize) {
-    // load from disk
-    Assimp::Importer importer;
-    std::cout << "Loading: " << path << "..." << std::endl;
-    const aiScene* scene_ai = importer.ReadFile(path.string(), aiProcess_Triangulate | aiProcess_GenNormals);// | aiProcess_FlipUVs);
-    if (!scene_ai) // handle error
-        throw std::runtime_error("ERROR: Failed to load file: " + path.string() + "!");
-    const std::string base_name = path.filename().replace_extension("").string();
-    // load geometries
-    std::vector<Geometry> geometries;
-    for (uint32_t i = 0; i < scene_ai->mNumMeshes; ++i) {
-        const aiMesh* ai_mesh = scene_ai->mMeshes[i];
-        geometries.push_back(Geometry(base_name + "_" + ai_mesh->mName.C_Str() + "_" + std::to_string(i), ai_mesh));
-    }
-    // move and scale geometry to fit into [-1, 1]x3?
-    if (normalize) {
-        glm::vec3 bb_min(FLT_MAX), bb_max(FLT_MIN);
-        for (const auto& geom : geometries) {
-            bb_min = glm::min(bb_min, geom->bb_min);
-            bb_max = glm::max(bb_max, geom->bb_max);
-        }
-        const glm::vec3 center = (bb_min + bb_max) * 0.5f;
-        const glm::vec3 max = glm::vec3(1), min = glm::vec3(-1);
-        const glm::vec3 scale_v = (max - min) / (bb_max - bb_min);
-        const float scale_f = std::min(scale_v.x, std::min(scale_v.y, scale_v.z));
-        for (auto& geom : geometries) {
-            geom->translate(-center);
-            geom->scale(glm::vec3(scale_f));
-        }
-    }
-    // load materials
-    std::vector<Material> materials;
-    for (uint32_t i = 0; i < scene_ai->mNumMaterials; ++i) {
-        aiString name_ai;
-        scene_ai->mMaterials[i]->Get(AI_MATKEY_NAME, name_ai);
-        materials.push_back(Material(base_name + "_" + name_ai.C_Str(), path.parent_path(), scene_ai->mMaterials[i]));
-    }
-    // build meshes
-    std::vector<Mesh> meshes;
-    for (uint32_t i = 0; i < scene_ai->mNumMeshes; ++i) {
-        const aiMesh* ai_mesh = scene_ai->mMeshes[i];
-        auto geometry = geometries[i];
-        auto material = materials[scene_ai->mMeshes[i]->mMaterialIndex];
-        meshes.push_back(Mesh(geometry->name + "/" + material->name, geometry, material));
-    }
-
-    return meshes;
-}
-
 // ------------------------------------------
 // MeshImpl
 
@@ -212,4 +163,59 @@ void* MeshImpl::map_ibo(GLenum access) const {
 void MeshImpl::unmap_ibo() const {
     glUnmapBuffer(GL_ELEMENT_ARRAY_BUFFER);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+}
+
+// ------------------------------------------
+// Mesh loader (Ass-Imp)
+
+std::vector<std::pair<Geometry, Material>> load_meshes_cpu(const fs::path& path, bool normalize) {
+    // load from disk
+    Assimp::Importer importer;
+    std::cout << "Loading: " << path << "..." << std::endl;
+    const aiScene* scene_ai = importer.ReadFile(path.string(), aiProcess_Triangulate | aiProcess_GenNormals);// | aiProcess_FlipUVs);
+    if (!scene_ai) // handle error
+        throw std::runtime_error("ERROR: Failed to load file: " + path.string() + "!");
+    const std::string base_name = path.filename().replace_extension("").string();
+    // load geometries
+    std::vector<Geometry> geometries;
+    for (uint32_t i = 0; i < scene_ai->mNumMeshes; ++i) {
+        const aiMesh* ai_mesh = scene_ai->mMeshes[i];
+        geometries.push_back(Geometry(base_name + "_" + ai_mesh->mName.C_Str() + "_" + std::to_string(i), ai_mesh));
+    }
+    // move and scale geometry to fit into [-1, 1]x3?
+    if (normalize) {
+        glm::vec3 bb_min(FLT_MAX), bb_max(FLT_MIN);
+        for (const auto& geom : geometries) {
+            bb_min = glm::min(bb_min, geom->bb_min);
+            bb_max = glm::max(bb_max, geom->bb_max);
+        }
+        const glm::vec3 center = (bb_min + bb_max) * 0.5f;
+        const glm::vec3 max = glm::vec3(1), min = glm::vec3(-1);
+        const glm::vec3 scale_v = (max - min) / (bb_max - bb_min);
+        const float scale_f = std::min(scale_v.x, std::min(scale_v.y, scale_v.z));
+        for (auto& geom : geometries) {
+            geom->translate(-center);
+            geom->scale(glm::vec3(scale_f));
+        }
+    }
+    // load materials
+    std::vector<Material> materials;
+    for (uint32_t i = 0; i < scene_ai->mNumMaterials; ++i) {
+        aiString name_ai;
+        scene_ai->mMaterials[i]->Get(AI_MATKEY_NAME, name_ai);
+        materials.push_back(Material(base_name + "_" + name_ai.C_Str(), path.parent_path(), scene_ai->mMaterials[i]));
+    }
+    // link geometry <-> material
+    std::vector<std::pair<Geometry, Material>> result;
+    for (uint32_t i = 0; i < scene_ai->mNumMeshes; ++i)
+        result.push_back(std::make_pair(geometries[i], materials[scene_ai->mMeshes[i]->mMaterialIndex]));
+    return result;
+}
+
+std::vector<Mesh> load_meshes_gpu(const fs::path& path, bool normalize) {
+    // build meshes from cpu data
+    std::vector<Mesh> meshes;
+    for (const auto& [geometry, material] : load_meshes_cpu(path, normalize))
+        meshes.push_back(Mesh(geometry->name + "/" + material->name, geometry, material));
+    return meshes;
 }

@@ -76,7 +76,7 @@ int main(int argc, char** argv) {
         } else if (arg == "-fov")
             current_camera()->fov_degree = std::stof(argv[++i]);
         else {
-            for (auto& mesh : load_meshes(argv[i], true))
+            for (auto& mesh : load_meshes_gpu(argv[i], true))
                 Drawelement(mesh->name, Shader::find("draw"), mesh);
         }
     }

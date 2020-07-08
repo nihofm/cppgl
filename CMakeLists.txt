@@ -1,5 +1,5 @@
 project(CppGL)
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.4)
 
 if (NOT UNIX AND NOT WIN32)
 	message(FATAL_ERROR "Unsupported platform!")
@@ -39,6 +39,8 @@ else()
     add_definitions(-D_SILENCE_EXPERIMENTAL_FILESYSTEM_DEPRECATION_WARNING) # wtf
 endif()
 
+set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
+include(GenerateExportHeader)
 
 # ---------------------------------------------------------------------
 # traverse source tree

@@ -6,7 +6,8 @@ file(GLOB_RECURSE HEADERS "*.h")
 file(GLOB_RECURSE SOURCES "*.cpp")
 
 # define target
-add_library(${TARGET} STATIC ${SOURCES} ${HEADERS})
+add_library(${TARGET} SHARED ${SOURCES} ${HEADERS})
+generate_export_header(${TARGET})
 set_target_properties(${TARGET} PROPERTIES VERSION 0.1 DESCRIPTION "xx")
 
 # install
@@ -31,7 +32,8 @@ else()
 	find_library(GLEW glew32 PATHS ${DEPDIR}/win/lib NO_DEFAULT_PATH)
     find_library(GLFW glfw3 PATHS ${DEPDIR}/win/lib NO_DEFAULT_PATH)
 	find_library(ASSIMP assimp PATHS ${DEPDIR}/win/lib NO_DEFAULT_PATH)
-	target_compile_definitions(${TARGET} PUBLIC -DNNG_STATIC_LIB)
+	target_compile_definitions(${TARGET} PUBLIC -DBUILD_SHARED_LIBS=On)
 endif()
+
 
 target_link_libraries(${TARGET} ${GLEW} ${GLFW} ${ASSIMP})

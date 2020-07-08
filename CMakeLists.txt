@@ -1,5 +1,5 @@
 project(CppGL)
-cmake_minimum_required(VERSION 3.4)
+cmake_minimum_required(VERSION 3.10)
 
 if (NOT UNIX AND NOT WIN32)
 	message(FATAL_ERROR "Unsupported platform!")
@@ -33,10 +33,12 @@ include_directories(${DEPDIR}/include)
 if(UNIX)
     add_compile_options(-pthread -march=native)
     add_compile_options(-Wall -Wno-unused-parameter -Wno-unused-variable -Wno-int-to-pointer-cast)
+    set(CMAKE_INTERPROCEDURAL_OPTIMIZATION ON)
 else()
     add_definitions(-DNOMINMAX)
     add_definitions(-D_USE_MATH_DEFINES)
     add_definitions(-D_SILENCE_EXPERIMENTAL_FILESYSTEM_DEPRECATION_WARNING) # wtf
+    set(CMAKE_INTERPROCEDURAL_OPTIMIZATION OFF)
 endif()
 
 set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)

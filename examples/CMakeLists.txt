@@ -11,9 +11,6 @@ add_executable(${TARGET} ${SOURCES} ${HEADERS})
 # forces executables to be compiled to /example/ folder, to allow relative paths for shaders
 set_target_properties(${TARGET} PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}")
 
-# install
-install(TARGETS ${TARGET} DESTINATION bin)
-
 # ----------------------------------------------------------
 # dependencies
 if(UNIX)

@@ -38,6 +38,7 @@ else()
     add_definitions(-DNOMINMAX)
     add_definitions(-D_USE_MATH_DEFINES)
     add_definitions(-D_SILENCE_EXPERIMENTAL_FILESYSTEM_DEPRECATION_WARNING) # wtf
+    #with cmake version >3.8, CMAKE_INTERPROCEDURAL_OPTIMIZATION ON breaks windows dll export
     set(CMAKE_INTERPROCEDURAL_OPTIMIZATION OFF)
 endif()
 

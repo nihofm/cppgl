@@ -17,7 +17,7 @@ if(UNIX)
 # std::filesystem
 	target_link_libraries(${TARGET} stdc++fs)
 else()
-	add_custom_command(TARGET ${TARGET} POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy_directory "${DEPDIR}/win/bin/x64" $<TARGET_FILE_DIR:${TARGET}>)
+	add_custom_command(TARGET ${TARGET} POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy_directory "${CMAKE_SOURCE_DIR}/external/thirdparty/win/bin/x64" $<TARGET_FILE_DIR:${TARGET}>)
 	add_custom_command(TARGET ${TARGET} POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/cppgl.dll" $<TARGET_FILE_DIR:${TARGET}>)
 endif()
 

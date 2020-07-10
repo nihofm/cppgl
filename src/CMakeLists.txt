@@ -17,6 +17,9 @@ install(DIRECTORY . DESTINATION include/${TARGET} FILES_MATCHING PATTERN "*.h")
 # ----------------------------------------------------------
 # dependencies
 
+set(DEPDIR "../external/thirdparty")
+target_include_directories(${TARGET} PUBLIC ${DEPDIR}/include)
+
 # opengl
 set(OpenGL_GL_PREFERENCE "GLVND")
 find_package(OpenGL REQUIRED)

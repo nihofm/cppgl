@@ -15,7 +15,7 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}")
 # ---------------------------------------------------------------------
 # cmake options
 
-option(BUILD_EXAMPLES OFF)
+option(BUILD_CPPGL_EXAMPLES OFF)
 
 # ---------------------------------------------------------------------
 # compiler options
@@ -27,8 +27,6 @@ set(CMAKE_INTERPROCEDURAL_OPTIMIZATION ON)
 # setup for included dependencies
 set(CMAKE_INCLUDE_DIRECTORIES_BEFORE ON)
 set(CMAKE_LINK_DIRECTORIES_BEFORE ON)
-set(DEPDIR "${CMAKE_SOURCE_DIR}/thirdparty")
-include_directories(${DEPDIR}/include)
 
 if(UNIX)
     add_compile_options(-pthread -march=native)
@@ -51,6 +49,6 @@ include(GenerateExportHeader)
 include_directories(src)
 add_subdirectory(src)
 
-if (BUILD_EXAMPLES)
+if (BUILD_CPPGL_EXAMPLES)
     add_subdirectory(examples)
 endif()

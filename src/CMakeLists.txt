@@ -17,7 +17,7 @@ install(DIRECTORY . DESTINATION include/${TARGET} FILES_MATCHING PATTERN "*.h")
 # ----------------------------------------------------------
 # dependencies
 
-set(DEPDIR "../external/thirdparty")
+set(DEPDIR "${CMAKE_SOURCE_DIR}/external/thirdparty")
 target_include_directories(${TARGET} PUBLIC ${DEPDIR}/include)
 
 # opengl

@@ -8,7 +8,7 @@ file(GLOB_RECURSE SOURCES "*.cpp")
 # define target
 add_library(${TARGET} SHARED ${SOURCES} ${HEADERS})
 generate_export_header(${TARGET})
-set_target_properties(${TARGET} PROPERTIES VERSION 0.1 DESCRIPTION "xx")
+set_target_properties(${TARGET} PROPERTIES VERSION 1.0 DESCRIPTION "xx")
 
 # install
 install(TARGETS ${TARGET} DESTINATION lib)
@@ -29,8 +29,9 @@ target_link_libraries(${TARGET} ${OPENGL_LIBRARIES})
 if(UNIX)
     find_library(GLEW GLEW PATHS ${DEPDIR}/lin/lib NO_DEFAULT_PATH)
     find_library(GLFW glfw PATHS ${DEPDIR}/lin/lib NO_DEFAULT_PATH)
-	find_library(ASSIMP assimp PATHS ${DEPDIR}/lin/lib NO_DEFAULT_PATH)
-	target_link_libraries(${TARGET} stdc++fs) # required for std::filesystem
+    find_library(ASSIMP assimp PATHS ${DEPDIR}/lin/lib NO_DEFAULT_PATH)
+    target_link_libraries(${TARGET} stdc++fs) # required for std::filesystem
+    install(DIRECTORY ${DEPDIR}/lin/lib DESTINATION .) # install deps
 else()
 	find_library(GLEW glew32 PATHS ${DEPDIR}/win/lib NO_DEFAULT_PATH)
     find_library(GLFW glfw3 PATHS ${DEPDIR}/win/lib NO_DEFAULT_PATH)

@@ -49,7 +49,6 @@ int main(int argc, char** argv) {
     //params.resizable = GLFW_FALSE;
     params.swap_interval = 1;
     Context::init(params); // TODO FIXME invalid query object msg
-    Context::set_resize_callback(resize_callback);
     Context::set_keyboard_callback(keyboard_callback);
     Context::set_mouse_button_callback(mouse_button_callback);
     Context::set_gui_callback(gui_callback);
@@ -76,10 +75,11 @@ int main(int argc, char** argv) {
         } else if (arg == "-fov")
             current_camera()->fov_degree = std::stof(argv[++i]);
         else {
-            for (auto& mesh : load_meshes(argv[i], true))
+            for (auto& mesh : load_meshes_gpu(argv[i], true))
                 Drawelement(mesh->name, Shader::find("draw"), mesh);
         }
     }
+    Context::set_resize_callback(resize_callback);
 
     // setup fbo
     const glm::ivec2 res = Context::resolution();

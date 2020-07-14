@@ -61,5 +61,8 @@ public:
 
 using Mesh = NamedHandle<MeshImpl>;
 
-// TODO move this to Mesh::load()?
-std::vector<Mesh> load_meshes(const fs::path& path, bool normalize = false);
+// ------------------------------------------
+// Mesh loader (Ass-Imp)
+
+std::vector<std::pair<Geometry, Material>> load_meshes_cpu(const fs::path& path, bool normalize = false);
+std::vector<Mesh> load_meshes_gpu(const fs::path& path, bool normalize = false);

@@ -459,8 +459,7 @@ static void display_drawelement(Drawelement& elem) {
 static void display_animation(const Animation& anim) {
     ImGui::Indent();
     ImGui::Text("name: %s", anim->name.c_str());
-    ImGui::Text("curr time: %.3f, ms_per_node: %.3f", anim->time, anim->ms_between_nodes);
-    ImGui::Text("curr node: %.3f / %lu", anim->time / (anim->ms_between_nodes * anim->camera_path.size()), anim->camera_path.size());
+    ImGui::Text("curr time: %.3f / %lu, ms_per_node: %.3f", anim->time, anim->camera_path.size(), anim->ms_between_nodes);
     ImGui::Text("camera path:");
     ImGui::Indent();
     for (const auto& [pos, rot] : anim->camera_path)

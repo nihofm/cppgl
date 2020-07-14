@@ -48,8 +48,10 @@ void TimerQueryGLImpl::end() {
 PrimitiveQueryGLImpl::PrimitiveQueryGLImpl(const std::string& name, size_t samples) : Query(name, samples) {
     glGenQueries(2, query_ids);
     // avoid error on first run
-    begin();
-    end();
+    glBeginQuery(GL_PRIMITIVES_GENERATED, query_ids[0]);
+    glEndQuery(GL_PRIMITIVES_GENERATED);
+    glBeginQuery(GL_PRIMITIVES_GENERATED, query_ids[1]);
+    glEndQuery(GL_PRIMITIVES_GENERATED);
 }
 
 PrimitiveQueryGLImpl::~PrimitiveQueryGLImpl() {
@@ -74,8 +76,10 @@ void PrimitiveQueryGLImpl::end() {
 FragmentQueryGLImpl::FragmentQueryGLImpl(const std::string& name, size_t samples) : Query(name, samples) {
     glGenQueries(2, query_ids);
     // avoid error on first run
-    begin();
-    end();
+    glBeginQuery(GL_SAMPLES_PASSED, query_ids[0]);
+    glEndQuery(GL_SAMPLES_PASSED);
+    glBeginQuery(GL_SAMPLES_PASSED, query_ids[1]);
+    glEndQuery(GL_SAMPLES_PASSED);
 }
 
 FragmentQueryGLImpl::~FragmentQueryGLImpl() {

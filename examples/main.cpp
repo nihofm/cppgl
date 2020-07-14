@@ -48,7 +48,7 @@ int main(int argc, char** argv) {
     //params.floating = GLFW_TRUE;
     //params.resizable = GLFW_FALSE;
     params.swap_interval = 1;
-    Context::init(params); // TODO FIXME invalid query object msg
+    Context::init(params);
     Context::set_keyboard_callback(keyboard_callback);
     Context::set_mouse_button_callback(mouse_button_callback);
     Context::set_gui_callback(gui_callback);

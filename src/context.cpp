@@ -5,6 +5,9 @@
 #include "texture.h"
 #include "framebuffer.h"
 #include "material.h"
+#include "geometry.h"
+#include "drawelement.h"
+#include "anim.h"
 #include "query.h"
 #include "stb_image_write.h"
 #include "imgui/imgui.h"
@@ -407,6 +410,66 @@ static void display_material(const Material& mat) {
     ImGui::Unindent();
 }
 
+static void display_geometry(const Geometry& geom) {
+    ImGui::Indent();
+    ImGui::Text("name: %s", geom->name.c_str());
+    ImGui::Text("AABB min: (%.3f, %.3f, %.3f)", geom->bb_min.x, geom->bb_min.y, geom->bb_min.z);
+    ImGui::Text("AABB max: (%.3f, %.3f, %.3f)", geom->bb_max.x, geom->bb_max.y, geom->bb_max.z);
+    ImGui::Text("#Vertices: %lu", geom->positions.size());
+    ImGui::Text("#Indices: %lu", geom->indices.size());
+    ImGui::Text("#Normals: %lu", geom->normals.size());
+    ImGui::Text("#Texcoords: %lu", geom->texcoords.size());
+    ImGui::Unindent();
+}
+
+static void display_mesh(const Mesh& mesh) {
+    ImGui::Indent();
+    ImGui::Text("name: %s", mesh->name.c_str());
+    if (ImGui::CollapsingHeader(("geometry: " + mesh->geometry->name).c_str()))
+        display_geometry(mesh->geometry);
+    if (ImGui::CollapsingHeader(("material: " + mesh->material->name).c_str()))
+        display_material(mesh->material);
+    ImGui::Unindent();
+}
+
+static void display_mat4(glm::mat4& mat) {
+    ImGui::Indent();
+    glm::mat4 row_maj = glm::transpose(mat);
+    bool modified = false;
+    if (ImGui::DragFloat4("row0", &row_maj[0][0], .01f)) modified = true;
+    if (ImGui::DragFloat4("row1", &row_maj[1][0], .01f)) modified = true;
+    if (ImGui::DragFloat4("row2", &row_maj[2][0], .01f)) modified = true;
+    if (ImGui::DragFloat4("row3", &row_maj[3][0], .01f)) modified = true;
+    if (modified) mat = glm::transpose(row_maj);
+    ImGui::Unindent();
+}
+
+static void display_drawelement(Drawelement& elem) {
+    ImGui::Indent();
+    ImGui::Text("name: %s", elem->name.c_str());
+    if (ImGui::CollapsingHeader("modelmatrix"))
+        display_mat4(elem->model);
+    if (ImGui::CollapsingHeader(("shader: " + elem->shader->name).c_str()))
+        display_shader(elem->shader);
+    if (ImGui::CollapsingHeader(("mesh: " + elem->mesh->name).c_str()))
+        display_mesh(elem->mesh);
+    ImGui::Unindent();
+}
+
+static void display_animation(const Animation& anim) {
+    ImGui::Indent();
+    ImGui::Text("name: %s", anim->name.c_str());
+    ImGui::Text("curr time: %.3f, ms_per_node: %.3f", anim->time, anim->ms_between_nodes);
+    ImGui::Text("curr node: %.3f / %lu", anim->time / (anim->ms_between_nodes * anim->camera_path.size()), anim->camera_path.size());
+    ImGui::Text("camera path:");
+    ImGui::Indent();
+    for (const auto& [pos, rot] : anim->camera_path)
+        ImGui::Text("pos: (%.3f, %.3f, %.3f), rot: (%.3f, %.3f, %.3f, %.3f)", pos.x, pos.y, pos.z, rot.x, rot.y, rot.z, rot.w);
+    ImGui::Unindent();
+    // TODO add anim node data?
+    ImGui::Unindent();
+}
+
 static void display_query_timer(const Query& query, const char* label="") {
     const float avg = query.exp_avg;
     const float lower = query.min();
@@ -430,37 +493,39 @@ static void display_query_counter(const Query& query, const char* label="") {
 static void draw_gui() {
     if (!show_gui) return;
 
-    // timers
+    // show timers/queries in top left corner
     ImGui::SetNextWindowPos(ImVec2(10, 20));
     ImGui::SetNextWindowSize(ImVec2(350, 500));
     if (ImGui::Begin("CPU/GPU Timer", 0, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoBackground)) {
         ImGui::PushStyleVar(ImGuiStyleVar_Alpha, .9f);
-        for (const auto& entry : TimerQuery::map) {
+        for (const auto& [name, query] : TimerQuery::map) {
             ImGui::Separator();
-            display_query_timer(*entry.second, entry.second->name.c_str());
+            display_query_timer(*query, name.c_str());
         }
-        for (const auto& entry : TimerQueryGL::map) {
+        for (const auto& [name, query] : TimerQueryGL::map) {
             ImGui::Separator();
-            display_query_timer(*entry.second, entry.second->name.c_str());
+            display_query_timer(*query, name.c_str());
         }
-        for (const auto& entry : PrimitiveQueryGL::map) {
+        for (const auto& [name, query] : PrimitiveQueryGL::map) {
             ImGui::Separator();
-            display_query_counter(*entry.second, entry.second->name.c_str());
+            display_query_counter(*query, name.c_str());
         }
-        for (const auto& entry : FragmentQueryGL::map) {
+        for (const auto& [name, query] : FragmentQueryGL::map) {
             ImGui::Separator();
-            display_query_counter(*entry.second, entry.second->name.c_str());
+            display_query_counter(*query, name.c_str());
         }
         ImGui::PopStyleVar();
     }
     ImGui::End();
 
-    // TODO update GUI (add drawelements, geometry, meshes?)
     static bool gui_show_cameras = false;
     static bool gui_show_textures = false;
     static bool gui_show_fbos = false;
     static bool gui_show_shaders = false;
     static bool gui_show_materials = false;
+    static bool gui_show_geometries = false;
+    static bool gui_show_drawelements = false;
+    static bool gui_show_animations = false;
 
     if (ImGui::BeginMainMenuBar()) {
         // camera menu
@@ -474,6 +539,12 @@ static void draw_gui() {
         ImGui::Separator();
         ImGui::Checkbox("materials", &gui_show_materials);
         ImGui::Separator();
+        ImGui::Checkbox("geometries", &gui_show_geometries);
+        ImGui::Separator();
+        ImGui::Checkbox("drawelements", &gui_show_drawelements);
+        ImGui::Separator();
+        ImGui::Checkbox("animations", &gui_show_animations);
+        ImGui::Separator();
         if (ImGui::Button("Screenshot"))
             Context::screenshot("screenshot.png");
         ImGui::EndMainMenuBar();
@@ -482,9 +553,9 @@ static void draw_gui() {
     if (gui_show_cameras) {
         if (ImGui::Begin(std::string("Cameras (" + std::to_string(Camera::map.size()) + ")").c_str(), &gui_show_cameras)) {
             ImGui::Text("Current: %s", current_camera()->name.c_str());
-            for (auto& entry : Camera::map) {
-                if (ImGui::CollapsingHeader(entry.first.c_str()))
-                    display_camera(entry.second);
+            for (auto& [name, cam] : Camera::map) {
+                if (ImGui::CollapsingHeader(name.c_str()))
+                    display_camera(cam);
             }
         }
         ImGui::End();
@@ -492,9 +563,9 @@ static void draw_gui() {
 
     if (gui_show_textures) {
         if (ImGui::Begin(std::string("Textures (" + std::to_string(Texture2D::map.size()) + ")").c_str(), &gui_show_textures)) {
-            for (auto& entry : Texture2D::map) {
-                if (ImGui::CollapsingHeader(entry.first.c_str()))
-                    display_texture(entry.second, ImVec2(300, 300));
+            for (const auto& [name, tex] : Texture2D::map) {
+                if (ImGui::CollapsingHeader(name.c_str()))
+                    display_texture(tex, ImVec2(300, 300));
             }
         }
         ImGui::End();
@@ -502,9 +573,9 @@ static void draw_gui() {
 
     if (gui_show_shaders) {
         if (ImGui::Begin(std::string("Shaders (" + std::to_string(Shader::map.size()) + ")").c_str(), &gui_show_shaders)) {
-            for (auto& entry : Shader::map)
-                if (ImGui::CollapsingHeader(entry.first.c_str()))
-                    display_shader(entry.second);
+            for (auto& [name, shader] : Shader::map)
+                if (ImGui::CollapsingHeader(name.c_str()))
+                    display_shader(shader);
             if (ImGui::Button("Reload modified")) reload_modified_shaders();
         }
         ImGui::End();
@@ -512,18 +583,45 @@ static void draw_gui() {
 
     if (gui_show_fbos) {
         if (ImGui::Begin(std::string("Framebuffers (" + std::to_string(Framebuffer::map.size()) + ")").c_str(), &gui_show_fbos)) {
-            for (auto& entry : Framebuffer::map)
-                if (ImGui::CollapsingHeader(entry.first.c_str()))
-                    display_framebuffer(entry.second);
+            for (const auto& [name, fbo] : Framebuffer::map)
+                if (ImGui::CollapsingHeader(name.c_str()))
+                    display_framebuffer(fbo);
         }
         ImGui::End();
     }
 
     if (gui_show_materials) {
         if (ImGui::Begin(std::string("Materials (" + std::to_string(Material::map.size()) + ")").c_str(), &gui_show_materials)) {
-            for (auto& entry : Material::map)
-                if (ImGui::CollapsingHeader(entry.first.c_str()))
-                    display_material(entry.second);
+            for (const auto& [name, mat] : Material::map)
+                if (ImGui::CollapsingHeader(name.c_str()))
+                    display_material(mat);
+        }
+        ImGui::End();
+    }
+
+    if (gui_show_geometries) {
+        if (ImGui::Begin(std::string("Geometries (" + std::to_string(Geometry::map.size()) + ")").c_str(), &gui_show_geometries)) {
+            for (const auto& [name, geom] : Geometry::map)
+                if (ImGui::CollapsingHeader(name.c_str()))
+                    display_geometry(geom);
+        }
+        ImGui::End();
+    }
+
+    if (gui_show_drawelements) {
+        if (ImGui::Begin(std::string("Drawelements (" + std::to_string(Drawelement::map.size()) + ")").c_str(), &gui_show_drawelements)) {
+            for (auto& [name, elem] : Drawelement::map)
+                if (ImGui::CollapsingHeader(name.c_str()))
+                    display_drawelement(elem);
+        }
+        ImGui::End();
+    }
+
+    if (gui_show_animations) {
+        if (ImGui::Begin(std::string("Animation (" + std::to_string(Animation::map.size()) + ")").c_str(), &gui_show_animations)) {
+            for (auto& [name, anim] : Animation::map)
+                if (ImGui::CollapsingHeader(name.c_str()))
+                    display_animation(anim);
         }
         ImGui::End();
     }

@@ -33,6 +33,14 @@ public:
         glBindBuffer(GL_TEMPLATE_BUFFER, 0);
     }
 
+    // clear to 0x0
+    void clear() {
+        bind();
+        const GLuint zero = 0;
+        glClearBufferData(GL_TEMPLATE_BUFFER, GL_R32UI, GL_RED, GL_UNSIGNED_INT, &zero);
+        unbind();
+    }
+
     // bind/unbind to/from OpenGL
     void bind() const {
         glBindBuffer(GL_TEMPLATE_BUFFER, id);

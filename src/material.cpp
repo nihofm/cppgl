@@ -24,6 +24,15 @@ MaterialImpl::MaterialImpl(const std::string& name, const fs::path& base_path, c
     if (mat_ai->Get(AI_MATKEY_REFRACTI, float_value) == AI_SUCCESS)
         float_map["ior"] = float_value;
 
+    //parse vec3 values
+    aiColor3D ai_color_value;
+    if (mat_ai->Get(AI_MATKEY_COLOR_AMBIENT, ai_color_value) == AI_SUCCESS)
+        vec3_map["ambient_color"] = glm::vec3(ai_color_value.r, ai_color_value.g, ai_color_value.b);
+    if (mat_ai->Get(AI_MATKEY_COLOR_DIFFUSE, ai_color_value) == AI_SUCCESS)
+        vec3_map["diffuse_color"] = glm::vec3(ai_color_value.r, ai_color_value.g, ai_color_value.b);
+    if (mat_ai->Get(AI_MATKEY_COLOR_SPECULAR, ai_color_value) == AI_SUCCESS)
+        vec3_map["specular_color"] = glm::vec3(ai_color_value.r, ai_color_value.g, ai_color_value.b);
+
     // parse textures (http://assimp.sourceforge.net/lib_html/material_8h.html#a7dd415ff703a2cc53d1c22ddbbd7dde0)
     aiString name_ai;
     mat_ai->Get(AI_MATKEY_NAME, name_ai);

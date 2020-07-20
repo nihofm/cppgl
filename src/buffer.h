@@ -9,7 +9,7 @@
 
 template <GLenum GL_TEMPLATE_BUFFER> class GLBufferImpl {
 public:
-    GLBufferImpl(const std::string& name, size_t size_bytes = 0) {
+    GLBufferImpl(const std::string& name, size_t size_bytes = 0):name(name) {
         glGenBuffers(1, &id);
         resize(size_bytes);
     }

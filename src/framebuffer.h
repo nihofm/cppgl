@@ -19,7 +19,7 @@ public:
     // prevent copies and moves, since GL buffers aren't reference counted
     FramebufferImpl(const FramebufferImpl&) = delete;
     FramebufferImpl& operator=(const FramebufferImpl&) = delete;
-    FramebufferImpl& operator=(const FramebufferImpl&&) = delete; // TODO allow moves?
+    FramebufferImpl& operator=(const FramebufferImpl&&) = delete;
 
     inline operator GLuint() const { return id; }
 

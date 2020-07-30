@@ -44,4 +44,4 @@ public:
 };
 
 using Geometry = NamedHandle<GeometryImpl>;
-template class _API NamedHandle<GeometryImpl>;
+template class _API NamedHandle<GeometryImpl>; //needed for Windows DLL export

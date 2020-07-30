@@ -40,3 +40,4 @@ public:
 };
 
 using Material = NamedHandle<MaterialImpl>;
+template class _API NamedHandle<MaterialImpl>; //needed for Windows DLL export

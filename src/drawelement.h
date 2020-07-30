@@ -24,3 +24,4 @@ public:
 };
 
 using Drawelement = NamedHandle<DrawelementImpl>;
+template class _API NamedHandle<DrawelementImpl>; //needed for Windows DLL export

@@ -50,6 +50,7 @@ public:
 };
 
 using Camera = NamedHandle<CameraImpl>;
+template class _API NamedHandle<CameraImpl>; //needed for Windows DLL export
 
 // TODO move to CameraImpl::current()
 Camera current_camera();

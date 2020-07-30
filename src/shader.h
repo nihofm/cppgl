@@ -82,5 +82,6 @@ public:
 };
 
 using Shader = NamedHandle<ShaderImpl>;
+template class _API NamedHandle<ShaderImpl>; //needed for Windows DLL export
 
 void reload_modified_shaders();

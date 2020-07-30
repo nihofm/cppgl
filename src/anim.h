@@ -62,6 +62,7 @@ public:
 };
 
 using Animation = NamedHandle<AnimationImpl>;
+template class NamedHandle<AnimationImpl>; //needed for Windows DLL export
 
 // TODO move this to own module
 Animation current_animation();

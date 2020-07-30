@@ -88,3 +88,35 @@ using PUBO = NamedHandle<GLBufferImpl<GL_PIXEL_UNPACK_BUFFER>>;
 using PPBO = NamedHandle<GLBufferImpl<GL_PIXEL_PACK_BUFFER>>;
 using CRBO = NamedHandle<GLBufferImpl<GL_COPY_READ_BUFFER>>;
 using CWBO = NamedHandle<GLBufferImpl<GL_COPY_WRITE_BUFFER>>;
+
+// explicit instanciation needed for Windows DLL export
+template class GLBufferImpl<GL_ARRAY_BUFFER>;
+template class GLBufferImpl<GL_ELEMENT_ARRAY_BUFFER>;
+template class GLBufferImpl<GL_UNIFORM_BUFFER>;
+template class GLBufferImpl<GL_SHADER_STORAGE_BUFFER>;
+template class GLBufferImpl<GL_TEXTURE_BUFFER>;
+template class GLBufferImpl<GL_QUERY_BUFFER>;
+template class GLBufferImpl<GL_ATOMIC_COUNTER_BUFFER>;
+template class GLBufferImpl<GL_DRAW_INDIRECT_BUFFER>;
+template class GLBufferImpl<GL_DISPATCH_INDIRECT_BUFFER>;
+template class GLBufferImpl<GL_TRANSFORM_FEEDBACK_BUFFER>;
+template class GLBufferImpl<GL_PIXEL_UNPACK_BUFFER>;
+template class GLBufferImpl<GL_PIXEL_PACK_BUFFER>;
+template class GLBufferImpl<GL_COPY_READ_BUFFER>;
+template class GLBufferImpl<GL_COPY_WRITE_BUFFER>;
+
+//needed for Windows DLL export 
+template class _API NamedHandle<GLBufferImpl<GL_ARRAY_BUFFER>>;
+template class _API NamedHandle<GLBufferImpl<GL_ELEMENT_ARRAY_BUFFER>>;
+template class _API NamedHandle<GLBufferImpl<GL_UNIFORM_BUFFER>>;
+template class _API NamedHandle<GLBufferImpl<GL_SHADER_STORAGE_BUFFER>>;
+template class _API NamedHandle<GLBufferImpl<GL_TEXTURE_BUFFER>>;
+template class _API NamedHandle<GLBufferImpl<GL_QUERY_BUFFER>>;
+template class _API NamedHandle<GLBufferImpl<GL_ATOMIC_COUNTER_BUFFER>>;
+template class _API NamedHandle<GLBufferImpl<GL_DRAW_INDIRECT_BUFFER>>;
+template class _API NamedHandle<GLBufferImpl<GL_DISPATCH_INDIRECT_BUFFER>>;
+template class _API NamedHandle<GLBufferImpl<GL_TRANSFORM_FEEDBACK_BUFFER>>;
+template class _API NamedHandle<GLBufferImpl<GL_PIXEL_UNPACK_BUFFER>>;
+template class _API NamedHandle<GLBufferImpl<GL_PIXEL_PACK_BUFFER>>;
+template class _API NamedHandle<GLBufferImpl<GL_COPY_READ_BUFFER>>;
+template class _API NamedHandle<GLBufferImpl<GL_COPY_WRITE_BUFFER>>;

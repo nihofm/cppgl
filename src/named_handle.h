@@ -7,6 +7,7 @@
 #include <cassert>
 #include <iostream>
 #include <stdexcept>
+#include "platform.h"
 
 #include <type_traits>
 template <typename T, typename = int> struct HasName : std::false_type {};

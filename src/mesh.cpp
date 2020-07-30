@@ -209,6 +209,10 @@ std::vector<std::pair<Geometry, Material>> load_meshes_cpu(const fs::path& path,
     std::vector<std::pair<Geometry, Material>> result;
     for (uint32_t i = 0; i < scene_ai->mNumMeshes; ++i)
         result.push_back(std::make_pair(geometries[i], materials[scene_ai->mMeshes[i]->mMaterialIndex]));
+
+#ifdef BUILD_CPPGL_DLL
+    std::cout <<"CPPGL size: " << Geometry::map.size() << std::endl;
+#endif
     return result;
 }
 

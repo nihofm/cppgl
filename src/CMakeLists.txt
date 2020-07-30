@@ -36,7 +36,7 @@ else()
 	find_library(GLEW glew32 PATHS ${DEPDIR}/win/lib NO_DEFAULT_PATH)
     find_library(GLFW glfw3 PATHS ${DEPDIR}/win/lib NO_DEFAULT_PATH)
 	find_library(ASSIMP assimp PATHS ${DEPDIR}/win/lib NO_DEFAULT_PATH)
-	target_compile_definitions(${TARGET} PUBLIC -DBUILD_SHARED_LIBS=On)
+	target_compile_definitions(${TARGET} PRIVATE -DBUILD_CPPGL_DLL)
 endif()
 
 

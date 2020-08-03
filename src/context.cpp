@@ -339,17 +339,17 @@ static void display_shader(Shader& shader) {
     ImGui::Text("name: %s", shader->name.c_str());
     ImGui::Text("ID: %u", shader->id);
     if (shader->source_files.count(GL_VERTEX_SHADER))
-        ImGui::Text("vertex source: %s", shader->source_files[GL_VERTEX_SHADER].c_str());
+        ImGui::Text("vertex source: %s", shader->source_files[GL_VERTEX_SHADER].string().c_str());
     if (shader->source_files.count(GL_TESS_CONTROL_SHADER))
-        ImGui::Text("tess_control source: %s", shader->source_files[GL_TESS_CONTROL_SHADER].c_str());
+        ImGui::Text("tess_control source: %s", shader->source_files[GL_TESS_CONTROL_SHADER].string().c_str());
     if (shader->source_files.count(GL_TESS_EVALUATION_SHADER))
-        ImGui::Text("tess_eval source: %s", shader->source_files[GL_TESS_EVALUATION_SHADER].c_str());
+        ImGui::Text("tess_eval source: %s", shader->source_files[GL_TESS_EVALUATION_SHADER].string().c_str());
     if (shader->source_files.count(GL_GEOMETRY_SHADER))
-        ImGui::Text("geometry source: %s", shader->source_files[GL_GEOMETRY_SHADER].c_str());
+        ImGui::Text("geometry source: %s", shader->source_files[GL_GEOMETRY_SHADER].string().c_str());
     if (shader->source_files.count(GL_FRAGMENT_SHADER))
-        ImGui::Text("fragment source: %s", shader->source_files[GL_FRAGMENT_SHADER].c_str());
+        ImGui::Text("fragment source: %s", shader->source_files[GL_FRAGMENT_SHADER].string().c_str());
     if (shader->source_files.count(GL_COMPUTE_SHADER))
-        ImGui::Text("compute source: %s", shader->source_files[GL_COMPUTE_SHADER].c_str());
+        ImGui::Text("compute source: %s", shader->source_files[GL_COMPUTE_SHADER].string().c_str());
     if (ImGui::Button("Compile"))
         shader->compile();
     ImGui::Unindent();

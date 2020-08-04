@@ -68,7 +68,7 @@ static void glfw_mouse_scroll_callback(GLFWwindow* window, double xoffset, doubl
         ImGui_ImplGlfw_ScrollCallback(window, xoffset, yoffset);
         return;
     }
-    CameraImpl::default_camera_movement_speed += CameraImpl::default_camera_movement_speed * yoffset * 0.1;
+    CameraImpl::default_camera_movement_speed += CameraImpl::default_camera_movement_speed * float(yoffset * 0.1);
     CameraImpl::default_camera_movement_speed = std::max(0.00001f, CameraImpl::default_camera_movement_speed);
     if (user_mouse_scroll_callback)
         user_mouse_scroll_callback(xoffset, yoffset);
@@ -160,7 +160,7 @@ Context::Context() {
         config.OversampleV = 3;
         std::cout << "Loading: " << parameters.font_ttf_filename << "..." << std::endl;
         ImGui::GetIO().FontDefault = ImGui::GetIO().Fonts->AddFontFromFileTTF(
-                parameters.font_ttf_filename.string().c_str(), parameters.font_size_pixels, &config);
+                parameters.font_ttf_filename.string().c_str(), float(parameters.font_size_pixels), &config);
     }
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplGlfw_NewFrame();
@@ -327,7 +327,8 @@ static void display_texture(const Texture2D& tex, ImVec2 size = ImVec2(300, 300)
     ImGui::Text("name: %s", tex->name.c_str());
     ImGui::Text("ID: %u, size: %ux%u", tex->id, tex->w, tex->h);
     ImGui::Text("internal_format: %u, format %u, type: %u", tex->internal_format, tex->format, tex->type);
-    ImGui::Image((ImTextureID)tex->id, size, ImVec2(0, 1), ImVec2(1, 0), ImVec4(1, 1, 1, 1), ImVec4(1, 1, 1, 0.5));
+    long long int texID = tex->id; //to satisfy complaints casting possible 32bit int to 64 bit pointer
+    ImGui::Image((ImTextureID)texID, size, ImVec2(0.f, 1.f), ImVec2(1.f, 0.f), ImVec4(1.f, 1.f, 1.f, 1.f), ImVec4(1.f, 1.f, 1.f, 0.5f));
     if (ImGui::Button(("Save PNG##" + tex->name).c_str())) tex->save_png(fs::path(tex->name).replace_extension(".png"));
     ImGui::SameLine();
     if (ImGui::Button(("Save JPEG##" + tex->name).c_str())) tex->save_jpg(fs::path(tex->name).replace_extension(".jpg"));
@@ -477,8 +478,8 @@ static void display_query_timer(const Query& query, const char* label="") {
     const float lower = query.min();
     const float upper = query.max();
     ImGui::Text("avg: %.1fms, min: %.1fms, max: %.1fms", avg, lower, upper);
-    ImGui::PushStyleColor(ImGuiCol_PlotHistogram, ImVec4(.7, .7, 0, 1));
-    ImGui::PlotHistogram(label, query.data.data(), query.data.size(), query.curr, 0, 0.f, std::max(upper, 17.f), ImVec2(0, 30));
+    ImGui::PushStyleColor(ImGuiCol_PlotHistogram, ImVec4(.7f, .7f, 0.f, 1.f));
+    ImGui::PlotHistogram(label, query.data.data(), int(query.data.size()), int(query.curr), 0, 0.f, std::max(upper, 17.f), ImVec2(0, 30));
     ImGui::PopStyleColor();
 }
 
@@ -487,8 +488,8 @@ static void display_query_counter(const Query& query, const char* label="") {
     const float lower = query.min();
     const float upper = query.max();
     ImGui::Text("avg: %uK, min: %uK, max: %uK", uint32_t(avg / 1000), uint32_t(lower / 1000), uint32_t(upper / 1000));
-    ImGui::PushStyleColor(ImGuiCol_PlotHistogram, ImVec4(0, .7, .7, 1));
-    ImGui::PlotHistogram(label, query.data.data(), query.data.size(), query.curr, 0, 0.f, std::max(upper, 17.f), ImVec2(0, 30));
+    ImGui::PushStyleColor(ImGuiCol_PlotHistogram, ImVec4(0.f, .7f, .7f, 1.f));
+    ImGui::PlotHistogram(label, query.data.data(), int(query.data.size()), int(query.curr), 0, 0.f, std::max(upper, 17.f), ImVec2(0, 30));
     ImGui::PopStyleColor();
 }
 

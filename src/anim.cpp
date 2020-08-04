@@ -153,7 +153,7 @@ void AnimationImpl::put_data(const std::string& name, size_t i, const glm::vec4&
 
 glm::vec3 AnimationImpl::eval_pos() const {
     // eval centripedal catmull rom spline
-    const size_t at = glm::floor(time);
+    const size_t at = size_t(glm::floor(time));
     const auto& p0 = camera_path[std::max(at - 1, size_t(0))].first;
     const auto& p1 = camera_path[std::min(at + 0, camera_path.size()) % camera_path.size()].first;
     const auto& p2 = camera_path[std::min(at + 1, camera_path.size()) % camera_path.size()].first;
@@ -163,7 +163,7 @@ glm::vec3 AnimationImpl::eval_pos() const {
 
 glm::quat AnimationImpl::eval_rot() const {
     // TODO spherical spline
-    const size_t at = glm::floor(time);
+    const size_t at = size_t(glm::floor(time));
     const auto& lower = camera_path[std::min(at, camera_path.size()) % camera_path.size()].second;
     const auto& upper = camera_path[std::min(at + 1, camera_path.size()) % camera_path.size()].second;
     return glm::slerp(lower, upper, time - at);
@@ -176,7 +176,7 @@ int AnimationImpl::eval_int(const std::string& name) const {
 
 // lerp helper
 template <typename T> inline T lerp_data(const std::vector<T>& data, float time) {
-    const size_t at = glm::floor(time);
+    const size_t at = size_t(glm::floor(time));
     const auto& lower = data[std::min(at, data.size()) % data.size()];
     const auto& upper = data[std::min(at + 1, data.size()) % data.size()];
     return glm::mix(lower, upper, time - at);

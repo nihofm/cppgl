@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <glm/glm.hpp>
+#include "platform.h"
 #include <assimp/mesh.h>
 #include "named_handle.h"
 

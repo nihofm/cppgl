@@ -103,7 +103,8 @@ static GLuint compile_shader(GLenum type, std::map<GLenum, fs::path>& source_fil
             try {
                 int line = stoi(out.substr(2, out.find(":") - 3));
                 lines.push_back(line);
-            } catch (const std::exception& e) {}
+            }
+            catch (const std::exception& e) { e; }
         }
         // print relevant lines
         std::stringstream stream(source);

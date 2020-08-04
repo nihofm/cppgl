@@ -1,5 +1,6 @@
 #include "mesh.h"
 #include <iostream>
+#include "platform.h"
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
@@ -50,7 +51,7 @@ void MeshImpl::clear_gpu() {
         glDeleteBuffers(1, &ibo);
         ibo = 0;
     }
-    glDeleteBuffers(vbo_ids.size(), vbo_ids.data());
+    glDeleteBuffers(GLsizei(vbo_ids.size()), vbo_ids.data());
     vbo_ids.clear();
     vbo_types.clear();
     vbo_dims.clear();
@@ -62,12 +63,12 @@ void MeshImpl::upload_gpu() {
     // free gpu resources
     clear_gpu();
     // (re-)upload data to GL
-    add_vertex_buffer(GL_FLOAT, 3, geometry->positions.size(), geometry->positions.data());
+    add_vertex_buffer(GL_FLOAT, 3, uint32_t(geometry->positions.size()), geometry->positions.data());
     if (geometry->has_normals())
-        add_vertex_buffer(GL_FLOAT, 3, geometry->normals.size(), geometry->normals.data());
+        add_vertex_buffer(GL_FLOAT, 3, uint32_t(geometry->normals.size()), geometry->normals.data());
     if (geometry->has_texcoords())
-        add_vertex_buffer(GL_FLOAT, 2, geometry->texcoords.size(), geometry->texcoords.data());
-    add_index_buffer(geometry->indices.size(), geometry->indices.data());
+        add_vertex_buffer(GL_FLOAT, 2, uint32_t(geometry->texcoords.size()), geometry->texcoords.data());
+    add_index_buffer(uint32_t(geometry->indices.size()), geometry->indices.data());
 }
 
 void MeshImpl::bind(const Shader& shader) const {
@@ -93,7 +94,7 @@ uint32_t MeshImpl::add_vertex_buffer(GLenum type, uint32_t element_dim, uint32_t
     if (this->num_vertices && this->num_vertices != num_vertices)
         throw std::runtime_error("Mesh::add_vertex_buffer: vertex buffer size mismatch!");
     this->num_vertices = num_vertices;
-    const uint32_t buf_id = vbo_ids.size();
+    const uint32_t buf_id = uint32_t(vbo_ids.size());
     vbo_ids.push_back(0); // dummy
     vbo_types.push_back(type);
     vbo_dims.push_back(element_dim);

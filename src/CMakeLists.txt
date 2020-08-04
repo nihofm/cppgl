@@ -38,7 +38,6 @@ else()
 	find_library(ASSIMP assimp PATHS ${DEPDIR}/win/lib NO_DEFAULT_PATH)
     target_compile_definitions(${TARGET} PRIVATE -DBUILD_CPPGL_DLL)
     target_compile_definitions(${TARGET} PRIVATE -DBUILD_SHARED_LIBS)
-
 endif()
 
 

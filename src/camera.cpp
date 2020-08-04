@@ -24,10 +24,10 @@ void make_camera_current(const Camera& cam) {
 // ----------------------------------------------------
 // CameraImpl
 
-float CameraImpl::default_camera_movement_speed = 0.005;
+float CameraImpl::default_camera_movement_speed = 0.005f;
 
 CameraImpl::CameraImpl(const std::string& name) : name(name), pos(0, 0, 0), dir(1, 0, 0), up(0, 1, 0), fov_degree(70),
-    near(0.01), far(1000), left(-100), right(100), bottom(-100), top(100),
+    near(0.01f), far(1000), left(-100), right(100), bottom(-100), top(100),
     perspective(true), fix_up_vector(true) {
     update();
 }
@@ -84,40 +84,40 @@ bool CameraImpl::default_input_handler(double dt_ms) {
     if (!ImGui::GetIO().WantCaptureKeyboard) {
         // keyboard
         if (Context::key_pressed(GLFW_KEY_W)) {
-            current_camera()->forward(dt_ms * default_camera_movement_speed);
+            current_camera()->forward(float(dt_ms * default_camera_movement_speed));
             moved = true;
         }
         if (Context::key_pressed(GLFW_KEY_S)) {
-            current_camera()->backward(dt_ms * default_camera_movement_speed);
+            current_camera()->backward(float(dt_ms * default_camera_movement_speed));
             moved = true;
         }
         if (Context::key_pressed(GLFW_KEY_A)) {
-            current_camera()->leftward(dt_ms * default_camera_movement_speed);
+            current_camera()->leftward(float(dt_ms * default_camera_movement_speed));
             moved = true;
         }
         if (Context::key_pressed(GLFW_KEY_D)) {
-            current_camera()->rightward(dt_ms * default_camera_movement_speed);
+            current_camera()->rightward(float(dt_ms * default_camera_movement_speed));
             moved = true;
         }
         if (Context::key_pressed(GLFW_KEY_R)) {
-            current_camera()->upward(dt_ms * default_camera_movement_speed);
+            current_camera()->upward(float(dt_ms * default_camera_movement_speed));
             moved = true;
         }
         if (Context::key_pressed(GLFW_KEY_F)) {
-            current_camera()->downward(dt_ms * default_camera_movement_speed);
+            current_camera()->downward(float(dt_ms * default_camera_movement_speed));
             moved = true;
         }
         if (Context::key_pressed(GLFW_KEY_Q)) {
-            current_camera()->roll(dt_ms * -0.1);
+            current_camera()->roll(float(dt_ms * -0.1));
             moved = true;
         }
         if (Context::key_pressed(GLFW_KEY_E)) {
-            current_camera()->roll(dt_ms * 0.1);
+            current_camera()->roll(float(dt_ms * 0.1));
             moved = true;
         }
     }
     // mouse
-    static float rot_speed = 0.05;
+    static float rot_speed = 0.05f;
     static glm::vec2 last_pos(-1);
     const glm::vec2 curr_pos = Context::mouse_pos();
     if (last_pos == glm::vec2(-1)) last_pos = curr_pos;

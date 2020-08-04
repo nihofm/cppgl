@@ -12,13 +12,13 @@ void TimerQueryImpl::begin() {
 }
 
 void TimerQueryImpl::end() {
-    put(timer.look());
+    put(float(timer.look()));
 }
 
 // -------------------------------------------------------
 // (GPU) TimerQueryGL (in ms)
 
-TimerQueryGLImpl::TimerQueryGLImpl(const std::string& name, size_t samples) : Query(name, samples) {
+TimerQueryGLImpl::TimerQueryGLImpl(const std::string& name, size_t samples) : Query(name, samples), start_time(0), stop_time(0){
     glGenQueries(2, query_ids[0]);
     glGenQueries(2, query_ids[1]);
     glQueryCounter(query_ids[1][0], GL_TIMESTAMP);
@@ -39,13 +39,13 @@ void TimerQueryGLImpl::end() {
     std::swap(query_ids[0], query_ids[1]); // switch front/back buffer
     glGetQueryObjectui64v(query_ids[0][0], GL_QUERY_RESULT, &start_time);
     glGetQueryObjectui64v(query_ids[0][1], GL_QUERY_RESULT, &stop_time);
-    put((stop_time - start_time) / 1000000.0);
+    put(float((stop_time - start_time) / 1000000.0));
 }
 
 // -------------------------------------------------------
 // (GPU) PrimitiveQueryGL
 
-PrimitiveQueryGLImpl::PrimitiveQueryGLImpl(const std::string& name, size_t samples) : Query(name, samples) {
+PrimitiveQueryGLImpl::PrimitiveQueryGLImpl(const std::string& name, size_t samples) : Query(name, samples), start_time(0), stop_time(0) {
     glGenQueries(2, query_ids);
     // avoid error on first run
     glBeginQuery(GL_PRIMITIVES_GENERATED, query_ids[0]);
@@ -67,13 +67,13 @@ void PrimitiveQueryGLImpl::end() {
     std::swap(query_ids[0], query_ids[1]); // switch front/back buffer
     GLuint result;
     glGetQueryObjectuiv(query_ids[0], GL_QUERY_RESULT, &result);
-    put(result);
+    put(float(result));
 }
 
 // -------------------------------------------------------
 // (GPU) FragmentQueryGL
 
-FragmentQueryGLImpl::FragmentQueryGLImpl(const std::string& name, size_t samples) : Query(name, samples) {
+FragmentQueryGLImpl::FragmentQueryGLImpl(const std::string& name, size_t samples) : Query(name, samples), start_time(0), stop_time(0) {
     glGenQueries(2, query_ids);
     // avoid error on first run
     glBeginQuery(GL_SAMPLES_PASSED, query_ids[0]);
@@ -95,5 +95,5 @@ void FragmentQueryGLImpl::end() {
     std::swap(query_ids[0], query_ids[1]); // switch front/back buffer
     GLuint result;
     glGetQueryObjectuiv(query_ids[0], GL_QUERY_RESULT, &result);
-    put(result);
+    put(float(result));
 }

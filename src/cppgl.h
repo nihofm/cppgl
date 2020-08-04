@@ -12,6 +12,7 @@
 #include "material.h"
 #include "mesh.h"
 #include "named_handle.h"
+#include "platform.h"
 #include "quad.h"
 #include "query.h"
 #include "shader.h"

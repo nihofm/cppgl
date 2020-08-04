@@ -1,7 +1,7 @@
 #include "framebuffer.h"
 #include <atomic>
 
-FramebufferImpl::FramebufferImpl(const std::string& name, uint32_t w, uint32_t h) : name(name), id(0), w(w), h(h) {
+FramebufferImpl::FramebufferImpl(const std::string& name, uint32_t w, uint32_t h) : name(name), id(0), w(w), h(h), prev_vp{0,0,0,0} {
     glGenFramebuffers(1, &id);
 }
 
@@ -13,7 +13,7 @@ void FramebufferImpl::bind() {
     glGetIntegerv(GL_VIEWPORT, prev_vp);
     glViewport(0, 0, w, h);
     glBindFramebuffer(GL_FRAMEBUFFER, id);
-    glDrawBuffers(color_targets.size(), color_targets.data());
+    glDrawBuffers(GLsizei(color_targets.size()), color_targets.data());
 }
 
 void FramebufferImpl::unbind() {
@@ -59,7 +59,7 @@ void FramebufferImpl::attach_depthbuffer(Texture2D tex) {
 }
 
 void FramebufferImpl::attach_colorbuffer(const Texture2D& tex) {
-    const GLenum target = GL_COLOR_ATTACHMENT0 + color_targets.size();
+    const GLenum target = GL_COLOR_ATTACHMENT0 + GLenum(color_targets.size());
     glBindFramebuffer(GL_FRAMEBUFFER, id);
     glFramebufferTexture2D(GL_FRAMEBUFFER, target, GL_TEXTURE_2D, tex->id, 0);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);

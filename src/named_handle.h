@@ -1,6 +1,6 @@
 #pragma once
 
-#include <unordered_map>
+#include <map>
 #include <mutex>
 #include <memory>
 #include <string>
@@ -63,14 +63,14 @@ public:
     }
 
     // iterators to iterate over all entries
-    static typename std::unordered_map<std::string, NamedHandle<T>>::iterator begin() { return map.begin(); }
-    static typename std::unordered_map<std::string, NamedHandle<T>>::iterator end() { return map.end(); }
+    static typename std::map<std::string, NamedHandle<T>>::iterator begin() { return map.begin(); }
+    static typename std::map<std::string, NamedHandle<T>>::iterator end() { return map.end(); }
 
     std::shared_ptr<T> ptr;
     static std::mutex mutex;
-    static std::unordered_map<std::string, NamedHandle<T>> map;
+    static std::map<std::string, NamedHandle<T>> map;
 };
 
 // definition of static members (compiler magic)
 template <typename T> std::mutex NamedHandle<T>::mutex;
-template <typename T> std::unordered_map<std::string, NamedHandle<T>> NamedHandle<T>::map;
+template <typename T> std::map<std::string, NamedHandle<T>> NamedHandle<T>::map;

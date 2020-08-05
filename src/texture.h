@@ -15,7 +15,8 @@ public:
     // construct from image on disk
     Texture2DImpl(const std::string& name, const fs::path& path, bool mipmap = true);
     // construct empty texture or from raw data
-    Texture2DImpl(const std::string& name, uint32_t w, uint32_t h, GLint internal_format, GLenum format, GLenum type, const void *data = 0, bool mipmap = false);
+    Texture2DImpl(const std::string& name, uint32_t w, uint32_t h, GLint internal_format, GLenum format, GLenum type,
+            const void* data = 0, bool mipmap = false);
     virtual ~Texture2DImpl();
 
     // prevent copies and moves, since GL buffers aren't reference counted

@@ -35,7 +35,7 @@ inline uint32_t type_to_bytes(GLenum type) {
 // MeshImpl
 
 MeshImpl::MeshImpl(const std::string& name, const Geometry& geometry, const Material& material)
-    : name(name), geometry(geometry), material(material), vao(0), ibo(0), num_vertices(0), num_indices(0), primitive_type(GL_TRIANGLES) {
+    : name(name), geometry(geometry), material(material), vao(0), num_vertices(0), num_indices(0), primitive_type(GL_TRIANGLES) {
     glGenVertexArrays(1, &vao);
     upload_gpu();
 }
@@ -46,12 +46,8 @@ MeshImpl::~MeshImpl() {
 }
 
 void MeshImpl::clear_gpu() {
-    if (ibo) {
-        glDeleteBuffers(1, &ibo);
-        ibo = 0;
-    }
-    glDeleteBuffers(vbo_ids.size(), vbo_ids.data());
-    vbo_ids.clear();
+    ibo = IBO();
+    vbos.clear();
     vbo_types.clear();
     vbo_dims.clear();
     num_vertices = num_indices = 0;
@@ -76,12 +72,6 @@ void MeshImpl::bind(const Shader& shader) const {
         material->bind(shader);
 }
 
-void MeshImpl::unbind() const {
-    glBindVertexArray(0);
-    if (material)
-        material->unbind();
-}
-
 void MeshImpl::draw() const {
     if (ibo)
         glDrawElements(primitive_type, num_indices, GL_UNSIGNED_INT, 0);
@@ -89,21 +79,25 @@ void MeshImpl::draw() const {
         glDrawArrays(primitive_type, 0, num_vertices);
 }
 
+void MeshImpl::unbind() const {
+    glBindVertexArray(0);
+    if (material)
+        material->unbind();
+}
+
 uint32_t MeshImpl::add_vertex_buffer(GLenum type, uint32_t element_dim, uint32_t num_vertices, const void* data, GLenum hint) {
     if (this->num_vertices && this->num_vertices != num_vertices)
         throw std::runtime_error("Mesh::add_vertex_buffer: vertex buffer size mismatch!");
+    // setup vbo
     this->num_vertices = num_vertices;
-    const uint32_t buf_id = vbo_ids.size();
-    vbo_ids.push_back(0); // dummy
+    const uint32_t buf_id = vbos.size();
+    vbos.emplace_back(name + "_vertex_buffer_" + std::to_string(buf_id));
+    vbos[buf_id]->upload_data(data, type_to_bytes(type) * element_dim * num_vertices, hint);
     vbo_types.push_back(type);
     vbo_dims.push_back(element_dim);
-    // setup vbo
-    glBindVertexArray(vao);
-    glGenBuffers(1, &vbo_ids[buf_id]);
-    glBindBuffer(GL_ARRAY_BUFFER, vbo_ids[buf_id]);
-    const size_t stride = type_to_bytes(type) * element_dim;
-    glBufferData(GL_ARRAY_BUFFER, stride * num_vertices, data, hint);
     // setup vertex attributes
+    glBindVertexArray(vao);
+    vbos[buf_id]->bind();;
     glEnableVertexAttribArray(buf_id);
     if (type == GL_BYTE || type == GL_UNSIGNED_BYTE ||
             type == GL_SHORT || type == GL_UNSIGNED_SHORT ||
@@ -114,28 +108,25 @@ uint32_t MeshImpl::add_vertex_buffer(GLenum type, uint32_t element_dim, uint32_t
     else
         glVertexAttribPointer(buf_id, element_dim, type, GL_FALSE, 0, 0);
     glBindVertexArray(0);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    vbos[buf_id]->unbind();
     return buf_id;
 }
 
 void MeshImpl::add_index_buffer(uint32_t num_indices, const uint32_t* data, GLenum hint) {
-    if (!ibo) glGenBuffers(1, &ibo);
     this->num_indices = num_indices;
-    // setup ibo
+    ibo = IBO(name + "_index_buffer");
+    ibo->upload_data(data, sizeof(uint32_t) * num_indices, hint);
+    // setup vao+ibo
     glBindVertexArray(vao);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(uint32_t) * num_indices, data, hint);
+    ibo->bind();
     glBindVertexArray(0);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+    ibo->unbind();
 }
 
 void MeshImpl::update_vertex_buffer(uint32_t buf_id, const void* data) {
-    if (buf_id >= vbo_ids.size())
+    if (buf_id >= vbos.size())
         throw std::runtime_error("Mesh::update_vertex_buffer: buffer id out of range!");
-    glBindBuffer(GL_ARRAY_BUFFER, vbo_ids[buf_id]);
-    const size_t stride = type_to_bytes(vbo_types[buf_id]) * vbo_dims[buf_id];
-    glBufferSubData(GL_ARRAY_BUFFER, 0, stride * num_vertices, data);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    vbos[buf_id]->upload_subdata(data, 0, type_to_bytes(vbo_types[buf_id]) * vbo_dims[buf_id] * num_vertices);
 }
 
 void MeshImpl::set_primitive_type(GLenum primitive_type) {
@@ -143,27 +134,25 @@ void MeshImpl::set_primitive_type(GLenum primitive_type) {
 }
 
 void* MeshImpl::map_vbo(uint32_t buf_id, GLenum access) const {
-    if (buf_id >= vbo_ids.size())
+    if (buf_id >= vbos.size())
         throw std::runtime_error("Mesh::map_vbo: buffer id out of range!");
-    glBindBuffer(GL_ARRAY_BUFFER, vbo_ids[buf_id]);
-    return glMapBuffer(GL_ARRAY_BUFFER, access);
+    return vbos[buf_id]->map(access);
 }
 
 void MeshImpl::unmap_vbo(uint32_t buf_id) const {
-    glUnmapBuffer(GL_ARRAY_BUFFER);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    if (buf_id >= vbos.size())
+        throw std::runtime_error("Mesh::map_vbo: buffer id out of range!");
+    vbos[buf_id]->unmap();
 }
 
 void* MeshImpl::map_ibo(GLenum access) const {
     if (!ibo)
         throw std::runtime_error("Mesh::map_ibo: no index buffer present!");
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
-    return glMapBuffer(GL_ELEMENT_ARRAY_BUFFER, access);
+    return ibo->map(access);
 }
 
 void MeshImpl::unmap_ibo() const {
-    glUnmapBuffer(GL_ELEMENT_ARRAY_BUFFER);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+    ibo->unmap();
 }
 
 // ------------------------------------------

@@ -32,10 +32,6 @@ void mouse_button_callback(int button, int action, int mods) {
     if (ImGui::GetIO().WantCaptureMouse) return;
 }
 
-void gui_callback(void) {
-    ImGui::ShowMetricsWindow();
-}
-
 // ------------------------------------------
 // main
 
@@ -51,7 +47,7 @@ int main(int argc, char** argv) {
     Context::init(params);
     Context::set_keyboard_callback(keyboard_callback);
     Context::set_mouse_button_callback(mouse_button_callback);
-    Context::set_gui_callback(gui_callback);
+    gui_add_callback("example_gui_callback", []{ ImGui::ShowMetricsWindow(); });
 
     // setup draw shader
     Shader("draw", "shader/draw.vs", "shader/draw.fs");

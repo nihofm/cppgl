@@ -8,7 +8,7 @@
 #include "drawelement.h"
 #include "framebuffer.h"
 #include "geometry.h"
-#include "imgui/imgui.h"
+#include "gui.h"
 #include "material.h"
 #include "mesh.h"
 #include "named_handle.h"

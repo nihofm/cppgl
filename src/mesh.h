@@ -8,7 +8,7 @@ namespace fs = std::filesystem;
 #include <GL/glew.h>
 #include <GL/gl.h>
 #include <glm/glm.hpp>
-#include "named_handle.h"
+#include "buffer.h"
 #include "geometry.h"
 #include "material.h"
 
@@ -25,10 +25,10 @@ public:
     MeshImpl& operator=(const MeshImpl&) = delete;
     MeshImpl& operator=(const MeshImpl&&) = delete;
 
-    // TODO cleaner mesh class/interface?
     void clear_gpu(); // free gpu resources
     void upload_gpu(); // cpu -> gpu transfer
 
+    // call in this order to draw
     void bind(const Shader& shader) const;
     void draw() const;
     void unbind() const;
@@ -50,10 +50,11 @@ public:
     Geometry geometry;
     Material material;
     // GPU data
-    GLuint vao, ibo;
+    GLuint vao;
+    IBO ibo;
     uint32_t num_vertices;
     uint32_t num_indices;
-    std::vector<GLuint> vbo_ids;
+    std::vector<VBO> vbos;
     std::vector<GLenum> vbo_types;
     std::vector<uint32_t> vbo_dims;
     GLenum primitive_type;

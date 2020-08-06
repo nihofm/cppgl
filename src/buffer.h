@@ -9,7 +9,7 @@
 
 template <GLenum GL_TEMPLATE_BUFFER> class GLBufferImpl {
 public:
-    GLBufferImpl(const std::string& name, size_t size_bytes = 0):name(name) {
+    GLBufferImpl(const std::string& name, size_t size_bytes = 0) : name(name) {
         glGenBuffers(1, &id);
         resize(size_bytes);
     }
@@ -25,22 +25,6 @@ public:
     explicit inline operator bool() const { return glIsBuffer(id) && size_bytes > 0; }
     inline operator GLuint() const { return id; }
 
-    // resize (discards all data!)
-    void resize(size_t size_bytes, GLenum hint = GL_DYNAMIC_DRAW) {
-        this->size_bytes = size_bytes;
-        glBindBuffer(GL_TEMPLATE_BUFFER, id);
-        glBufferData(GL_TEMPLATE_BUFFER, size_bytes, 0, hint);
-        glBindBuffer(GL_TEMPLATE_BUFFER, 0);
-    }
-
-    // clear to 0x0
-    void clear() {
-        bind();
-        const GLuint zero = 0;
-        glClearBufferData(GL_TEMPLATE_BUFFER, GL_R32UI, GL_RED, GL_UNSIGNED_INT, &zero);
-        unbind();
-    }
-
     // bind/unbind to/from OpenGL
     void bind() const {
         glBindBuffer(GL_TEMPLATE_BUFFER, id);
@@ -55,7 +39,33 @@ public:
         glBindBufferBase(GL_TEMPLATE_BUFFER, unit, 0);
     }
 
-    // map/unmap from GPU mem (https://www.seas.upenn.edu/~pcozzi/OpenGLInsights/OpenGLInsights-AsynchronousBufferTransfers.pdf)
+    // directly upload data (discards and reallocates memory, slow!)
+    void upload_data(const void* data, size_t size_bytes, GLenum hint = GL_DYNAMIC_DRAW) {
+        bind();
+        this->size_bytes = size_bytes;
+        glBufferData(GL_TEMPLATE_BUFFER, size_bytes, data, hint);
+        unbind();
+    }
+    // directly upload data (overwrites memory with no bounds checking, slow-ish)
+    void upload_subdata(const void* data, size_t offset_bytes, size_t size_bytes) {
+        bind();
+        glBufferSubData(GL_TEMPLATE_BUFFER, offset_bytes, size_bytes, data);
+        unbind();
+    }
+    // resize (discards all data!)
+    void resize(size_t size_bytes, GLenum hint = GL_DYNAMIC_DRAW) {
+        upload_data(0, size_bytes, hint);
+    }
+    // clear to 0x0
+    void clear() {
+        bind();
+        const GLuint zero = 0;
+        glClearBufferData(GL_TEMPLATE_BUFFER, GL_R32UI, GL_RED, GL_UNSIGNED_INT, &zero);
+        unbind();
+    }
+
+    // map/unmap from GPU mem for faster memory transfer
+    // https://www.seas.upenn.edu/~pcozzi/OpenGLInsights/OpenGLInsights-AsynchronousBufferTransfers.pdf
     void* map(GLenum access = GL_READ_WRITE) const {
         bind();
         return glMapBuffer(GL_TEMPLATE_BUFFER, access);
@@ -64,6 +74,7 @@ public:
         glUnmapBuffer(GL_TEMPLATE_BUFFER);
         unbind();
     }
+
 
     // data
     const std::string name;

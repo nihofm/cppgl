@@ -32,13 +32,16 @@ if(UNIX)
     find_library(ASSIMP assimp PATHS ${DEPDIR}/lin/lib NO_DEFAULT_PATH)
     target_link_libraries(${TARGET} stdc++fs) # required for std::filesystem
     install(DIRECTORY ${DEPDIR}/lin/lib DESTINATION .) # install deps
+    target_link_libraries(${TARGET} ${GLEW} ${GLFW} ${ASSIMP})
 else()
 	find_library(GLEW glew32 PATHS ${DEPDIR}/win/lib NO_DEFAULT_PATH)
     find_library(GLFW glfw3 PATHS ${DEPDIR}/win/lib NO_DEFAULT_PATH)
 	find_library(ASSIMP assimp PATHS ${DEPDIR}/win/lib NO_DEFAULT_PATH)
+    find_library(ASSIMPD assimpd PATHS ${DEPDIR}/win/lib NO_DEFAULT_PATH)
     target_compile_definitions(${TARGET} PRIVATE -DBUILD_CPPGL_DLL)
     target_compile_definitions(${TARGET} PRIVATE -DBUILD_SHARED_LIBS)
+    target_link_libraries(${TARGET} ${GLEW} ${GLFW})
+    target_link_libraries(${TARGET} optimized ${ASSIMP} debug ${ASSIMPD})
 endif()
 
 
-target_link_libraries(${TARGET} ${GLEW} ${GLFW} ${ASSIMP})

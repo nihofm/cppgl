@@ -27,7 +27,7 @@ inline GLint channels_to_ubyte_format(uint32_t channels) {
 // ----------------------------------------------------
 // Texture2D
 
-Texture2DImpl::Texture2DImpl(const std::string& name, const fs::path& path, bool mipmap) : name(name), id(0) {
+Texture2DImpl::Texture2DImpl(const std::string& name, const fs::path& path, bool mipmap) : name(name), id(0), loaded_from_path(path){
     // load image from disk
     stbi_set_flip_vertically_on_load(1);
     int channels;
@@ -43,8 +43,11 @@ Texture2DImpl::Texture2DImpl(const std::string& name, const fs::path& path, bool
         format = channels_to_format(channels);
         type = GL_UNSIGNED_BYTE;
     }
-    if (!data)
+    if (!data) {
         throw std::runtime_error("Failed to load image file: " + path.string());
+        return;
+    }
+
     // init GL texture
     glGenTextures(1, &id);
     glBindTexture(GL_TEXTURE_2D, id);
@@ -52,9 +55,18 @@ Texture2DImpl::Texture2DImpl(const std::string& name, const fs::path& path, bool
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, mipmap ? GL_LINEAR_MIPMAP_LINEAR : GL_LINEAR);
-    glTexImage2D(GL_TEXTURE_2D, 0, internal_format, w, h, 0, format, type, data);
+
+    //opengl by default needs 4 byte alignment after every row
+    //stbi loaded data is not aligned that way -> pixelStore attributes need to be set
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+    glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
+    glPixelStorei(GL_UNPACK_SKIP_PIXELS, 0);
+    glPixelStorei(GL_UNPACK_SKIP_ROWS, 0);
+
+    glTexImage2D(GL_TEXTURE_2D, 0, internal_format, w, h, 0, format, type, &data[0]);
     if (mipmap) glGenerateMipmap(GL_TEXTURE_2D);
     glBindTexture(GL_TEXTURE_2D, 0);
+
     // free data
     stbi_image_free(data);
 }
@@ -72,6 +84,7 @@ Texture2DImpl::Texture2DImpl(const std::string& name, uint32_t w, uint32_t h, GL
     glTexImage2D(GL_TEXTURE_2D, 0, internal_format, w, h, 0, format, type, data);
     if (mipmap && data != 0) glGenerateMipmap(GL_TEXTURE_2D);
     glBindTexture(GL_TEXTURE_2D, 0);
+
 }
 
 Texture2DImpl::~Texture2DImpl() {

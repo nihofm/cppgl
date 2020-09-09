@@ -44,6 +44,7 @@ public:
 
     // data
     const std::string name;
+    const fs::path loaded_from_path;
     GLuint id;
     int w, h;
     GLint internal_format;

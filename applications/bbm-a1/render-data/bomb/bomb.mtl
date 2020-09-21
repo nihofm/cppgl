@@ -1,0 +1,21 @@
+# Blender3D MTL File: 
+# Material Count: 2
+newmtl Iron_bomb_texture
+Ns 39.215686
+Ka 0.000000 0.000000 0.000000
+Kd 0.168624 0.188463 0.244671
+Ks 0.309804 0.311765 0.352941
+Ni 1.000000
+d 1.000000
+illum 2
+map_Kd bomb_texture.png
+
+newmtl Cork_bomb_texture
+Ns 64.0000
+Ka 0.000000 0.000000 0.000000
+Kd 0.937255 0.752941 0.572549
+Ks 0.209228 0.209228 0.209228
+Ni 1.000000
+d 1.000000
+illum 2
+map_Kd bomb_texture.png

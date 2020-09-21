@@ -1,0 +1,24 @@
+# Blender MTL File: 'None'
+# Material Count: 2
+
+newmtl cloth
+Ns 90.196078
+Ka 0.000000 0.000000 0.000000
+Kd 0.409600 0.000000 0.108082
+Ks 0.500000 0.500000 0.500000
+Ni 1.000000
+d 1.000000
+illum 2
+map_Kd ghost_texture.png
+map_d ghost_texture.png
+
+newmtl eyes
+Ns 90.196078
+Ka 0.000000 0.000000 0.000000
+Kd 0.008902 0.008902 0.008902
+Ks 0.500000 0.500000 0.500000
+Ni 1.000000
+d 1.000000
+illum 2
+map_Kd ghost_texture.png
+map_d ghost_texture.png

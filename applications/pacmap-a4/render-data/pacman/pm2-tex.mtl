@@ -1,0 +1,24 @@
+# Blender MTL File: 'None'
+# Material Count: 2
+
+newmtl Body
+Ns 84.313725
+Ka 0.000000 0.000000 0.000000
+Kd 0.262144 0.230869 0.000000
+Ks 0.500000 0.500000 0.500000
+Ni 1.000000
+d 1.000000
+illum 2
+map_Kd pacman_texture.png
+map_d pacman_texture.png
+
+newmtl Eyes
+Ns 84.313725
+Ka 0.000000 0.000000 0.000000
+Kd 0.327680 0.327680 0.327680
+Ks 0.500000 0.500000 0.500000
+Ni 1.000000
+d 1.000000
+illum 2
+map_Kd pacman_texture.png
+map_d pacman_texture.png

@@ -1,8 +1,7 @@
-
+#include <cppgl.h>
 #include "server-cmdline.h"
 #include "gamelogic.h"
 
-#include <cppgl.h>
 #include <messages/messages.h>
 
 #include <glm/gtc/type_precision.hpp>
@@ -82,7 +81,7 @@ void broadcast(msg::message *m) {
 		cerr << "Error sending message to client of player " << players[i]->name << ": " << err.what() << "\nExiting." << endl;
 		quit(-1);
 	}
-	since_last_broadcast.restart();
+	since_last_broadcast.begin();
 }
 
 
@@ -205,11 +204,11 @@ int main(int argc, char **argv)
 		// main loop
 		Timer wtt, info_timer;
 		while (1) {
-			if (wtt.look() < Timer::msec(settings::timeslicethickness)) {
-				sleep(0); // just schedule away...
+			if (wtt.look() < (settings::timeslicethickness)) {
+				std::this_thread::sleep_for(0s);// just schedule away... 
 				continue;
 			}
-			wtt.start();
+			wtt.begin();
 			for (unsigned i = 0; i < client_connections::sockets; ++i) {
 				client_connections::reader[i]->read_and_handle();
 				if (client_connections::reader[i]->eof()) {
@@ -238,11 +237,11 @@ int main(int argc, char **argv)
 					}
 			}
 
-			if (info_timer.look() > Timer::sec(3)) {
+			if (info_timer.look() > (3*1000)) {
 				 board->Print();
-				 info_timer.restart();
+				 info_timer.begin();
 			}
-			if (since_last_broadcast.look() > Timer::sec(1)) {
+			if (since_last_broadcast.look() > (1*1000)) {
 				msg::keep_alive ping = make_message<msg::keep_alive>();
 				broadcast(&ping);
 			}

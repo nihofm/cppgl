@@ -4,7 +4,8 @@
 #include <memory>
 #include <glm/glm.hpp>
 #include "named_handle.h"
-
+#undef far
+#undef near
 // ----------------------------------------------------
 // Camera
 

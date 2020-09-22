@@ -1,5 +1,0 @@
-#add_subdirectory(bbm-server)
-add_subdirectory(bbm-a1)
-#add_subdirectory(bbm-a2)
-#add_subdirectory(terrain-a3)
-#add_subdirectory(pacmap-a4)

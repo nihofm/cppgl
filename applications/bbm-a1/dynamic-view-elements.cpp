@@ -27,86 +27,86 @@ std::vector<Drawelement> Box::prototype_scatter;
 std::vector<Drawelement> Bomb::prototype;
 
 void init_dynamic_prototypes() {
-    { // load player prototype
-        auto shader_norm = Shader("bbm: pos+norm", "shader/pos+norm.vs", "shader/pos+norm.fs");
-        auto shader_norm_tc = Shader("bbm: pos+norm+tc,modulated", "shader/pos+norm+tc.vs", "shader/pos+norm+tc.fs");
-        auto shader_callback = [shader_norm, shader_norm_tc](const Material& mat) {
-            return mat->texture_map.empty() ? shader_norm : shader_norm_tc;
-        };
+	{ // load player prototype
+		auto shader_norm = Shader("bbm: pos+norm", "shader/pos+norm.vs", "shader/pos+norm.fs");
+		auto shader_norm_tc = Shader("bbm: pos+norm+tc,modulated", "shader/pos+norm+tc.vs", "shader/pos+norm+tc.fs");
+		auto shader_callback = [shader_norm, shader_norm_tc](const Material& mat) {
+			return mat->texture_map.empty() ? shader_norm : shader_norm_tc;
+		};
 		auto meshes = load_meshes_gpu("render-data/bbm/bbm-nolegs.obj", true);
 		for (auto m : meshes) {
-			Player::prototype.push_back(Drawelement(m->name, m, shader_callback(m->material)));
+			Player::prototype.push_back(Drawelement(m->name, shader_callback(m->material), m));
 		}
 	}
-    { // load bomb prototype
-        auto shader_norm = Shader("bomb: pos+norm", "shader/pos+norm.vs", "shader/pos+norm.fs");
-        auto shader_norm_tc = Shader("bomb: pos+norm+tc", "shader/pos+norm+tc.vs", "shader/pos+norm+tc.fs");
-        auto shader_callback = [shader_norm, shader_norm_tc](const Material& mat) {
-            return mat->texture_map.empty() ? shader_norm : shader_norm_tc;
-        };
+	{ // load bomb prototype
+		auto shader_norm = Shader("bomb: pos+norm", "shader/pos+norm.vs", "shader/pos+norm.fs");
+		auto shader_norm_tc = Shader("bomb: pos+norm+tc", "shader/pos+norm+tc.vs", "shader/pos+norm+tc.fs");
+		auto shader_callback = [shader_norm, shader_norm_tc](const Material& mat) {
+			return mat->texture_map.empty() ? shader_norm : shader_norm_tc;
+		};
 		auto meshes = load_meshes_gpu("render-data/bomb/bomb.obj", true);
 		for (auto m : meshes) {
-			Bomb::prototype.push_back(Drawelement(m->name, m, shader_callback(m->material)));
+			Bomb::prototype.push_back(Drawelement(m->name, shader_callback(m->material), m));
 		}
 	}
-    { // load box prototypes
-        auto shader = Shader("box-shader", "shader/box.vs", "shader/box.fs");
-        auto shader_cb = [shader](const Material&) { return shader; };
-        // load idle and scatter box
+	{ // load box prototypes
+		auto shader = Shader("box-shader", "shader/box.vs", "shader/box.fs");
+		auto shader_cb = [shader](const Material&) { return shader; };
+		// load idle and scatter box
 		{
 			auto meshes = load_meshes_gpu("render-data/cube/cube.obj", true);
 			for (auto m : meshes) {
-				Box::prototype_idle.push_back(Drawelement(m->name, m, shader_cb(m->material)));
+				Box::prototype_idle.push_back(Drawelement(m->name, shader_cb(m->material), m));
 			}
 		}
 		{
 			auto meshes = load_meshes_gpu("render-data/crate/wooden_crate.obj", true);
 			for (auto m : meshes) {
-				Box::prototype_scatter.push_back(Drawelement(m->name, m, shader_cb(m->material)));
+				Box::prototype_scatter.push_back(Drawelement(m->name, shader_cb(m->material), m));
 			}
 		}
-        // load materials
-        auto overlay = Texture2D("crate_overlay", "render-data/images/crate_overlay2.png");
-        Box::wood_material = Material("box-wood");
-        Box::wood_material->add_texture("diffuse", Texture2D("box-wood", "render-data/crate/crate.png"));
-        Box::wood_material->add_texture("normalmap", Texture2D("box-wood-normals", "render-data/crate/crate_normals.png"));
-        Box::wood_material->add_texture("overlay", overlay);
-        auto mat0 = Material("box-wall_0");
-        mat0->add_texture("diffuse", Texture2D("box-wall_diff_0", "render-data/images/wall_0.png"));
-        mat0->add_texture("normalmap", Texture2D("box-wall_normals_0", "render-data/images/wall_normals_0.png"));
-        mat0->add_texture("overlay", overlay);
-        Box::stone_materials.push_back(mat0);
-        auto mat1 = Material("box-wall_1");
-        mat1->add_texture("diffuse", Texture2D("box-wall_diff_1", "render-data/images/wall_1.png"));
-        mat1->add_texture("normalmap", Texture2D("box-wall_normals_1", "render-data/images/wall_normals_1.png"));
-        mat1->add_texture("overlay", overlay);
-        Box::stone_materials.push_back(mat1);
-        auto mat2 = Material("box-wall_2");
-        mat2->add_texture("diffuse", Texture2D("box-wall_diff_2", "render-data/images/wall_2.png"));
-        mat2->add_texture("normalmap", Texture2D("box-wall_normals_2", "render-data/images/wall_normals_2.png"));
-        mat2->add_texture("overlay", overlay);
-        Box::stone_materials.push_back(mat2);
-    }
+		// load materials
+		auto overlay = Texture2D("crate_overlay", "render-data/images/crate_overlay2.png");
+		Box::wood_material = Material("box-wood");
+		Box::wood_material->add_texture("diffuse", Texture2D("box-wood", "render-data/crate/crate.png"));
+		Box::wood_material->add_texture("normalmap", Texture2D("box-wood-normals", "render-data/crate/crate_normals.png"));
+		Box::wood_material->add_texture("overlay", overlay);
+		auto mat0 = Material("box-wall_0");
+		mat0->add_texture("diffuse", Texture2D("box-wall_diff_0", "render-data/images/wall_0.png"));
+		mat0->add_texture("normalmap", Texture2D("box-wall_normals_0", "render-data/images/wall_normals_0.png"));
+		mat0->add_texture("overlay", overlay);
+		Box::stone_materials.push_back(mat0);
+		auto mat1 = Material("box-wall_1");
+		mat1->add_texture("diffuse", Texture2D("box-wall_diff_1", "render-data/images/wall_1.png"));
+		mat1->add_texture("normalmap", Texture2D("box-wall_normals_1", "render-data/images/wall_normals_1.png"));
+		mat1->add_texture("overlay", overlay);
+		Box::stone_materials.push_back(mat1);
+		auto mat2 = Material("box-wall_2");
+		mat2->add_texture("diffuse", Texture2D("box-wall_diff_2", "render-data/images/wall_2.png"));
+		mat2->add_texture("normalmap", Texture2D("box-wall_normals_2", "render-data/images/wall_normals_2.png"));
+		mat2->add_texture("overlay", overlay);
+		Box::stone_materials.push_back(mat2);
+	}
 }
 
 // ------------------------------------------------
 // Player
 
 Player::Player(const std::string& name, int id) : moving(false), look_dir(0, 1),
-    name(name), trafo(1), trafo_rot(1), health(100), id(id), respawning(false), frags(0) {
-    trafo[0][0] = render_settings::character_radius;
-    trafo[1][1] = render_settings::character_radius;
-    trafo[2][2] = render_settings::character_radius;
-    trafo[3][1] = render_settings::character_float_h;
+name(name), trafo(1), trafo_rot(1), health(100), id(id), respawning(false), frags(0) {
+	trafo[0][0] = render_settings::character_radius;
+	trafo[1][1] = render_settings::character_radius;
+	trafo[2][2] = render_settings::character_radius;
+	trafo[3][1] = render_settings::character_float_h;
 	// Start wobble timer
 	wobble_timer.begin();
 }
 
 float Player::rotation(Dir dir) {
-	if (dir == Dir(0,1))  return 0;
-	if (dir == Dir(0,-1)) return float(M_PI);
-	if (dir == Dir(1,0))  return -float(M_PI)/2.0f;
-	if (dir == Dir(-1,0)) return float(M_PI)/2.0f;
+	if (dir == Dir(0, 1))  return 0;
+	if (dir == Dir(0, -1)) return float(M_PI);
+	if (dir == Dir(1, 0))  return -float(M_PI) / 2.0f;
+	if (dir == Dir(-1, 0)) return float(M_PI) / 2.0f;
 	return 0;
 }
 
@@ -123,7 +123,7 @@ void Player::force_position(int x, int y) {
 	moving = false;
 	glm::vec3 axis(0, 1, 0);
 	base_rotation = -rotation(look_dir);
-    trafo_rot = glm::rotate(glm::mat4(1), base_rotation, glm::vec3(0, 1, 0));
+	trafo_rot = glm::rotate(glm::mat4(1), base_rotation, glm::vec3(0, 1, 0));
 	trafo[3][0] = x * render_settings::tile_size;
 	trafo[3][2] = y * render_settings::tile_size;
 	base = glm::vec3(x, 0, y);
@@ -131,12 +131,12 @@ void Player::force_position(int x, int y) {
 
 void Player::start_moving(int dir_x, int dir_y, int est_duration) {
 	if (moving) {	// the last movement is not finished: reset base
-		base =  base + move_dir;
+		base = base + move_dir;
 		trafo[3][0] = base.x * render_settings::tile_size;
 		trafo[3][2] = base.z * render_settings::tile_size;
 		base_rotation = -rotation(look_dir);
 	}
-	
+
 	move_dir = glm::vec3(dir_x, 0, dir_y);
 	move_duration = float(est_duration);
 	move_rotation = rotation_angle_between(look_dir, Dir(dir_x, dir_y));
@@ -153,71 +153,71 @@ void Player::update() {
 	if (moving) {
 		const float elapsed = float(movement_timer.look());
 		// HINT: Right here we may have skipped something tagged 'smooth player movement'
-        // NOTE: Use matrix 'trafo' for translation/scale and 'trafo_rot' for rotation
+		// NOTE: Use matrix 'trafo' for translation/scale and 'trafo_rot' for rotation
 #ifndef A1_2
 		const float t = std::min(1.0f, elapsed / move_duration);
-        trafo_rot = glm::rotate(glm::mat4(1), base_rotation + t * move_rotation, glm::vec3(0, 1, 0));
-        const glm::vec3 curr = (base + move_dir * t) * render_settings::tile_size;
+		trafo_rot = glm::rotate(glm::mat4(1), base_rotation + t * move_rotation, glm::vec3(0, 1, 0));
+		const glm::vec3 curr = (base + move_dir * t) * render_settings::tile_size;
 		trafo[3][0] = curr.x;
 		trafo[3][2] = curr.z;
 #endif // A1_2
 
 		// HINT: Right here we may have skipped something tagged 'smooth camera movement'
-        const glm::vec2& cam_offset = render_settings::character_camera_offset;
+		const glm::vec2& cam_offset = render_settings::character_camera_offset;
 #ifndef A1_3
 		if (id == player_id) {
-            auto cam = Camera::find("playercam");
-            cam->pos = glm::vec3(curr.x, cam_offset.y, curr.z + cam_offset.x);
-            cam->dir = glm::normalize(curr - cam->pos);
-            cam->update();
+			auto cam = Camera::find("playercam");
+			cam->pos = glm::vec3(curr.x, cam_offset.y, curr.z + cam_offset.x);
+			cam->dir = glm::normalize(curr - cam->pos);
+			cam->update();
 		}
 #endif // A1_3
 	}
-	
-    // HINT: Right here we may have skipped something tagged 'character idle animation'
+
+	// HINT: Right here we may have skipped something tagged 'character idle animation'
 #ifndef A1_4
-    trafo[3][1] = render_settings::character_float_h + 0.2f * render_settings::character_radius +
-                         glm::sin(float(player_id) * 10.0f + glm::cos(0.002f * wobble_timer.look() + glm::cos(0.001f * wobble_timer.look())));
+	trafo[3][1] = render_settings::character_float_h + 0.2f * render_settings::character_radius +
+		glm::sin(float(player_id) * 10.0f + glm::cos(0.002f * wobble_timer.look() + glm::cos(0.001f * wobble_timer.look())));
 #endif // A1_4
 
-    // player particles
+	// player particles
 	if (particle_timer.look() >= render_settings::particle_emitter_timeslice) {
 		particle_timer.begin();
-        const float offset = 0.9f * render_settings::character_radius;
-        const glm::vec3 pos = glm::vec3(trafo[3][0], trafo[3][1] - offset, trafo[3][2]);
-        const glm::vec3 dir = glm::normalize(glm::vec3(random_float(), -3, random_float()));
-        particles->add(pos, dir, (rand() % 1000) + 1000);
-        // HINT: Right here we may have skipped something tagged 'even more particles'
+		const float offset = 0.9f * render_settings::character_radius;
+		const glm::vec3 pos = glm::vec3(trafo[3][0], trafo[3][1] - offset, trafo[3][2]);
+		const glm::vec3 dir = glm::normalize(glm::vec3(random_float(), -3, random_float()));
+		particles->add(pos, dir, (rand() % 1000) + 1000);
+		// HINT: Right here we may have skipped something tagged 'even more particles'
 #ifndef A1_8
-        for (int i = 0; i < 3; ++i)
-            particles_small->add(pos, dir + glm::vec3(random_float(), random_float(), random_float()), (rand() % 1000) + 1000);
+		for (int i = 0; i < 3; ++i)
+			particles_small->add(pos, dir + glm::vec3(random_float(), random_float(), random_float()), (rand() % 1000) + 1000);
 #endif // A1_8
 	}
 }
 
 void Player::draw() {
-    if (health <= 0) return;
-    for (auto& elem : prototype) {
+	if (health <= 0) return;
+	for (auto& elem : prototype) {
 		elem->model = trafo * trafo_rot;
-        elem->bind();
-        setup_light(elem->shader);
-        elem->draw();
-        elem->unbind();
-    }
+		elem->bind();
+		setup_light(elem->shader);
+		elem->draw();
+		elem->unbind();
+	}
 }
 
 // ------------------------------------------------
 // Box
 
 Box::Box(unsigned posx, unsigned posy, bool is_stone) : trafo(1.f), is_stone(is_stone), exploding(false) {
-    stone_type = is_stone ? rand() % 3 : 0;
+	stone_type = is_stone ? rand() % 3 : 0;
 	uv_offset.x = float(rand() % 100) / 100.0f;
 	uv_offset.y = float(rand() % 100) / 100.0f;
-    trafo[0][0] = 0.5 * render_settings::tile_size;
-    trafo[1][1] = 0.5 * render_settings::tile_size;
-    trafo[2][2] = 0.5 * render_settings::tile_size;
+	trafo[0][0] = 0.5 * render_settings::tile_size;
+	trafo[1][1] = 0.5 * render_settings::tile_size;
+	trafo[2][2] = 0.5 * render_settings::tile_size;
 	trafo[3][0] = posx * render_settings::tile_size;
-    trafo[3][1] = 0.5 * render_settings::tile_size;
+	trafo[3][1] = 0.5 * render_settings::tile_size;
 	trafo[3][2] = posy * render_settings::tile_size;
 }
 
@@ -247,29 +247,29 @@ void Box::draw() {
 // Bomb
 
 Bomb::Bomb(int posx, int posy, int id) : x(posx), y(posy), id(id), trafo(1) {
-    // HINT: Right here we may have skipped something tagged 'render bombs'
+	// HINT: Right here we may have skipped something tagged 'render bombs'
 #ifndef A1_6
-    trafo[0][0] = render_settings::bomb_radius;
-    trafo[1][1] = render_settings::bomb_radius;
-    trafo[2][2] = render_settings::bomb_radius;
-    trafo[3][0] = float(posx) * render_settings::tile_size;
-    trafo[3][1] = render_settings::bomb_radius;
-    trafo[3][2] = float(posy) * render_settings::tile_size;
+	trafo[0][0] = render_settings::bomb_radius;
+	trafo[1][1] = render_settings::bomb_radius;
+	trafo[2][2] = render_settings::bomb_radius;
+	trafo[3][0] = float(posx) * render_settings::tile_size;
+	trafo[3][1] = render_settings::bomb_radius;
+	trafo[3][2] = float(posy) * render_settings::tile_size;
 #endif // A1_6
 }
 
 void Bomb::draw() {
-    for (auto& elem : prototype) {
+	for (auto& elem : prototype) {
 		elem->model = trafo;
-        elem->bind();
-        setup_light(elem->shader);
-        elem->draw();
-        elem->unbind();
-    }
-    // HINT: Right here we may have skipped something tagged 'even more particles'
+		elem->bind();
+		setup_light(elem->shader);
+		elem->draw();
+		elem->unbind();
+	}
+	// HINT: Right here we may have skipped something tagged 'even more particles'
 #ifndef A1_8
-    particles_small->add(glm::vec3(trafo[3]) + glm::vec3(0, render_settings::bomb_radius, 0),
-            1.5f * glm::normalize(glm::vec3(random_float(), 2, random_float())), (rand() % 750) + 500);
+	particles_small->add(glm::vec3(trafo[3]) + glm::vec3(0, render_settings::bomb_radius, 0),
+		1.5f * glm::normalize(glm::vec3(random_float(), 2, random_float())), (rand() % 750) + 500);
 #endif // A1_8
 }
 
@@ -277,7 +277,7 @@ void Bomb::draw() {
 // Board
 
 Board::Board(int tiles_x, int tiles_y) : tiles_x(tiles_x), tiles_y(tiles_y), camera_shake(false) {
-    // init cells
+	// init cells
 	cells = std::vector<std::vector<Cell>>(tiles_y);
 	for (int i = 0; i < tiles_y; ++i) {
 		cells[i] = (std::vector<Cell>(tiles_x));
@@ -287,7 +287,7 @@ Board::Board(int tiles_x, int tiles_y) : tiles_x(tiles_x), tiles_y(tiles_y), cam
 }
 
 void Board::add_box(int x, int y, int type) {
-    const bool is_stone = type == msg::box_type::stone;
+	const bool is_stone = type == msg::box_type::stone;
 	auto box = std::make_shared<Box>(x, y, is_stone);
 	cells[y][x].occupied = type;
 	cells[y][x].box = box;
@@ -321,22 +321,22 @@ void Board::update() {
 }
 
 void Board::draw() {
-    for (auto& elem : stone_boxes)
-        elem->draw();
-    for (auto& elem : crates)
-        elem->draw();
-    for (auto& elem : bombs)
-        elem->draw();
+	for (auto& elem : stone_boxes)
+		elem->draw();
+	for (auto& elem : crates)
+		elem->draw();
+	for (auto& elem : bombs)
+		elem->draw();
 }
 
 void Board::explosion(int bomb_id, unsigned int codes) {
 	// Camera wobble on explode
-	if(!camera_shake) {
+	if (!camera_shake) {
 		camera_shake_timer.begin();
 		camera_shake = true;
 	}
 
-    std::shared_ptr<Bomb> the_bomb;
+	std::shared_ptr<Bomb> the_bomb;
 	for (auto it = bombs.begin(); it != bombs.end(); ++it) {
 		if ((*it)->id == bomb_id) {
 			the_bomb = *it;
@@ -352,19 +352,19 @@ void Board::explosion(int bomb_id, unsigned int codes) {
 	// HINT: Right here we may have skipped something tagged 'map update'
 #ifndef A1_7
 	int x = the_bomb->x, y = the_bomb->y;
-	int x_pos = codes&0x3;	codes >>= 2;
-	int x_neg = codes&0x3;	codes >>= 2;
-	int y_pos = codes&0x3;	codes >>= 2;
-	int y_neg = codes&0x3;
+	int x_pos = codes & 0x3;	codes >>= 2;
+	int x_neg = codes & 0x3;	codes >>= 2;
+	int y_pos = codes & 0x3;	codes >>= 2;
+	int y_neg = codes & 0x3;
 	cout << x_pos << " | " << x_neg << " | " << y_pos << " | " << y_neg << endl;
 
 	struct direction { int x, y, z, len; };
 	direction dirs[4] = { {1, 0, 0, x_pos}, {-1, 0, 0, x_neg}, {0, 0, 1, y_pos}, {0, 0, -1, y_neg} };
-	glm::vec3 center = glm::vec3(float(x)*render_settings::tile_size, render_settings::tile_size/2, float(y)*render_settings::tile_size);
+	glm::vec3 center = glm::vec3(float(x) * render_settings::tile_size, render_settings::tile_size / 2, float(y) * render_settings::tile_size);
 
 	for (int i = 0; i < 4; ++i) {
 		for (int j = 1; j <= dirs[i].len; ++j) {
-            auto& cell = cells[y + j*dirs[i].z][x + j*dirs[i].x];
+			auto& cell = cells[y + j * dirs[i].z][x + j * dirs[i].x];
 			if (!cell.box) continue;
 			int type = cell.occupied;
 			if (type == msg::box_type::stone)
@@ -376,12 +376,12 @@ void Board::explosion(int bomb_id, unsigned int codes) {
 		}
 	}
 
-    for (auto it = crates.begin(); it != crates.end(); ) {
-        if ((*it)->to_destroy())
-            it = crates.erase(it);
-        else
-            ++it;
-    }
+	for (auto it = crates.begin(); it != crates.end(); ) {
+		if ((*it)->to_destroy())
+			it = crates.erase(it);
+		else
+			++it;
+	}
 #endif // A1_7
 
 	// HINT: Right here we may have skipped something tagged 'bomb particles'
@@ -389,16 +389,16 @@ void Board::explosion(int bomb_id, unsigned int codes) {
 	for (int i = 0; i < 200; ++i) {
 		glm::vec3 jitter = random_vec3() * render_settings::tile_size / 7.f;
 		int d = 0;
-		do d = rand()%4; while (dirs[d].len == 0);
-		glm::vec3 pos; pos =  center + jitter;
+		do d = rand() % 4; while (dirs[d].len == 0);
+		glm::vec3 pos; pos = center + jitter;
 		glm::vec3 dir = { (float)dirs[d].x, (float)dirs[d].y, (float)dirs[d].z };
-		if (dir.x == 0) dir.x = random_float()/10; else dir.x += random_float()*0.5f;
-		if (dir.z == 0) dir.z = random_float()/10; else dir.z += random_float()*0.5f;
-		dir.y = random_float()/10;
+		if (dir.x == 0) dir.x = random_float() / 10; else dir.x += random_float() * 0.5f;
+		if (dir.z == 0) dir.z = random_float() / 10; else dir.z += random_float() * 0.5f;
+		dir.y = random_float() / 10;
 		dir = dir * 5.0f;
-        particles->add(pos, dir, (rand() % 500) + 250);
-        for (int p = 0; p < 3; ++p)
-            particles_small->add(pos, dir + glm::vec3(random_float(), 0.5, random_float()), (rand() % 750) + 150);
+		particles->add(pos, dir, (rand() % 500) + 250);
+		for (int p = 0; p < 3; ++p)
+			particles_small->add(pos, dir + glm::vec3(random_float(), 0.5, random_float()), (rand() % 750) + 150);
 	}
 #endif // A1_8
 }

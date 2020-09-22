@@ -8,6 +8,8 @@
 #include "static-view-elements.h"
 #include "dynamic-view-elements.h"
 #include "clientside-networking.h"
+#undef far
+#undef near
 
 using namespace std;
 
@@ -30,8 +32,8 @@ client_message_reader* reader = 0;
 
 void keyboard_callback(int key, int scancode, int action, int mods) {
     if (!reader || !reader->prologue_over()) return;
-    if (key == GLFW_KEY_F2 && action == GLFW_PRESS) Camera::find("default")->make_current();
-    if (key == GLFW_KEY_F3 && action == GLFW_PRESS) Camera::find("playercam")->make_current();
+    if (key == GLFW_KEY_F2 && action == GLFW_PRESS) make_camera_current(Camera::find("default"));
+    if (key == GLFW_KEY_F3 && action == GLFW_PRESS) make_camera_current(Camera::find("playercam"));
     if (current_camera()->name != "playercam") return;
 
     // HINT: https://www.glfw.org/docs/latest/input_guide.html
@@ -82,33 +84,31 @@ void resize_callback(int w, int h) {
 // main
 
 int main(int argc, char** argv) {
-    parse_cmdline(argc, argv);
+    if(!parse_cmdline(argc, argv)) return 0;
 
     // init context and set parameters
     ContextParameters params;
     params.title = "bbm";
-    params.font_ttf_filename = concat(EXECUTABLE_DIR, "render-data/fonts/DroidSansMono.ttf");
+    params.font_ttf_filename = EXECUTABLE_DIR + std::string("render-data/fonts/DroidSansMono.ttf");
     params.font_size_pixels = 15;
     Context::init(params);
     Context::set_keyboard_callback(keyboard_callback);
     Context::set_resize_callback(resize_callback);
 
     // EXECUTABLE_DIR set via cmake, paths now relative to source/executable directory
-    Shader::base_path = EXECUTABLE_DIR;
-    Texture2D::base_path = EXECUTABLE_DIR;
-    MeshLoader::base_path = EXECUTABLE_DIR;
+    std::filesystem::current_path(EXECUTABLE_DIR);
 
-    auto playercam = make_camera("playercam");
+    auto playercam = Camera("playercam");
     playercam->far = 250;
-    playercam->make_current();
+    make_camera_current(playercam);
 
     const glm::ivec2 res = Context::resolution();
-    fbo = make_framebuffer("target_fbo", res.x, res.y);
-    fbo->attach_depthbuffer(make_texture("fbo_depth", res.x, res.y, GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT));
-    fbo->attach_colorbuffer(make_texture("fbo_color", res.x, res.y, GL_RGBA32F, GL_RGBA, GL_FLOAT));
+    fbo = Framebuffer("target_fbo", res.x, res.y);
+    fbo->attach_depthbuffer(Texture2D("fbo_depth", res.x, res.y, GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT));
+    fbo->attach_colorbuffer(Texture2D("fbo_color", res.x, res.y, GL_RGBA32F, GL_RGBA, GL_FLOAT));
     fbo->check();
 
-    auto game_over_tex = make_texture("game-over", "render-data/images/gameover.png");
+    auto game_over_tex = Texture2D("game-over", "render-data/images/gameover.png");
 
     init_static_prototypes();
     init_dynamic_prototypes();
@@ -123,16 +123,16 @@ int main(int argc, char** argv) {
 
     while (Context::running() && game_is_running) {
         // input handling
-        input_timer.start();
+        input_timer.begin();
         if (current_camera()->name != "playercam")
-            Camera::default_input_handler(Context::frame_time());
+            CameraImpl::default_input_handler(Context::frame_time());
         reader->read_and_handle();
         current_camera()->update();
-        Shader::reload();
+        reload_modified_shaders();
         input_timer.end();
 
         // update
-        update_timer.start();
+        update_timer.begin();
         for (auto& player : players)
             player->update();
         the_board->update();
@@ -141,7 +141,7 @@ int main(int argc, char** argv) {
         update_timer.end();
 
         // render
-        render_timer.start();
+        render_timer.begin();
         fbo->bind();
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         for (auto& player : players)

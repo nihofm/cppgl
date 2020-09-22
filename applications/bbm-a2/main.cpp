@@ -1,7 +1,6 @@
 #include <iostream>
 
-#include <cppgl/cppgl.h>
-#include <imgui/imgui.h>
+#include <cppgl.h>
 
 #include "cmdline.h"
 #include "particles.h"
@@ -22,7 +21,7 @@ std::shared_ptr<Skybox> the_skybox;
 std::shared_ptr<Fog> the_fog;
 std::vector<std::shared_ptr<Player>> players;
 std::shared_ptr<Particles> particles, particles_small;
-std::shared_ptr<Framebuffer> gbuffer;
+Framebuffer gbuffer;
 int player_id = -1;
 boost::asio::ip::tcp::socket* server_connection = 0;
 client_message_reader* reader = 0;
@@ -36,7 +35,7 @@ void keyboard_callback(int key, int scancode, int action, int mods) {
     if (key == GLFW_KEY_F2 && action == GLFW_PRESS) Camera::find("default")->make_current();
     if (key == GLFW_KEY_F3 && action == GLFW_PRESS) Camera::find("playercam")->make_current();
     if (key == GLFW_KEY_F4 && action == GLFW_PRESS) gbuffer_debug = !gbuffer_debug;
-    if (Camera::current()->name != "playercam") return;
+    if (current_camera()->name != "playercam") return;
     // HINT: https://www.glfw.org/docs/latest/input_guide.html
     if (action == GLFW_REPEAT) return;
     if (key == GLFW_KEY_W) {
@@ -122,10 +121,10 @@ int main(int argc, char** argv) {
     while (Context::running() && game_is_running) {
         // input handling
         input_timer.start();
-        if (Camera::current()->name != "playercam")
+        if (current_camera()->name != "playercam")
             Camera::default_input_handler(Context::frame_time());
         reader->read_and_handle();
-        Camera::current()->update();
+        current_camera()->update();
         static uint32_t counter = 0;
         if (counter++ % 100 == 0) Shader::reload();
         input_timer.end();

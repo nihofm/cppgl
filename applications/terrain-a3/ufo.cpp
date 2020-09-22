@@ -2,13 +2,13 @@
 #include "rendering.h"
 #include <glm/gtc/matrix_transform.hpp>
 
-std::vector<std::shared_ptr<Drawelement>> Ufo::prototype;
+std::vector<Drawelement> Ufo::prototype;
 
 Ufo::Ufo() {
     // lazy init prototype
     if (prototype.empty()) {
-        auto shader = make_shader("ufo", "shader/ufo.vs", "shader/ufo.fs");
-        auto shader_callback = [shader](const std::shared_ptr<Material>&) { return shader; };
+        auto shader = Shader("ufo", "shader/ufo.vs", "shader/ufo.fs");
+        auto shader_callback = [shader](const Material&) { return shader; };
         prototype = MeshLoader::load("render-data/ufo/ufo.obj", true, shader_callback);
     }
     // rotate and translate ufo

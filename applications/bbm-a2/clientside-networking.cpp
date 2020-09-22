@@ -3,10 +3,7 @@
 #include <iostream>
 #include <memory>
 
-#include <cppgl/context.h>
-#include <cppgl/camera.h>
-#include <cppgl/timer.h>
-#include <imgui/imgui.h>
+#include <cppgl.h>
 
 #include "static-view-elements.h"
 #include "dynamic-view-elements.h"

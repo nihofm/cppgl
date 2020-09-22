@@ -16,14 +16,13 @@ if(UNIX)
     find_package(Boost REQUIRED COMPONENTS system)
     include_directories(${Boost_INCLUDE_DIRS})
     target_link_libraries(messages ${Boost_LIBRARIES})
-
 else()
-
-    find_library(BOOST Boost PATHS ${CMAKE_CURRENT_SOURCE_DIR}/../../../boost NO_DEFAULT_PATH)
-  #  include_directories(${Boost_INCLUDE_DIRS})
-    target_link_libraries(messages BOOST)
-
-
+    #find_library(BOOST Boost PATHS ${CMAKE_CURRENT_SOURCE_DIR}/../../../boost NO_DEFAULT_PATH)
+       # target_include_directories(${TARGET} ${LOCAL_BOOST_DIR})
+    find_package(Boost REQUIRED COMPONENTS system)
+    include_directories(${Boost_INCLUDE_DIRS})
+    target_link_libraries(messages ${Boost_LIBRARIES})
+    #target_link_libraries(messages ${BOOST})
 endif()
 
 

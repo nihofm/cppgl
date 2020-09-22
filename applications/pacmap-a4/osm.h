@@ -8,8 +8,7 @@
 #include <map>
 #include <unordered_map>
 
-#include <cppgl/cppgl.h>
-#include <imgui/imgui.h>
+#include <cppgl.h>
 
 #include "rendering.h"
 
@@ -35,5 +34,5 @@ namespace osm {
     //
 
     void make_meshes();
-    void draw_meshes(const std::shared_ptr<Shader>& shader);
+    void draw_meshes(const Shader& shader);
 }

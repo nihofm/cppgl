@@ -1,7 +1,6 @@
 #pragma once
 
-#include <cppgl/mesh.h>
-#include <cppgl/shader.h>
+#include <cppgl.h>
 
 class Particles {
     const uint32_t N;
@@ -12,8 +11,8 @@ class Particles {
     uint32_t vbo_id_pos, vbo_id_life;
     uint32_t start, end;
     const float particle_size;
-    std::shared_ptr<Mesh> mesh;
-    static std::shared_ptr<Shader> shader;
+    Mesh mesh;
+    static Shader shader;
 
     uint32_t advance(uint32_t& pointer);
 

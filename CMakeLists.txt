@@ -4,20 +4,19 @@ if (NOT UNIX AND NOT WIN32)
 	message(FATAL_ERROR "Unsupported platform!")
 endif()
 
+# set project name
 project("GraPa")
 
-# set project name
 
 # ---------------------------------------------------------------------
 # compiler options
 
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 17)
 
 # setup for included dependencies
 set(CMAKE_INCLUDE_DIRECTORIES_BEFORE ON)
 set(CMAKE_LINK_DIRECTORIES_BEFORE ON)
-
 
 if(UNIX)
     add_compile_options(-pthread -march=native)
@@ -44,16 +43,11 @@ set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 set(OpenGL_GL_PREFERENCE "GLVND")
 
 
-#boost on windows
-if(WIN32)
-    include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../boost/)
-endif()
-
-
-
 # additional global includes
-include_directories(common)
 
 # traverse
 add_subdirectory(common)
+include_directories(common/cppgl/src)
+include_directories(common)
+
 add_subdirectory(applications)

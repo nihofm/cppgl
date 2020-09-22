@@ -1,7 +1,6 @@
 #include <iostream>
 
-#include <cppgl/cppgl.h>
-#include <imgui/imgui.h>
+#include <cppgl.h>
 
 #include "ufo.h"
 
@@ -16,8 +15,8 @@ std::shared_ptr<Ufo> the_ufo;
 // callbacks
 
 void keyboard_callback(int key, int scancode, int action, int mods) {
-    if (key == GLFW_KEY_F2 && action == GLFW_PRESS) Camera::find("default")->make_current();
-    if (key == GLFW_KEY_F3 && action == GLFW_PRESS) Camera::find("ufocam")->make_current();
+    if (key == GLFW_KEY_F2 && action == GLFW_PRESS) make_camera_current(Camera::find("default"));
+    if (key == GLFW_KEY_F3 && action == GLFW_PRESS) make_camera_current(Camera::find("ufocam"));
     if (key == GLFW_KEY_F5 && action == GLFW_PRESS) {
         static bool wireframe = false;
         wireframe = !wireframe;
@@ -29,7 +28,7 @@ void keyboard_callback(int key, int scancode, int action, int mods) {
         else
             glEnable(GL_CULL_FACE);
     }
-    if (Camera::current()->name != "ufocam") return;
+    if (current_camera()->name != "ufocam") return;
     // HINT: https://www.glfw.org/docs/latest/input_guide.html
     if (action == GLFW_REPEAT) return;
     if (key == GLFW_KEY_W) {
@@ -77,9 +76,9 @@ int main(int argc, char** argv) {
 
     while (Context::running()) {
         // input and update
-        if (Camera::current()->name != "ufocam")
+        if (current_camera()->name != "ufocam")
             Camera::default_input_handler(Context::frame_time());
-        Camera::current()->update();
+        current_camera()->update();
         static uint32_t counter = 0;
         if (counter++ % 100 == 0) Shader::reload();
 

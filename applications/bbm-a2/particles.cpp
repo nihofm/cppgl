@@ -1,25 +1,23 @@
 #include "particles.h"
-#include <cppgl/context.h>
-#include <cppgl/camera.h>
-#include <cppgl/texture.h>
+#include <cppgl.h>
 
 #include <iostream>
 
-std::shared_ptr<Shader> Particles::draw_shader;
-std::shared_ptr<Shader> Particles::splat_shader;
+Shader Particles::draw_shader;
+Shader Particles::splat_shader;
 
 Particles::Particles(unsigned int N, float particle_size) : N(N), position(N), direction(N), lifetime(N, 0), index_buffer(N), start(0), end(0), particle_size(particle_size) {
     static unsigned idx = 0;
-    mesh = make_mesh(std::string("particle-data") + std::to_string(idx++));
+    mesh = Mesh(std::string("particle-data") + std::to_string(idx++));
     vbo_id_pos = mesh->add_vertex_buffer(GL_FLOAT, 3, N, position.data(), GL_DYNAMIC_DRAW);
     vbo_id_life = mesh->add_vertex_buffer(GL_INT, 1, N, lifetime.data(), GL_DYNAMIC_DRAW);
     for (unsigned i = 0; i < N; ++i) index_buffer[i] = i;
     mesh->add_index_buffer(N, index_buffer.data());
     // lazy init static stuff
     if (!draw_shader)
-        draw_shader = make_shader("particle-draw", "shader/particle-flare.vs", "shader/particle-flare.fs");
+        draw_shader = Shader("particle-draw", "shader/particle-flare.vs", "shader/particle-flare.fs");
     if (!splat_shader)
-        splat_shader = make_shader("particle-splat", "shader/deferred-splats.vs", "shader/deferred-splats.gs", "shader/deferred-splats.fs");
+        splat_shader = Shader("particle-splat", "shader/deferred-splats.vs", "shader/deferred-splats.gs", "shader/deferred-splats.fs");
 }
 
 Particles::~Particles() {}
@@ -61,7 +59,7 @@ void Particles::draw() {
     glEnable(GL_POINT_SPRITE);
 
     draw_shader->bind();
-    auto cam = Camera::current();
+    auto cam = current_camera();
     draw_shader->uniform("view", cam->view);
     draw_shader->uniform("proj", cam->proj);
     draw_shader->uniform("near_far", glm::vec2(cam->near, cam->far));
@@ -69,7 +67,7 @@ void Particles::draw() {
     draw_shader->uniform("particle_size", particle_size);
     draw_shader->uniform("depth_tex", Texture2D::find("gbuf_depth"), 0);
 
-    mesh->bind();
+    mesh->bind(draw_shader);
     if (start < end) {
         glDrawElementsBaseVertex(GL_POINTS, end - start, GL_UNSIGNED_INT, 0, start);
     }

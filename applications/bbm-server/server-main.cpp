@@ -2,7 +2,7 @@
 #include "server-cmdline.h"
 #include "gamelogic.h"
 
-#include <cppgl/timer.h>
+#include <cppgl.h>
 #include <messages/messages.h>
 
 #include <glm/gtc/type_precision.hpp>

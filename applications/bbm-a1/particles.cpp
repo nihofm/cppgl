@@ -1,22 +1,21 @@
 #include "particles.h"
-#include <cppgl/context.h>
-#include <cppgl/camera.h>
+#include <cppgl.h>
 
 #include <iostream>
 using namespace std;
 
-std::shared_ptr<Shader> Particles::shader;
+Shader Particles::shader;
 
 Particles::Particles(unsigned int N, float particle_size) : N(N), position(N), direction(N), lifetime(N, 0), index_buffer(N), start(0), end(0), particle_size(particle_size) {
     static unsigned idx = 0;
-    mesh = make_mesh(std::string("particle-data") + std::to_string(idx++));
+    mesh = Mesh(std::string("particle-data") + std::to_string(idx++));
     vbo_id_pos = mesh->add_vertex_buffer(GL_FLOAT, 3, N, position.data(), GL_DYNAMIC_DRAW);
     vbo_id_life = mesh->add_vertex_buffer(GL_INT, 1, N, lifetime.data(), GL_DYNAMIC_DRAW);
     for (unsigned i = 0; i < N; ++i) index_buffer[i] = i;
     mesh->add_index_buffer(N, index_buffer.data());
     // lazy init static stuff
     if (!shader)
-        shader = make_shader("particle-shader", "shader/particle-flare.vs", "shader/particle-flare.fs");
+        shader = Shader("particle-shader", "shader/particle-flare.vs", "shader/particle-flare.fs");
 }
 
 Particles::~Particles() {}
@@ -57,7 +56,7 @@ void Particles::draw() {
     glDepthMask(GL_FALSE);
 
     shader->bind();
-    auto cam = Camera::current();
+    auto cam = current_camera();
     shader->uniform("view", cam->view);
     shader->uniform("proj", cam->proj);
     shader->uniform("screenres", glm::vec2(Context::resolution()));
@@ -65,7 +64,7 @@ void Particles::draw() {
     shader->uniform("particle_size", particle_size);
     shader->uniform("depth_tex", Texture2D::find("fbo_depth"), 0);
 
-    mesh->bind();
+    mesh->bind(shader);
     if (start < end) {
         glDrawElementsBaseVertex(GL_POINTS, end - start, GL_UNSIGNED_INT, 0, start);
     }

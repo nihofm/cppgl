@@ -1,9 +1,7 @@
 #pragma once
 
 #include <list>
-#include <cppgl/timer.h>
-#include <cppgl/meshloader.h>
-#include <cppgl/drawelement.h>
+#include <cppgl.h>
 
 #include "rendering.h"
 
@@ -41,7 +39,7 @@ public:
 	int id;
 	bool respawning;
 	int frags;
-    static std::vector<std::shared_ptr<Drawelement>> prototype;
+    static std::vector<Drawelement> prototype;
 };
 
 
@@ -63,10 +61,10 @@ public:
     Timer       explo_timer;
     std::vector<glm::vec3> explo_rot_axis;
     std::vector<glm::vec3> explo_translation;
-	static std::shared_ptr<Material> wood_material;
-	static std::vector<std::shared_ptr<Material>> stone_materials;
-	static std::vector<std::shared_ptr<Drawelement>> prototype_idle;
-	static std::vector<std::shared_ptr<Drawelement>> prototype_scatter;
+	static Material wood_material;
+	static std::vector<Material> stone_materials;
+	static std::vector<Drawelement> prototype_idle;
+	static std::vector<Drawelement> prototype_scatter;
 };
 
 class Bomb {
@@ -78,7 +76,7 @@ public:
     // data
 	int x, y, id;
     glm::mat4 trafo;
-    static std::vector<std::shared_ptr<Drawelement>> prototype;
+    static std::vector<Drawelement> prototype;
 };
 
 

@@ -37,7 +37,7 @@ namespace osm {
     }
 
     //! this is called externally
-    void draw_meshes(const std::shared_ptr<Shader>& shader) {
+    void draw_meshes(const Shader& shader) {
         (void)shader;
     }
     

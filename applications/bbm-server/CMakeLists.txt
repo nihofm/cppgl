@@ -17,7 +17,7 @@ if(UNIX)
     target_link_libraries(${TARGET} ${Boost_LIBRARIES})
 else()
 
-    find_library(BOOST Boost PATHS ${CMAKE_CURRENT_SOURCE_DIR}/../../../boost NO_DEFAULT_PATH)
+    #find_library(BOOST Boost PATHS ${CMAKE_CURRENT_SOURCE_DIR}/../../../boost NO_DEFAULT_PATH)
   #  include_directories(${Boost_INCLUDE_DIRS})
     target_link_libraries(${TARGET} BOOST)
 endif()

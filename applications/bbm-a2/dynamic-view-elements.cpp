@@ -2,8 +2,7 @@
 #include "clientside-networking.h"
 #include "particles.h"
 
-#include <cppgl/camera.h>
-#include <cppgl/meshloader.h>
+#include <cppgl.h>
 #include <glm/gtc/matrix_transform.hpp>
 
 #include <cstdlib>
@@ -21,18 +20,18 @@ extern std::shared_ptr<Particles> particles, particles_small;
 // prototypes
 
 std::vector<glm::vec3> Player::colors;
-std::vector<std::shared_ptr<Drawelement>> Player::prototype;
-std::shared_ptr<Material> Box::wood_material;
-std::vector<std::shared_ptr<Material>> Box::stone_materials;
-std::vector<std::shared_ptr<Drawelement>> Box::prototype_idle;
-std::vector<std::shared_ptr<Drawelement>> Box::prototype_scatter;
+std::vector<Drawelement> Player::prototype;
+Material Box::wood_material;
+std::vector<Material> Box::stone_materials;
+std::vector<Drawelement> Box::prototype_idle;
+std::vector<Drawelement> Box::prototype_scatter;
 std::vector<std::shared_ptr<Drawelement>> Bomb::prototype;
 
 void init_dynamic_prototypes() {
     { // load player prototype
-        auto shader_norm = make_shader("bbm: pos+norm", "shader/pos+norm.vs", "shader/pos+norm.fs");
-        auto shader_norm_tc = make_shader("bbm: pos+norm+tc,modulated", "shader/pos+norm+tc.vs", "shader/pos+norm+tc,modulated.fs");
-        auto shader_callback = [shader_norm, shader_norm_tc](const std::shared_ptr<Material>& mat) {
+        auto shader_norm = Shader("bbm: pos+norm", "shader/pos+norm.vs", "shader/pos+norm.fs");
+        auto shader_norm_tc = Shader("bbm: pos+norm+tc,modulated", "shader/pos+norm+tc.vs", "shader/pos+norm+tc,modulated.fs");
+        auto shader_callback = [shader_norm, shader_norm_tc](const Material& mat) {
             return mat->texture_map.empty() ? shader_norm : shader_norm_tc;
         };
         Player::prototype = MeshLoader::load("render-data/bbm/bbm-nolegs.obj", true, shader_callback);
@@ -48,16 +47,16 @@ void init_dynamic_prototypes() {
         Player::colors[7] = glm::vec3(0.5, 1, 0.5);
 	}
     { // load bomb prototype
-        auto shader_norm = make_shader("bomb: pos+norm", "shader/pos+norm.vs", "shader/pos+norm.fs");
-        auto shader_norm_tc = make_shader("bomb: pos+norm+tc", "shader/pos+norm+tc.vs", "shader/pos+norm+tc.fs");
-        auto shader_callback = [shader_norm, shader_norm_tc](const std::shared_ptr<Material>& mat) {
+        auto shader_norm = Shader("bomb: pos+norm", "shader/pos+norm.vs", "shader/pos+norm.fs");
+        auto shader_norm_tc = Shader("bomb: pos+norm+tc", "shader/pos+norm+tc.vs", "shader/pos+norm+tc.fs");
+        auto shader_callback = [shader_norm, shader_norm_tc](const Material& mat) {
             return mat->texture_map.empty() ? shader_norm : shader_norm_tc;
         };
         Bomb::prototype = MeshLoader::load("render-data/bomb/bomb.obj", true, shader_callback);
 	}
     { // load box prototypes
-        auto shader = make_shader("box-shader", "shader/box.vs", "shader/box.fs");
-        auto shader_cb = [shader](const std::shared_ptr<Material>&) { return shader; };
+        auto shader = Shader("box-shader", "shader/box.vs", "shader/box.fs");
+        auto shader_cb = [shader](const Material&) { return shader; };
         // load idle and scatter box
         Box::prototype_idle = MeshLoader::load("render-data/cube/cube.obj", true, shader_cb);
         Box::prototype_scatter = MeshLoader::load("render-data/crate/wooden_crate.obj", true, shader_cb);
@@ -186,6 +185,7 @@ void Player::update() {
 void Player::draw() {
     if (health <= 0) return;
     for (auto& elem : prototype) {
+        elem->model = trafo * trafo_rot;
         elem->bind();
         setup_light(elem->shader);
         // HINT: Right here we may have skipped something tagged 'character colors'
@@ -193,7 +193,7 @@ void Player::draw() {
             elem->shader->uniform("modulate_by", colors[id]);
         else
             elem->shader->uniform("modulate_by", glm::vec3(1));
-        elem->draw(trafo * trafo_rot);
+        elem->draw();
         elem->unbind();
     }
 }
@@ -241,6 +241,7 @@ void Box::draw() {
 	// HINT: Right here we may have skipped something tagged 'box explosion'
     if (!exploding) {
         for (auto& elem : prototype_idle) {
+            elem->model = trafo;
             elem->bind();
             // bind wood or stone material
             if (is_stone)
@@ -249,11 +250,12 @@ void Box::draw() {
                 Box::wood_material->bind(elem->shader);
             elem->shader->uniform("uv_offset", uv_offset);
             setup_light(elem->shader);
-            elem->draw(trafo);
+            elem->draw();
             elem->unbind();
         }
     } else if (!to_destroy()) {
         for (size_t i = 0; i < prototype_scatter.size(); ++i) {
+            prototype_scatter[i]->model = model;
             prototype_scatter[i]->bind();
             Box::wood_material->bind(prototype_scatter[i]->shader);
             prototype_scatter[i]->shader->uniform("uv_offset", uv_offset);
@@ -262,7 +264,7 @@ void Box::draw() {
             const float t = powf(explo_timer.look() / render_settings::box_explosion_duration, 0.75);
             glm::mat4 model = glm::translate(trafo, t * explo_translation[i]);
             model = glm::rotate(model, t * float(5 * M_PI), glm::vec3(explo_rot_axis[i]));
-            prototype_scatter[i]->draw(model);
+            prototype_scatter[i]->draw();
             prototype_scatter[i]->unbind();
         }
     }
@@ -283,9 +285,10 @@ Bomb::Bomb(int posx, int posy, int id) : x(posx), y(posy), id(id), trafo(1) {
 
 void Bomb::draw() {
     for (auto& elem : prototype) {
+        elem->model = trafo;
         elem->bind();
         setup_light(elem->shader);
-        elem->draw(trafo);
+        elem->draw();
         elem->unbind();
     }
     // HINT: Right here we may have skipped something tagged 'even more particles'

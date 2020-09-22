@@ -1,7 +1,6 @@
 #pragma once
 
-#include <cppgl/drawelement.h>
-#include <cppgl/timer.h>
+#include <cppgl.h>
 
 void init_static_prototypes();
 void draw_gui();
@@ -14,7 +13,7 @@ public:
 
     // data
     glm::mat4 trafo;
-    static std::shared_ptr<Drawelement> prototype;
+    static Drawelement prototype;
 };
 
 class Skybox {
@@ -25,7 +24,7 @@ public:
 
     // data
     glm::mat4 trafo;
-    static std::vector<std::shared_ptr<Drawelement>> prototype;
+    static std::vector<Drawelement> prototype;
 };
 
 class Fog {
@@ -37,5 +36,5 @@ public:
     // data
     glm::mat4 trafo;
     Timer fog_timer;
-    static std::shared_ptr<Drawelement> prototype;
+    static Drawelement prototype;
 };

@@ -1,7 +1,6 @@
 #include <iostream>
 
-#include <cppgl/cppgl.h>
-#include <imgui/imgui.h>
+#include <cppgl.h>
 
 #include "osm.h"
 #include "parse.h"
@@ -31,7 +30,7 @@ void keyboard_callback(int key, int scancode, int action, int mods) {
         else
             glEnable(GL_CULL_FACE);
     }
-    if (Camera::current()->name != "mapcam") return;
+    if (current_camera()->name != "mapcam") return;
     // HINT: https://www.glfw.org/docs/latest/input_guide.html
     if (action == GLFW_REPEAT) return;
     if (key == GLFW_KEY_W) {
@@ -82,13 +81,13 @@ int main(int argc, char** argv) {
     setup_map("render-data/map/map2.osm");
     osm::make_meshes();
     // init shader
-    auto pos_shader = make_shader("pos", "shader/pos.vs", "shader/pos.fs");
+    auto pos_shader = Shader("pos", "shader/pos.vs", "shader/pos.fs");
 
     while (Context::running()) {
         // input and update
-        if (Camera::current()->name != "mapcam")
+        if (current_camera()->name != "mapcam")
             Camera::default_input_handler(Context::frame_time());
-        Camera::current()->update();
+        current_camera()->update();
         static uint32_t counter = 0;
         if (counter++ % 100 == 0) Shader::reload();
 

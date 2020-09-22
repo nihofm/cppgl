@@ -1,9 +1,5 @@
 #include "static-view-elements.h"
-#include <cppgl/camera.h>
-#include <cppgl/meshloader.h>
-#include <cppgl/context.h>
-#include <cppgl/texture.h>
-#include <imgui/imgui.h>
+#include <cppgl.h>
 #include "rendering.h"
 #include "dynamic-view-elements.h"
 
@@ -16,9 +12,9 @@ extern std::vector<std::shared_ptr<Player>> players;
 // ------------------------------------------------
 // prototypes
 
-std::shared_ptr<Drawelement> Floor::prototype;
-std::vector<std::shared_ptr<Drawelement>> Skybox::prototype;
-std::shared_ptr<Drawelement> Fog::prototype;
+Drawelement Floor::prototype;
+std::vector<Drawelement> Skybox::prototype;
+Drawelement Fog::prototype;
 
 void init_static_prototypes() {
     { // init floor prototype
@@ -28,7 +24,7 @@ void init_static_prototypes() {
         glm::vec3 normals[4] = { {0,1,0}, {0,1,0}, {0,1,0}, {0,1,0} };
         glm::vec2 texcoords[4] = { {0, 0}, {0, 1}, {1, 1}, {1, 0} };
         unsigned int indices[6] = { 0, 1, 2, 0, 2, 3 };
-        auto mesh = make_mesh("floor-mesh");
+        auto mesh = Mesh("floor-mesh");
         mesh->add_vertex_buffer(GL_FLOAT, 3, 4, vertices);
         mesh->add_vertex_buffer(GL_FLOAT, 3, 4, normals);
         mesh->add_vertex_buffer(GL_FLOAT, 2, 4, texcoords);
@@ -40,18 +36,18 @@ void init_static_prototypes() {
         mat->add_texture("normalmap", make_texture("floor-normalmap", "render-data/images/floor_normals.png"));
         Floor::prototype->use_material(mat);
         // setup shader
-        auto shader = make_shader("floor-shader", "shader/floor.vs", "shader/floor.fs");
+        auto shader = Shader("floor-shader", "shader/floor.vs", "shader/floor.fs");
         Floor::prototype->use_shader(shader);
     }
     { // init skybox prototype (don't try this at home, use a cubemap instead!)
         const float e = 0.001f;
-        auto shader = make_shader("skybox-shader", "shader/skybox.vs", "shader/skybox.fs");
+        auto shader = Shader("skybox-shader", "shader/skybox.vs", "shader/skybox.fs");
         {
             // front
             glm::vec3 vertices_f[] = { {+1+e,-1-e,-1+e}, {-1-e,-1-e,-1+e}, {+1+e,+1+e,-1+e}, {-1-e,+1+e,-1+e} };
             glm::vec2 texs_f[] = { {0, 0}, {1, 0}, {0, 1}, {1, 1} };
             unsigned int idxs_f[] = { 0, 1, 2, 2, 1, 3 };
-            auto mesh = make_mesh("skybox-mesh-front");
+            auto mesh = Mesh("skybox-mesh-front");
             mesh->add_vertex_buffer(GL_FLOAT, 3, 4, vertices_f);
             mesh->add_vertex_buffer(GL_FLOAT, 2, 4, texs_f);
             mesh->add_index_buffer(6, idxs_f);
@@ -65,7 +61,7 @@ void init_static_prototypes() {
             glm::vec3 vertices_l[] = { {+1-e,-1-e,+1+e}, {+1-e,-1-e,-1-e}, {+1-e,+1+e,+1+e}, {+1-e,+1+e,-1-e} };
             glm::vec2 texs_l[] = { {0, 0}, {1, 0}, {0, 1}, {1, 1} };
             unsigned int idxs_l[] = { 0, 1, 2, 2, 1, 3 };
-            auto mesh = make_mesh("skybox-mesh-left");
+            auto mesh = Mesh("skybox-mesh-left");
             mesh->add_vertex_buffer(GL_FLOAT, 3, 4, vertices_l);
             mesh->add_vertex_buffer(GL_FLOAT, 2, 4, texs_l);
             mesh->add_index_buffer(6, idxs_l);
@@ -79,7 +75,7 @@ void init_static_prototypes() {
             glm::vec3 vertices_b[] = { {-1-e,-1-e,+1-e}, {+1+e,-1-e,+1-e}, {-1-e,+1+e,+1-e}, {+1+e,+1+e,+1-e} };
             glm::vec2 texs_b[] = { {0, 0}, {1, 0}, {0, 1}, {1, 1} };
             unsigned int idxs_b[] = { 0, 1, 2, 2, 1, 3 };
-            auto mesh = make_mesh("skybox-mesh-back");
+            auto mesh = Mesh("skybox-mesh-back");
             mesh->add_vertex_buffer(GL_FLOAT, 3, 4, vertices_b);
             mesh->add_vertex_buffer(GL_FLOAT, 2, 4, texs_b);
             mesh->add_index_buffer(6, idxs_b);
@@ -93,7 +89,7 @@ void init_static_prototypes() {
             glm::vec3 vertices_r[] = { {-1+e,-1-e,-1-e}, {-1+e,-1-e,+1+e}, {-1+e,+1+e,-1-e}, {-1+e,+1+e,+1+e} };
             glm::vec2 texs_r[] = { {0, 0}, {1, 0}, {0, 1}, {1, 1} };
             unsigned int idxs_r[] = { 0, 1, 2, 2, 1, 3 };
-            auto mesh = make_mesh("skybox-mesh-right");
+            auto mesh = Mesh("skybox-mesh-right");
             mesh->add_vertex_buffer(GL_FLOAT, 3, 4, vertices_r);
             mesh->add_vertex_buffer(GL_FLOAT, 2, 4, texs_r);
             mesh->add_index_buffer(6, idxs_r);
@@ -107,7 +103,7 @@ void init_static_prototypes() {
             glm::vec3 vertices_t[] = { {-1-e,+1-e,-1-e}, {-1-e,+1-e,+1+e}, {+1+e,+1-e,-1-e}, {+1+e,+1-e,+1+e} };
             glm::vec2 texs_t[] = { {0, 0}, {1, 0}, {0, 1}, {1, 1} };
             unsigned int idxs_t[] = { 0, 1, 2, 2, 1, 3 };
-            auto mesh = make_mesh("skybox-mesh-top");
+            auto mesh = Mesh("skybox-mesh-top");
             mesh->add_vertex_buffer(GL_FLOAT, 3, 4, vertices_t);
             mesh->add_vertex_buffer(GL_FLOAT, 2, 4, texs_t);
             mesh->add_index_buffer(6, idxs_t);
@@ -121,7 +117,7 @@ void init_static_prototypes() {
             glm::vec3 vertices_d[] = { {-1-e,-1+e,-1-e}, {-1-e,-1+e,+1+e}, {+1+e,-1+e,-1-e}, {+1+e,-1+e,+1+e} };
             glm::vec2 texs_d[] = { {1, 1}, {1, 0}, {0, 1}, {0, 0} };
             unsigned int idxs_d[] = { 0, 2, 1, 2, 3, 1 };
-            auto mesh = make_mesh("skybox-mesh-bottom");
+            auto mesh = Mesh("skybox-mesh-bottom");
             mesh->add_vertex_buffer(GL_FLOAT, 3, 4, vertices_d);
             mesh->add_vertex_buffer(GL_FLOAT, 2, 4, texs_d);
             mesh->add_index_buffer(6, idxs_d);
@@ -137,13 +133,13 @@ void init_static_prototypes() {
         glm::vec3 vertices[4] = { {0,0,0}, {0,0,1}, {1,0,1}, {1,0,0} };
         glm::vec2 texcoords[4] = { {0, 0}, {0, 1}, {1, 1}, {1, 0} };
         unsigned int indices[6] = { 0, 1, 2, 0, 2, 3 };
-        auto mesh = make_mesh("fog-mesh");
+        auto mesh = Mesh("fog-mesh");
         mesh->add_vertex_buffer(GL_FLOAT, 3, 4, vertices);
         mesh->add_vertex_buffer(GL_FLOAT, 2, 4, texcoords);
         mesh->add_index_buffer(6, indices);
         Fog::prototype->add_mesh(mesh);
         // setup shader
-        auto shader = make_shader("fog-shader", "shader/fog.vs", "shader/fog.fs");
+        auto shader = Shader("fog-shader", "shader/fog.vs", "shader/fog.fs");
         Fog::prototype->use_shader(shader);
     }
 }
@@ -181,10 +177,11 @@ Floor::Floor(int w, int h) : trafo(1) {
 }
 
 void Floor::draw() {
+    prototype->model = trafo;
     prototype->bind();
     setup_light(prototype->shader);
     prototype->shader->uniform("tc_scale", glm::vec2(trafo[0][0], trafo[2][2]) / render_settings::tile_size);
-    prototype->draw(trafo);
+    prototype->draw();
     prototype->unbind();
 }
 
@@ -205,9 +202,10 @@ void Skybox::draw() {
     glDepthFunc(GL_LEQUAL);
     glFrontFace(GL_CW);
     for (const auto& elem : prototype) {
+        elem->model = trafo;
         elem->bind();
         setup_light(elem->shader);
-        elem->draw(trafo);
+        elem->draw();
         elem->unbind();
     }
     glFrontFace(GL_CCW);
@@ -232,11 +230,12 @@ void Fog::draw() {
     glDepthMask(GL_FALSE);
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    prototype->model = trafo;
     prototype->bind();
     prototype->shader->uniform("depth", Texture2D::find("gbuf_depth"), 0);
     prototype->shader->uniform("wpos", Texture2D::find("gbuf_pos"), 0);
     prototype->shader->uniform("time", float(fog_timer.look()));
-    prototype->draw(trafo);
+    prototype->draw();
     prototype->unbind();
     glDisable(GL_BLEND);
     glDepthMask(GL_TRUE);

@@ -18,6 +18,7 @@ vec3 align(in vec3 axis, in vec3 v) {
 }
 
 void main() {
+
     vec2 TC = fract(tc);
     vec3 diff = texture(diffuse, TC).rgb;
     vec3 N = align(norm_wc, 2 * texture(normalmap, TC).xyz - 1);

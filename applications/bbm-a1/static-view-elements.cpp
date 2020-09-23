@@ -166,11 +166,15 @@ Floor::Floor(int w, int h) : trafo(1) {
     trafo[3][2] = -0.5 * render_settings::tile_size;
 }
 
+#include <glm/gtx/string_cast.hpp>
+
 void Floor::draw() {
     prototype->model = trafo;
+    std::cout << glm::to_string(prototype->model) << std::endl;
     prototype->bind();
     setup_light(prototype->shader);
     prototype->shader->uniform("tc_scale", glm::vec2(trafo[0][0], trafo[2][2]) / render_settings::tile_size);
+    prototype->draw();
     prototype->unbind();
 }
 

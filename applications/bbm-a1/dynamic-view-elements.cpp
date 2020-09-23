@@ -223,24 +223,66 @@ Box::Box(unsigned posx, unsigned posy, bool is_stone) : trafo(1.f), is_stone(is_
 
 void Box::set_exploding(const glm::vec2& dir) {
 	exploding = true;
+	// HINT: Right here we may have skipped something tagged 'crate explosion'
+#ifndef A1_8_ex
+	explo_timer.begin();
+	explo_rot_axis.resize(prototype_scatter.size());
+	explo_translation.resize(prototype_scatter.size());
+	for (unsigned int i = 0; i < prototype_scatter.size(); ++i) {
+		explo_rot_axis[i] = glm::normalize(glm::vec3(random_float(), random_float(), random_float()));
+		explo_translation[i] = glm::vec3(
+			dir.x * 20.f * fabs(random_float()) + 3.f * random_float(),
+			5.f + 12.f * fabs(random_float()),
+			dir.y * 20.f * fabs(random_float()) + 3.f * random_float());
+		// HINT: Right here we may have skipped something tagged 'even more particles'
+		for (int p = 0; p < 10; ++p) {
+			const glm::vec3 pos = glm::vec3(trafo[3]);
+			const glm::vec3 dir = glm::normalize(explo_translation[i]) * glm::length(explo_translation[i]) * (random_float() + 1) * 0.3f;
+			particles_small->add(pos + 0.5f * render_settings::tile_size * glm::vec3(random_float(), random_float(), random_float()),
+				dir + glm::vec3(random_float(), random_float(), random_float()), (rand() % 750) + 750);
+		}
+	}
+#endif
+
 }
 
 bool Box::to_destroy() { return exploding; }
 
 void Box::draw() {
-	for (auto& elem : prototype_idle) {
-		elem->model = trafo;
-		elem->bind();
-		// bind wood or stone material
-		if (is_stone)
-			Box::stone_materials[stone_type]->bind(elem->shader);
-		else
-			Box::wood_material->bind(elem->shader);
-		elem->shader->uniform("uv_offset", uv_offset);
-		setup_light(elem->shader);
-		elem->draw();
-		elem->unbind();
+	if (!exploding) {
+		for (auto& elem : prototype_idle) {
+			elem->model = trafo;
+			elem->bind();
+			// bind wood or stone material
+			if (is_stone)
+				Box::stone_materials[stone_type]->bind(elem->shader);
+			else
+				Box::wood_material->bind(elem->shader);
+			elem->shader->uniform("uv_offset", uv_offset);
+			setup_light(elem->shader);
+			elem->draw();
+			elem->unbind();
+		}
 	}
+#ifndef A1_8_ex
+	else if (!to_destroy()) {
+		for (size_t i = 0; i < prototype_scatter.size(); ++i) {
+			// apply explosion translation and rotation
+			const float t = powf(explo_timer.look() / render_settings::box_explosion_duration, 0.75);
+			glm::mat4 model = glm::translate(trafo, t * explo_translation[i]);
+			model = glm::rotate(model, t * float(5 * M_PI), glm::vec3(explo_rot_axis[i]));
+
+			prototype_scatter[i]->model = model;
+			prototype_scatter[i]->bind();
+			Box::wood_material->bind(prototype_scatter[i]->shader);
+			prototype_scatter[i]->shader->uniform("uv_offset", uv_offset);
+			setup_light(prototype_scatter[i]->shader);
+
+			prototype_scatter[i]->draw();
+			prototype_scatter[i]->unbind();
+		}
+	}
+#endif
 }
 
 // ------------------------------------------------
@@ -259,6 +301,7 @@ Bomb::Bomb(int posx, int posy, int id) : x(posx), y(posy), id(id), trafo(1) {
 }
 
 void Bomb::draw() {
+
 	for (auto& elem : prototype) {
 		elem->model = trafo;
 		elem->bind();
@@ -302,6 +345,16 @@ void Board::add_bomb(int x, int y, int id) {
 }
 
 void Board::update() {
+
+	// HINT: Right here we may have skipped something tagged 'box explosion'
+#ifndef A1_8_ex
+	for (auto it = crates.begin(); it != crates.end(); ) {
+		if ((*it)->to_destroy())
+			it = crates.erase(it);
+		else
+			++it;
+	}
+#endif //A1_8_ex
 	// HINT: Right here we may have skipped something tagged 'camera shake'
 #ifndef A1_9
 	if (camera_shake) {
@@ -374,13 +427,6 @@ void Board::explosion(int bomb_id, unsigned int codes) {
 				cell.box = 0;
 			}
 		}
-	}
-
-	for (auto it = crates.begin(); it != crates.end(); ) {
-		if ((*it)->to_destroy())
-			it = crates.erase(it);
-		else
-			++it;
 	}
 #endif // A1_7
 

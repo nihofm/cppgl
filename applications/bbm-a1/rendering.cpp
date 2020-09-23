@@ -13,7 +13,7 @@ float render_settings::particle_size = 4;
 float render_settings::camera_shake_duration = 1000.f;
 float render_settings::box_explosion_duration = 2000.f;
 
-void setup_light(const Shader& shader) {
+void setup_light(const Shader shader) {
 	shader->uniform("ambient_col", glm::vec3(0.12f, 0.14f, 0.16f));
 	shader->uniform("light_dir", glm::normalize(glm::vec3(1.f, -0.6f, -0.4f)));
 	shader->uniform("light_col", glm::vec3(0.6f, 0.7f, 0.8f));

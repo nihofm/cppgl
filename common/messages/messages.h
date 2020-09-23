@@ -169,8 +169,8 @@ template<typename M> M make_message() {
 class message_reader {
 public:
 	typedef boost::asio::ip::tcp::socket socket;
-private:
 	socket *sock;
+private:
 	static const unsigned int buffer_size = 1024;
 	char buffer[buffer_size];
 	char *curr_input;

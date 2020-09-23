@@ -192,7 +192,7 @@ int main(int argc, char **argv)
 			pp.y = pos.y;
 			broadcast(&pp);
 			players[i]->Position(pp.x,pp.y);
-			players[i]->Damage(0,-1); // send healt init message.
+			players[i]->Damage(0,-1); // send health init message.
 		}
 
 

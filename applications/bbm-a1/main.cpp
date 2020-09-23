@@ -26,7 +26,7 @@ Framebuffer fbo;
 int player_id = -1;
 boost::asio::ip::tcp::socket* server_connection = 0;
 client_message_reader* reader = 0;
-
+boost::asio::io_service io_service;
 // ---------------------------------------
 // callbacks
 
@@ -126,6 +126,7 @@ int main(int argc, char** argv) {
         input_timer.begin();
         if (current_camera()->name != "playercam")
             CameraImpl::default_input_handler(Context::frame_time());
+
         reader->read_and_handle();
         current_camera()->update();
         reload_modified_shaders();

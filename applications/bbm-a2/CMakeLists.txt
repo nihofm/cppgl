@@ -24,17 +24,26 @@ set(DEPDIR "${CMAKE_CURRENT_SOURCE_DIR}/../common/thirdparty")
 if(UNIX)
     find_library(GLEW GLEW PATHS ${DEPDIR}/lin/lib NO_DEFAULT_PATH)
 	target_link_libraries(${TARGET} ${GLEW})
-else()
-	find_library(GLEW glew32 PATHS ${DEPDIR}/win/lib NO_DEFAULT_PATH)
-	target_link_libraries(${TARGET} ${GLEW})
+
+	# Boost
     find_package(Boost COMPONENTS program_options REQUIRED)
     include_directories(${Boost_INCLUDE_DIRS})
     target_link_libraries(${TARGET} ${Boost_LIBRARIES})
-  	add_custom_command(TARGET ${TARGET} POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy_directory "${CMAKE_CURRENT_SOURCE_DIR}/../../common/cppgl/external/thirdparty/win/bin/x64" $<TARGET_FILE_DIR:${TARGET}>)
-    #add_custom_command(TARGET ${TARGET} POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/common/cppgl/cppgl.dll" $<TARGET_FILE_DIR:${TARGET}>)
-    add_custom_command(TARGET ${TARGET} POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_FILE:cppgl> $<TARGET_FILE_DIR:${TARGET}>/$<TARGET_FILE_NAME:cppgl>)
+else()
+	find_library(GLEW glew32 PATHS ${DEPDIR}/win/lib NO_DEFAULT_PATH)
+   	target_link_libraries(${TARGET} ${GLEW})
 
+    # Boost
+    find_package(Boost COMPONENTS program_options REQUIRED)
+    include_directories(${Boost_INCLUDE_DIRS})
+    target_link_libraries(${TARGET} ${Boost_LIBRARIES})
+
+    # post build dll copy
+  	add_custom_command(TARGET ${TARGET} POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy_directory "${CMAKE_CURRENT_SOURCE_DIR}/../../common/cppgl/external/thirdparty/win/bin/x64" $<TARGET_FILE_DIR:${TARGET}>)
+    add_custom_command(TARGET ${TARGET} POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_FILE:cppgl> $<TARGET_FILE_DIR:${TARGET}>/$<TARGET_FILE_NAME:cppgl>)
 endif()
 
 # common libs
-target_link_libraries(${TARGET} imgui cppgl messages)
+target_link_libraries(${TARGET} cppgl messages)
+
+

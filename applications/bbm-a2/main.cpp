@@ -8,6 +8,8 @@
 #include "static-view-elements.h"
 #include "dynamic-view-elements.h"
 #include "clientside-networking.h"
+#undef far
+#undef near
 
 using namespace std;
 
@@ -25,6 +27,7 @@ Framebuffer gbuffer;
 int player_id = -1;
 boost::asio::ip::tcp::socket* server_connection = 0;
 client_message_reader* reader = 0;
+boost::asio::io_service io_service;
 bool gbuffer_debug = false;
 
 // ---------------------------------------
@@ -32,8 +35,8 @@ bool gbuffer_debug = false;
 
 void keyboard_callback(int key, int scancode, int action, int mods) {
     if (!reader || !reader->prologue_over()) return;
-    if (key == GLFW_KEY_F2 && action == GLFW_PRESS) Camera::find("default")->make_current();
-    if (key == GLFW_KEY_F3 && action == GLFW_PRESS) Camera::find("playercam")->make_current();
+    if (key == GLFW_KEY_F2 && action == GLFW_PRESS) make_camera_current(Camera::find("default"));
+    if (key == GLFW_KEY_F3 && action == GLFW_PRESS) make_camera_current(Camera::find("playercam"));
     if (key == GLFW_KEY_F4 && action == GLFW_PRESS) gbuffer_debug = !gbuffer_debug;
     if (current_camera()->name != "playercam") return;
     // HINT: https://www.glfw.org/docs/latest/input_guide.html
@@ -81,7 +84,7 @@ int main(int argc, char** argv) {
     // init context and set parameters
     ContextParameters params;
     params.title = "bbm";
-    params.font_ttf_filename = concat(EXECUTABLE_DIR, "render-data/fonts/DroidSansMono.ttf");
+    params.font_ttf_filename = EXECUTABLE_DIR + std::string("render-data/fonts/DroidSansMono.ttf");
     params.font_size_pixels = 15;
     params.width = cmdline.res_x;
     params.height = cmdline.res_y;
@@ -93,19 +96,19 @@ int main(int argc, char** argv) {
     std::filesystem::current_path(EXECUTABLE_DIR);
 
 
-    auto playercam = make_camera("playercam");
+    auto playercam = Camera("playercam");
     playercam->far = 250;
-    playercam->make_current();
+    make_camera_current(playercam);
 
     const glm::ivec2 res = Context::resolution();
-    gbuffer = make_framebuffer("gbuffer", res.x, res.y);
-    gbuffer->attach_depthbuffer(make_texture("gbuf_depth", res.x, res.y, GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT));
-    gbuffer->attach_colorbuffer(make_texture("gbuf_diff", res.x, res.y, GL_RGB32F, GL_RGB, GL_FLOAT));
-    gbuffer->attach_colorbuffer(make_texture("gbuf_pos", res.x, res.y, GL_RGB32F, GL_RGB, GL_FLOAT));
-    gbuffer->attach_colorbuffer(make_texture("gbuf_norm", res.x, res.y, GL_RGB32F, GL_RGB, GL_FLOAT));
+    gbuffer = Framebuffer("gbuffer", res.x, res.y);
+    gbuffer->attach_depthbuffer(Texture2D("gbuf_depth", res.x, res.y, GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT));
+    gbuffer->attach_colorbuffer(Texture2D("gbuf_diff", res.x, res.y, GL_RGB32F, GL_RGB, GL_FLOAT));
+    gbuffer->attach_colorbuffer(Texture2D("gbuf_pos", res.x, res.y, GL_RGB32F, GL_RGB, GL_FLOAT));
+    gbuffer->attach_colorbuffer(Texture2D("gbuf_norm", res.x, res.y, GL_RGB32F, GL_RGB, GL_FLOAT));
     gbuffer->check();
 
-    auto game_over_tex = make_texture("game-over", "render-data/images/gameover.png");
+    auto game_over_tex = Texture2D("game-over", "render-data/images/gameover.png");
 
     init_static_prototypes();
     init_dynamic_prototypes();
@@ -121,17 +124,18 @@ int main(int argc, char** argv) {
 
     while (Context::running() && game_is_running) {
         // input handling
-        input_timer.start();
+        input_timer.begin();
         if (current_camera()->name != "playercam")
-            Camera::default_input_handler(Context::frame_time());
+            CameraImpl::default_input_handler(Context::frame_time());
+
         reader->read_and_handle();
         current_camera()->update();
         static uint32_t counter = 0;
-        if (counter++ % 100 == 0) Shader::reload();
+        if (counter++ % 100 == 0) reload_modified_shaders();
         input_timer.end();
 
         // update
-        update_timer.start();
+        update_timer.begin();
         for (auto& player : players)
             player->update();
         the_board->update();
@@ -140,7 +144,7 @@ int main(int argc, char** argv) {
         update_timer.end();
 
         // render
-        render_timer.start();
+        render_timer.begin();
         gbuffer->bind();
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         for (auto& player : players)
@@ -151,7 +155,7 @@ int main(int argc, char** argv) {
         render_timer.end();
 
         // postprocess
-        postprocess_timer.start();
+        postprocess_timer.begin();
         if (gbuffer_debug)
             deferred_debug_pass(gbuffer);
         else {

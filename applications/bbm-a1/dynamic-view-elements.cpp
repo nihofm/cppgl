@@ -272,6 +272,7 @@ void Box::draw() {
 			elem->unbind();
 		}
 	}
+	// HINT: Right here we may have skipped something tagged 'crate explosion'
 #ifndef A1_8_ex
 	else if (!to_destroy()) {
 		for (size_t i = 0; i < prototype_scatter.size(); ++i) {

@@ -18,7 +18,6 @@ Drawelement Fog::prototype;
 
 void init_static_prototypes() {
     { // init floor prototype
-        Floor::prototype = make_drawelement("floor");
         // setup mesh
         glm::vec3 vertices[4] = { {0,0,0}, {0,0,1}, {1,0,1}, {1,0,0} };
         glm::vec3 normals[4] = { {0,1,0}, {0,1,0}, {0,1,0}, {0,1,0} };
@@ -29,106 +28,111 @@ void init_static_prototypes() {
         mesh->add_vertex_buffer(GL_FLOAT, 3, 4, normals);
         mesh->add_vertex_buffer(GL_FLOAT, 2, 4, texcoords);
         mesh->add_index_buffer(6, indices);
-        Floor::prototype->add_mesh(mesh);
         // setup material
-        auto mat = make_material("floor-material");
-        mat->add_texture("diffuse", make_texture("floor-diffuse", "render-data/images/floor.png"));
-        mat->add_texture("normalmap", make_texture("floor-normalmap", "render-data/images/floor_normals.png"));
-        Floor::prototype->use_material(mat);
+        auto mat = Material("floor-material");
+        mat->add_texture("diffuse", Texture2D("floor-diffuse", "render-data/images/floor.png"));
+        mat->add_texture("normalmap", Texture2D("floor-normalmap", "render-data/images/floor_normals.png"));
+        mesh->material = mat;
         // setup shader
         auto shader = Shader("floor-shader", "shader/floor.vs", "shader/floor.fs");
-        Floor::prototype->use_shader(shader);
+        Floor::prototype = Drawelement("floor",shader,mesh);
     }
     { // init skybox prototype (don't try this at home, use a cubemap instead!)
         const float e = 0.001f;
         auto shader = Shader("skybox-shader", "shader/skybox.vs", "shader/skybox.fs");
         {
             // front
-            glm::vec3 vertices_f[] = { {+1+e,-1-e,-1+e}, {-1-e,-1-e,-1+e}, {+1+e,+1+e,-1+e}, {-1-e,+1+e,-1+e} };
+            glm::vec3 vertices_f[] = { {+1 + e,-1 - e,-1 + e}, {-1 - e,-1 - e,-1 + e}, {+1 + e,+1 + e,-1 + e}, {-1 - e,+1 + e,-1 + e} };
             glm::vec2 texs_f[] = { {0, 0}, {1, 0}, {0, 1}, {1, 1} };
             unsigned int idxs_f[] = { 0, 1, 2, 2, 1, 3 };
             auto mesh = Mesh("skybox-mesh-front");
             mesh->add_vertex_buffer(GL_FLOAT, 3, 4, vertices_f);
             mesh->add_vertex_buffer(GL_FLOAT, 2, 4, texs_f);
             mesh->add_index_buffer(6, idxs_f);
-            auto mat = make_material("skybox-mat-front");
-            mat->add_texture("diffuse", make_texture("skybox-tex-front", "render-data/images/skybox_front.png"));
-            auto drawelement = make_drawelement("skybox-front", shader, mat, mesh);
+            auto mat = Material("skybox-mat-front");
+            mat->add_texture("diffuse", Texture2D("skybox-tex-front", "render-data/images/skybox_front.png"));
+            mesh->material = mat;
+            auto drawelement = Drawelement("skybox-front", shader, mesh);
             Skybox::prototype.push_back(drawelement);
         }
         {
             // left
-            glm::vec3 vertices_l[] = { {+1-e,-1-e,+1+e}, {+1-e,-1-e,-1-e}, {+1-e,+1+e,+1+e}, {+1-e,+1+e,-1-e} };
+            glm::vec3 vertices_l[] = { {+1 - e,-1 - e,+1 + e}, {+1 - e,-1 - e,-1 - e}, {+1 - e,+1 + e,+1 + e}, {+1 - e,+1 + e,-1 - e} };
             glm::vec2 texs_l[] = { {0, 0}, {1, 0}, {0, 1}, {1, 1} };
             unsigned int idxs_l[] = { 0, 1, 2, 2, 1, 3 };
             auto mesh = Mesh("skybox-mesh-left");
             mesh->add_vertex_buffer(GL_FLOAT, 3, 4, vertices_l);
             mesh->add_vertex_buffer(GL_FLOAT, 2, 4, texs_l);
             mesh->add_index_buffer(6, idxs_l);
-            auto mat = make_material("skybox-mat-left");
-            mat->add_texture("diffuse", make_texture("skybox-tex-left", "render-data/images/skybox_left.png"));
-            auto drawelement = make_drawelement("skybox-left", shader, mat, mesh);
+            auto mat = Material("skybox-mat-left");
+            mat->add_texture("diffuse", Texture2D("skybox-tex-left", "render-data/images/skybox_left.png"));
+            mesh->material = mat;
+
+            auto drawelement = Drawelement("skybox-left", shader, mesh);
             Skybox::prototype.push_back(drawelement);
         }
         {
             // back
-            glm::vec3 vertices_b[] = { {-1-e,-1-e,+1-e}, {+1+e,-1-e,+1-e}, {-1-e,+1+e,+1-e}, {+1+e,+1+e,+1-e} };
+            glm::vec3 vertices_b[] = { {-1 - e,-1 - e,+1 - e}, {+1 + e,-1 - e,+1 - e}, {-1 - e,+1 + e,+1 - e}, {+1 + e,+1 + e,+1 - e} };
             glm::vec2 texs_b[] = { {0, 0}, {1, 0}, {0, 1}, {1, 1} };
             unsigned int idxs_b[] = { 0, 1, 2, 2, 1, 3 };
             auto mesh = Mesh("skybox-mesh-back");
             mesh->add_vertex_buffer(GL_FLOAT, 3, 4, vertices_b);
             mesh->add_vertex_buffer(GL_FLOAT, 2, 4, texs_b);
             mesh->add_index_buffer(6, idxs_b);
-            auto mat = make_material("skybox-mat-back");
-            mat->add_texture("diffuse", make_texture("skybox-tex-back", "render-data/images/skybox_back.png"));
-            auto drawelement = make_drawelement("skybox-back", shader, mat, mesh);
+            auto mat = Material("skybox-mat-back");
+            mat->add_texture("diffuse", Texture2D("skybox-tex-back", "render-data/images/skybox_back.png"));
+            mesh->material = mat;
+            auto drawelement = Drawelement("skybox-back", shader, mesh);
             Skybox::prototype.push_back(drawelement);
         }
         {
             // right
-            glm::vec3 vertices_r[] = { {-1+e,-1-e,-1-e}, {-1+e,-1-e,+1+e}, {-1+e,+1+e,-1-e}, {-1+e,+1+e,+1+e} };
+            glm::vec3 vertices_r[] = { {-1 + e,-1 - e,-1 - e}, {-1 + e,-1 - e,+1 + e}, {-1 + e,+1 + e,-1 - e}, {-1 + e,+1 + e,+1 + e} };
             glm::vec2 texs_r[] = { {0, 0}, {1, 0}, {0, 1}, {1, 1} };
             unsigned int idxs_r[] = { 0, 1, 2, 2, 1, 3 };
             auto mesh = Mesh("skybox-mesh-right");
             mesh->add_vertex_buffer(GL_FLOAT, 3, 4, vertices_r);
             mesh->add_vertex_buffer(GL_FLOAT, 2, 4, texs_r);
             mesh->add_index_buffer(6, idxs_r);
-            auto mat = make_material("skybox-mat-right");
-            mat->add_texture("diffuse", make_texture("skybox-tex-right", "render-data/images/skybox_right.png"));
-            auto drawelement = make_drawelement("skybox-right", shader, mat, mesh);
+            auto mat = Material("skybox-mat-right");
+            mat->add_texture("diffuse", Texture2D("skybox-tex-right", "render-data/images/skybox_right.png"));
+            mesh->material = mat;
+            auto drawelement = Drawelement("skybox-right", shader, mesh);
             Skybox::prototype.push_back(drawelement);
         }
         {
             // top
-            glm::vec3 vertices_t[] = { {-1-e,+1-e,-1-e}, {-1-e,+1-e,+1+e}, {+1+e,+1-e,-1-e}, {+1+e,+1-e,+1+e} };
+            glm::vec3 vertices_t[] = { {-1 - e,+1 - e,-1 - e}, {-1 - e,+1 - e,+1 + e}, {+1 + e,+1 - e,-1 - e}, {+1 + e,+1 - e,+1 + e} };
             glm::vec2 texs_t[] = { {0, 0}, {1, 0}, {0, 1}, {1, 1} };
             unsigned int idxs_t[] = { 0, 1, 2, 2, 1, 3 };
             auto mesh = Mesh("skybox-mesh-top");
             mesh->add_vertex_buffer(GL_FLOAT, 3, 4, vertices_t);
             mesh->add_vertex_buffer(GL_FLOAT, 2, 4, texs_t);
             mesh->add_index_buffer(6, idxs_t);
-            auto mat = make_material("skybox-mat-top");
-            mat->add_texture("diffuse", make_texture("skybox-tex-top", "render-data/images/skybox_top.png"));
-            auto drawelement = make_drawelement("skybox-top", shader, mat, mesh);
+            auto mat = Material("skybox-mat-top");
+            mat->add_texture("diffuse", Texture2D("skybox-tex-top", "render-data/images/skybox_top.png"));
+            mesh->material = mat;
+            auto drawelement = Drawelement("skybox-top", shader, mesh);
             Skybox::prototype.push_back(drawelement);
         }
         {
             // bottom / down
-            glm::vec3 vertices_d[] = { {-1-e,-1+e,-1-e}, {-1-e,-1+e,+1+e}, {+1+e,-1+e,-1-e}, {+1+e,-1+e,+1+e} };
+            glm::vec3 vertices_d[] = { {-1 - e,-1 + e,-1 - e}, {-1 - e,-1 + e,+1 + e}, {+1 + e,-1 + e,-1 - e}, {+1 + e,-1 + e,+1 + e} };
             glm::vec2 texs_d[] = { {1, 1}, {1, 0}, {0, 1}, {0, 0} };
             unsigned int idxs_d[] = { 0, 2, 1, 2, 3, 1 };
             auto mesh = Mesh("skybox-mesh-bottom");
             mesh->add_vertex_buffer(GL_FLOAT, 3, 4, vertices_d);
             mesh->add_vertex_buffer(GL_FLOAT, 2, 4, texs_d);
             mesh->add_index_buffer(6, idxs_d);
-            auto mat = make_material("skybox-mat-bottom");
-            mat->add_texture("diffuse", make_texture("skybox-tex-bottom", "render-data/images/skybox_bottom.png"));
-            auto drawelement = make_drawelement("skybox-bottom", shader, mat, mesh);
+            auto mat = Material("skybox-mat-bottom");
+            mat->add_texture("diffuse", Texture2D("skybox-tex-bottom", "render-data/images/skybox_bottom.png"));
+            mesh->material = mat;
+            auto drawelement = Drawelement("skybox-bottom", shader, mesh);
             Skybox::prototype.push_back(drawelement);
         }
     }
     { // init fog prototype
-        Fog::prototype = make_drawelement("fog");
         // setup mesh
         glm::vec3 vertices[4] = { {0,0,0}, {0,0,1}, {1,0,1}, {1,0,0} };
         glm::vec2 texcoords[4] = { {0, 0}, {0, 1}, {1, 1}, {1, 0} };
@@ -137,10 +141,9 @@ void init_static_prototypes() {
         mesh->add_vertex_buffer(GL_FLOAT, 3, 4, vertices);
         mesh->add_vertex_buffer(GL_FLOAT, 2, 4, texcoords);
         mesh->add_index_buffer(6, indices);
-        Fog::prototype->add_mesh(mesh);
         // setup shader
         auto shader = Shader("fog-shader", "shader/fog.vs", "shader/fog.fs");
-        Fog::prototype->use_shader(shader);
+        Fog::prototype = Drawelement("fog",shader,mesh);
     }
 }
 
@@ -201,7 +204,7 @@ Skybox::Skybox(int w, int h, int d) : trafo(1) {
 void Skybox::draw() {
     glDepthFunc(GL_LEQUAL);
     glFrontFace(GL_CW);
-    for (const auto& elem : prototype) {
+    for (auto& elem : prototype) {
         elem->model = trafo;
         elem->bind();
         setup_light(elem->shader);
@@ -222,7 +225,7 @@ Fog::Fog(int w, int h) : trafo(1) {
     trafo[3][0] = -0.5 * w * render_settings::tile_size - 0.5 * render_settings::tile_size;
     trafo[3][1] = 0.4 * render_settings::tile_size;
     trafo[3][2] = -0.5 * h * render_settings::tile_size - 0.5 * render_settings::tile_size;
-    fog_timer.start();
+    fog_timer.begin();
 }
 
 void Fog::draw() {

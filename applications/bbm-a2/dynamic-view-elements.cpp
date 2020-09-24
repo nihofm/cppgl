@@ -25,7 +25,7 @@ Material Box::wood_material;
 std::vector<Material> Box::stone_materials;
 std::vector<Drawelement> Box::prototype_idle;
 std::vector<Drawelement> Box::prototype_scatter;
-std::vector<std::shared_ptr<Drawelement>> Bomb::prototype;
+std::vector<Drawelement> Bomb::prototype;
 
 void init_dynamic_prototypes() {
     { // load player prototype
@@ -34,8 +34,12 @@ void init_dynamic_prototypes() {
         auto shader_callback = [shader_norm, shader_norm_tc](const Material& mat) {
             return mat->texture_map.empty() ? shader_norm : shader_norm_tc;
         };
-        Player::prototype = MeshLoader::load("render-data/bbm/bbm-nolegs.obj", true, shader_callback);
-        // set player colors
+        auto meshes = load_meshes_gpu("render-data/bbm/bbm-nolegs.obj", true);
+        for (auto m : meshes) {
+            Player::prototype.push_back(Drawelement(m->name, shader_callback(m->material), m));
+        }        
+        // HINT: we may have skipped something regarding player colors
+#ifndef A2_3
         Player::colors.resize(8);
         Player::colors[0] = glm::vec3(1, 0, 0);
         Player::colors[1] = glm::vec3(0, 1, 0);
@@ -45,6 +49,7 @@ void init_dynamic_prototypes() {
         Player::colors[5] = glm::vec3(1, 0, 1);
         Player::colors[6] = glm::vec3(1, 0.5, 0.5);
         Player::colors[7] = glm::vec3(0.5, 1, 0.5);
+#endif
 	}
     { // load bomb prototype
         auto shader_norm = Shader("bomb: pos+norm", "shader/pos+norm.vs", "shader/pos+norm.fs");
@@ -52,33 +57,46 @@ void init_dynamic_prototypes() {
         auto shader_callback = [shader_norm, shader_norm_tc](const Material& mat) {
             return mat->texture_map.empty() ? shader_norm : shader_norm_tc;
         };
-        Bomb::prototype = MeshLoader::load("render-data/bomb/bomb.obj", true, shader_callback);
-	}
+        auto meshes = load_meshes_gpu("render-data/bomb/bomb.obj", true);
+        for (auto m : meshes) {
+            Bomb::prototype.push_back(Drawelement(m->name, shader_callback(m->material), m));
+        }
+    }
     { // load box prototypes
         auto shader = Shader("box-shader", "shader/box.vs", "shader/box.fs");
         auto shader_cb = [shader](const Material&) { return shader; };
         // load idle and scatter box
-        Box::prototype_idle = MeshLoader::load("render-data/cube/cube.obj", true, shader_cb);
-        Box::prototype_scatter = MeshLoader::load("render-data/crate/wooden_crate.obj", true, shader_cb);
+        {
+            auto meshes = load_meshes_gpu("render-data/cube/cube.obj", true);
+            for (auto m : meshes) {
+                Box::prototype_idle.push_back(Drawelement(m->name, shader_cb(m->material), m));
+            }
+        }
+        {
+            auto meshes = load_meshes_gpu("render-data/crate/wooden_crate.obj", true);
+            for (auto m : meshes) {
+                Box::prototype_scatter.push_back(Drawelement(m->name, shader_cb(m->material), m));
+            }
+        }
         // load materials
-        auto overlay = make_texture("crate_overlay", "render-data/images/crate_overlay2.png");
-        Box::wood_material = make_material("box-wood");
-        Box::wood_material->add_texture("diffuse", make_texture("box-wood", "render-data/crate/crate.png"));
-        Box::wood_material->add_texture("normalmap", make_texture("box-wood-normals", "render-data/crate/crate_normals.png"));
+        auto overlay = Texture2D("crate_overlay", "render-data/images/crate_overlay2.png");
+        Box::wood_material = Material("box-wood");
+        Box::wood_material->add_texture("diffuse", Texture2D("box-wood", "render-data/crate/crate.png"));
+        Box::wood_material->add_texture("normalmap", Texture2D("box-wood-normals", "render-data/crate/crate_normals.png"));
         Box::wood_material->add_texture("overlay", overlay);
-        auto mat0 = make_material("box-wall_0");
-        mat0->add_texture("diffuse", make_texture("box-wall_diff_0", "render-data/images/wall_0.png"));
-        mat0->add_texture("normalmap", make_texture("box-wall_normals_0", "render-data/images/wall_normals_0.png"));
+        auto mat0 = Material("box-wall_0");
+        mat0->add_texture("diffuse", Texture2D("box-wall_diff_0", "render-data/images/wall_0.png"));
+        mat0->add_texture("normalmap", Texture2D("box-wall_normals_0", "render-data/images/wall_normals_0.png"));
         mat0->add_texture("overlay", overlay);
         Box::stone_materials.push_back(mat0);
-        auto mat1 = make_material("box-wall_1");
-        mat1->add_texture("diffuse", make_texture("box-wall_diff_1", "render-data/images/wall_1.png"));
-        mat1->add_texture("normalmap", make_texture("box-wall_normals_1", "render-data/images/wall_normals_1.png"));
+        auto mat1 = Material("box-wall_1");
+        mat1->add_texture("diffuse", Texture2D("box-wall_diff_1", "render-data/images/wall_1.png"));
+        mat1->add_texture("normalmap", Texture2D("box-wall_normals_1", "render-data/images/wall_normals_1.png"));
         mat1->add_texture("overlay", overlay);
         Box::stone_materials.push_back(mat1);
-        auto mat2 = make_material("box-wall_2");
-        mat2->add_texture("diffuse", make_texture("box-wall_diff_2", "render-data/images/wall_2.png"));
-        mat2->add_texture("normalmap", make_texture("box-wall_normals_2", "render-data/images/wall_normals_2.png"));
+        auto mat2 = Material("box-wall_2");
+        mat2->add_texture("diffuse", Texture2D("box-wall_diff_2", "render-data/images/wall_2.png"));
+        mat2->add_texture("normalmap", Texture2D("box-wall_normals_2", "render-data/images/wall_normals_2.png"));
         mat2->add_texture("overlay", overlay);
         Box::stone_materials.push_back(mat2);
     }
@@ -94,7 +112,7 @@ Player::Player(const std::string& name, int id) : moving(false), look_dir(0, 1),
     trafo[2][2] = render_settings::character_radius;
     trafo[3][1] = render_settings::character_float_h;
 	// Start wobble timer
-	wobble_timer.start();
+	wobble_timer.begin();
 }
 
 float Player::rotation(Dir dir) {
@@ -139,7 +157,7 @@ void Player::start_moving(int dir_x, int dir_y, int est_duration) {
 	look_dir.x = dir_x;
 	look_dir.y = dir_y;
 	moving = true;
-	movement_timer.start();
+	movement_timer.begin();
 }
 
 void Player::update() {
@@ -171,7 +189,7 @@ void Player::update() {
 
     // player particles
 	if (particle_timer.look() >= render_settings::particle_emitter_timeslice) {
-		particle_timer.restart();
+		particle_timer.begin();
         const float offset = 0.9f * render_settings::character_radius;
         const glm::vec3 pos = glm::vec3(trafo[3][0], trafo[3][1] - offset, trafo[3][2]);
         const glm::vec3 dir = glm::normalize(glm::vec3(random_float(), -3, random_float()));
@@ -189,10 +207,12 @@ void Player::draw() {
         elem->bind();
         setup_light(elem->shader);
         // HINT: Right here we may have skipped something tagged 'character colors'
+#ifndef A2_3
         if (elem->name.find("sphere") != string::npos)
             elem->shader->uniform("modulate_by", colors[id]);
         else
             elem->shader->uniform("modulate_by", glm::vec3(1));
+#endif
         elem->draw();
         elem->unbind();
     }
@@ -216,7 +236,7 @@ Box::Box(unsigned posx, unsigned posy, bool is_stone) : trafo(1.f), is_stone(is_
 void Box::set_exploding(const glm::vec2& dir) {
     // HINT: Right here we may have skipped something tagged 'box explosion'
 	exploding = true;
-	explo_timer.start();
+	explo_timer.begin();
 	explo_rot_axis.resize(prototype_scatter.size());
 	explo_translation.resize(prototype_scatter.size());
 	for (unsigned int i = 0; i < prototype_scatter.size(); ++i) {
@@ -362,7 +382,7 @@ void Board::draw() {
 void Board::explosion(int bomb_id, unsigned int codes) {
 	// Camera wobble on explode
 	if (!camera_shake) {
-		camera_shake_timer.restart();
+		camera_shake_timer.begin();
 		camera_shake = true;
 	}
 

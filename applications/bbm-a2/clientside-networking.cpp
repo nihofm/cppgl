@@ -22,7 +22,8 @@ extern std::shared_ptr<Fog> the_fog;
 extern std::vector<std::shared_ptr<Player>> players;
 extern int player_id;
 extern boost::asio::ip::tcp::socket* server_connection;
-extern client_message_reader* reader;
+extern client_message_reader* reader; 
+extern boost::asio::io_service io_service;
 
 // ---------------------------------------
 
@@ -56,8 +57,6 @@ void networking_prologue() {
     draw_start_screen();
 
 	try {
-		boost::asio::io_service io_service;
-
 		cout << "connecting..." << endl;
 		tcp::resolver resolver(io_service);
 		tcp::resolver::query query(cmdline.server_host, "2214");

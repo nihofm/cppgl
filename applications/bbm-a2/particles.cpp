@@ -93,7 +93,7 @@ void Particles::draw() {
     splat_shader->uniform("gbuf_pos", Texture2D::find("gbuf_pos"), 2);
     splat_shader->uniform("gbuf_norm", Texture2D::find("gbuf_norm"), 3);
 
-    mesh->bind();
+    mesh->bind(splat_shader);
     if (start < end) {
         glDrawElementsBaseVertex(GL_POINTS, end - start, GL_UNSIGNED_INT, 0, start);
     }

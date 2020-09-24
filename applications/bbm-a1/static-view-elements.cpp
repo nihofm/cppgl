@@ -192,9 +192,9 @@ void Skybox::draw() {
     glDepthFunc(GL_LEQUAL);
     glFrontFace(GL_CW);
     for (auto& elem : prototype) {
+        elem->model = trafo;
         elem->bind();
         setup_light(elem->shader);
-        elem->model = trafo;
         elem->draw();
         elem->unbind();
     }

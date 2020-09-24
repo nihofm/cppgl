@@ -56,7 +56,6 @@ void networking_prologue() {
 	
     draw_start_screen();
 
-
 	try {
 		cout << "connecting..." << endl;
 		tcp::resolver resolver(io_service);
@@ -88,8 +87,6 @@ void networking_prologue() {
         draw_start_screen("...");
 
 		reader = new client_message_reader(server_connection);
-
-
 		while (!reader->eof()) {
 
             draw_start_screen("....");

@@ -17,8 +17,8 @@ using namespace std;
 // callbacks
 
 void keyboard_callback(int key, int scancode, int action, int mods) {
-    if (key == GLFW_KEY_F2 && action == GLFW_PRESS) Camera::find("default")->make_current();
-    if (key == GLFW_KEY_F3 && action == GLFW_PRESS) Camera::find("mapcam")->make_current();
+    if (key == GLFW_KEY_F2 && action == GLFW_PRESS) make_camera_current(Camera::find("default"));
+    if (key == GLFW_KEY_F3 && action == GLFW_PRESS) make_camera_current(Camera::find("mapcam"));
     if (key == GLFW_KEY_F5 && action == GLFW_PRESS) {
         static bool wireframe = false;
         wireframe = !wireframe;
@@ -56,19 +56,17 @@ int main(int argc, char** argv) {
     // init context and set parameters
     ContextParameters params;
     params.title = "pacmap";
-    params.font_ttf_filename = concat(EXECUTABLE_DIR, "render-data/fonts/DroidSansMono.ttf");
+    params.font_ttf_filename = EXECUTABLE_DIR + std::string("render-data/fonts/DroidSansMono.ttf");
     params.font_size_pixels = 15;
     Context::init(params);
     Context::set_keyboard_callback(keyboard_callback);
     Context::set_resize_callback(resize_callback);
 
     // EXECUTABLE_DIR set via cmake, paths now relative to source/executable directory
-    Shader::base_path = EXECUTABLE_DIR;
-    Texture2D::base_path = EXECUTABLE_DIR;
-    MeshLoader::base_path = EXECUTABLE_DIR;
+    std::filesystem::current_path(EXECUTABLE_DIR);
 
     // init camera
-    auto mapcam = make_camera("mapcam");
+    auto mapcam = Camera("mapcam");
     mapcam->pos = glm::vec3(0, 5, 0);
     mapcam->dir = glm::vec3(0, -1, 0);
     mapcam->up = glm::vec3(0, 0, 1);
@@ -86,10 +84,10 @@ int main(int argc, char** argv) {
     while (Context::running()) {
         // input and update
         if (current_camera()->name != "mapcam")
-            Camera::default_input_handler(Context::frame_time());
+            CameraImpl::default_input_handler(Context::frame_time());
         current_camera()->update();
         static uint32_t counter = 0;
-        if (counter++ % 100 == 0) Shader::reload();
+        if (counter++ % 100 == 0) reload_modified_shaders();
 
         // render
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);

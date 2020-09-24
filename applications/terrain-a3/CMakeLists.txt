@@ -3,7 +3,6 @@ file(GLOB SOURCES "*.cpp")
 
 set(TARGET terrain-a3)
 
-
 # executable target
 add_executable(${TARGET} ${SOURCES})
 
@@ -28,6 +27,11 @@ if(UNIX)
 else()
 	find_library(GLEW glew32 PATHS ${DEPDIR}/win/lib NO_DEFAULT_PATH)
 	target_link_libraries(${TARGET} ${GLEW})
+
+    # post build dll copy
+  	add_custom_command(TARGET ${TARGET} POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy_directory "${CMAKE_CURRENT_SOURCE_DIR}/../../common/cppgl/external/thirdparty/win/bin/x64" $<TARGET_FILE_DIR:${TARGET}>)
+    add_custom_command(TARGET ${TARGET} POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_FILE:cppgl> $<TARGET_FILE_DIR:${TARGET}>/$<TARGET_FILE_NAME:cppgl>)
+
 endif()
 # common libs
-target_link_libraries(${TARGET} imgui cppgl messages)
+target_link_libraries(${TARGET} cppgl)

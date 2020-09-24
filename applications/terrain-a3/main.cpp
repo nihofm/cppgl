@@ -54,19 +54,17 @@ int main(int argc, char** argv) {
     // init context and set parameters
     ContextParameters params;
     params.title = "terrain";
-    params.font_ttf_filename = concat(EXECUTABLE_DIR, "render-data/fonts/DroidSansMono.ttf");
+    params.font_ttf_filename = EXECUTABLE_DIR + std::string("render-data/fonts/DroidSansMono.ttf");
     params.font_size_pixels = 15;
     Context::init(params);
     Context::set_keyboard_callback(keyboard_callback);
     Context::set_resize_callback(resize_callback);
 
     // EXECUTABLE_DIR set via cmake, paths now relative to source/executable directory
-    Shader::base_path = EXECUTABLE_DIR;
-    Texture2D::base_path = EXECUTABLE_DIR;
-    MeshLoader::base_path = EXECUTABLE_DIR;
+    std::filesystem::current_path(EXECUTABLE_DIR);
 
     // init camera
-    auto ufocam = make_camera("ufocam");
+    auto ufocam = Camera("ufocam");
     //ufocam->make_current();
 
     // init stuff
@@ -77,10 +75,10 @@ int main(int argc, char** argv) {
     while (Context::running()) {
         // input and update
         if (current_camera()->name != "ufocam")
-            Camera::default_input_handler(Context::frame_time());
+            CameraImpl::default_input_handler(Context::frame_time());
         current_camera()->update();
         static uint32_t counter = 0;
-        if (counter++ % 100 == 0) Shader::reload();
+        if (counter++ % 100 == 0) reload_modified_shaders();
 
         // render
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);

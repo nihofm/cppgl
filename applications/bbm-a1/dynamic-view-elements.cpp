@@ -246,7 +246,15 @@ void Box::set_exploding(const glm::vec2& dir) {
 
 }
 
-bool Box::to_destroy() { return exploding; }
+bool Box::to_destroy() { 
+	// HINT: Right here we may have skipped something tagged 'crate explosion'
+#ifndef A1_8_ex
+	return exploding && explo_timer.look() > render_settings::box_explosion_duration;
+#else
+	return exploding; 
+#endif
+
+}
 
 void Box::draw() {
 	if (!exploding) {

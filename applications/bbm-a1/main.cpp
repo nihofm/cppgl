@@ -91,6 +91,8 @@ int main(int argc, char** argv) {
     params.title = "bbm";
     params.font_ttf_filename = EXECUTABLE_DIR + std::string("render-data/fonts/DroidSansMono.ttf");
     params.font_size_pixels = 15;
+    params.width = cmdline.res_x;
+    params.height = cmdline.res_y;
     Context::init(params);
     Context::set_keyboard_callback(keyboard_callback);
     Context::set_resize_callback(resize_callback);

@@ -76,21 +76,22 @@ void resize_callback(int w, int h) {
 // main
 
 int main(int argc, char** argv) {
-    parse_cmdline(argc, argv);
+    if (!parse_cmdline(argc, argv)) return 0;
 
     // init context and set parameters
     ContextParameters params;
     params.title = "bbm";
     params.font_ttf_filename = concat(EXECUTABLE_DIR, "render-data/fonts/DroidSansMono.ttf");
     params.font_size_pixels = 15;
+    params.width = cmdline.res_x;
+    params.height = cmdline.res_y;
     Context::init(params);
     Context::set_keyboard_callback(keyboard_callback);
     Context::set_resize_callback(resize_callback);
 
     // EXECUTABLE_DIR set via cmake, paths now relative to source/executable directory
-    Shader::base_path = EXECUTABLE_DIR;
-    Texture2D::base_path = EXECUTABLE_DIR;
-    MeshLoader::base_path = EXECUTABLE_DIR;
+    std::filesystem::current_path(EXECUTABLE_DIR);
+
 
     auto playercam = make_camera("playercam");
     playercam->far = 250;

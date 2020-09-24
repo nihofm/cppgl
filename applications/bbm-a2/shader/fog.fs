@@ -54,6 +54,7 @@ void main() {
     // Get screen coordinates of the current fragment for the wpos lookup
     vec4 sc = proj * view * pos_wc;
     sc/=sc.w;
+#ifndef A2_6
     vec3 fragment_pos_in_fog_wc = texture(wpos, sc.xy * 0.5 + 0.5).xyz;
 
     // compute noise/fog value
@@ -81,4 +82,9 @@ void main() {
 
     out_col.rgb = vec3(1);
     out_col.a = alpha * beta * gamma * n;
+#else
+	vec2 offset = vec2(0,0);
+    float n = fog(vec2(tc + offset), 0.0);
+    out_col= vec4(n);
+#endif
 }

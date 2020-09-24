@@ -132,6 +132,8 @@ void init_static_prototypes() {
             Skybox::prototype.push_back(drawelement);
         }
     }
+
+#ifndef A2_6
     { // init fog prototype
         // setup mesh
         glm::vec3 vertices[4] = { {0,0,0}, {0,0,1}, {1,0,1}, {1,0,0} };
@@ -145,6 +147,7 @@ void init_static_prototypes() {
         auto shader = Shader("fog-shader", "shader/fog.vs", "shader/fog.fs");
         Fog::prototype = Drawelement("fog",shader,mesh);
     }
+#endif
 }
 
 void draw_gui() {
@@ -155,8 +158,12 @@ void draw_gui() {
     if (ImGui::Begin("GUI", 0, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoBackground)) {
         ImGui::SetWindowFontScale(1.5f);
         for (uint32_t i = 0; i < players.size(); ++i) {
+#ifndef A2_3
             auto& player = players[i];
             const glm::vec3 col = Player::colors[player->id];//glm::mix(glm::vec3(1, 0, 0), glm::vec3(0, 1, 0), player->health / 100.f);
+#else
+            const glm::vec3 col = glm::mix(glm::vec3(1, 0, 0), glm::vec3(0, 1, 0), player->health / 100.f);
+#endif
             ImGui::PushStyleVar(ImGuiStyleVar_Alpha, 0.4);
             ImGui::PushStyleColor(ImGuiCol_PlotHistogram, ImVec4(col.x, col.y, col.z, 1));
             const std::string label = player->name + " (frags: " + std::to_string(player->frags) + ") ";
@@ -215,6 +222,8 @@ void Skybox::draw() {
     glDepthFunc(GL_LESS);
 }
 
+#ifndef A2_6
+
 // ------------------------------------------------
 // Fog
 
@@ -243,3 +252,5 @@ void Fog::draw() {
     glDisable(GL_BLEND);
     glDepthMask(GL_TRUE);
 }
+
+#endif

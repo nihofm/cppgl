@@ -9,7 +9,11 @@ uniform vec3 modulate_by;
 uniform sampler2D diffuse;
 
 void main() {
+#ifndef A2_3
     vec3 diff = texture(diffuse, tc).rgb * modulate_by;
+#else
+    vec3 diff = texture(diffuse, tc).rgb;
+#endif
     out_col = vec4(diff, 1);
     out_pos = pos_wc.xyz;
     out_norm = norm_wc;

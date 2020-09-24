@@ -13,6 +13,8 @@ uniform sampler2D gbuf_norm;
 float linear_depth(in float depth, in float near, in float far) { return (2.0 * near) / (far + near - depth * (far - near)); }
 
 void main() {
+    out_col = vec4(0,1,0,1);
+#ifndef A2_5
     // geometry inside splat radius?
     vec2 tc = gl_FragCoord.xy / screenres;
     float gbuf_depth = texture(gbuf_depth, tc).r;
@@ -39,4 +41,5 @@ void main() {
     float fade_geom = clamp(abs(frag_depth - geom_depth) / 0.01f, 0, 1);
     float fade_time = clamp(particle_time / 500.f, 0, 1);
     out_col *= fade_geom * fade_time;
+#endif
 }

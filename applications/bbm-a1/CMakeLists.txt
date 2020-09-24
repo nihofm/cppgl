@@ -19,20 +19,17 @@ find_package(OpenGL REQUIRED)
 include_directories(${OPENGL_INCLUDE_DIRS})
 target_link_libraries(${TARGET} ${OPENGL_LIBRARIES})
 
-set(DEPDIR "${CMAKE_CURRENT_SOURCE_DIR}/../common/thirdparty")
+#set(DEPDIR "${CMAKE_CURRENT_SOURCE_DIR}/../common/thirdparty")
 
 if(UNIX)
-    find_library(GLEW GLEW PATHS ${DEPDIR}/lin/lib NO_DEFAULT_PATH)
-	target_link_libraries(${TARGET} ${GLEW})
+    #find_library(GLEW GLEW PATHS ${DEPDIR}/lin/lib NO_DEFAULT_PATH)
+	#target_link_libraries(${TARGET} ${GLEW})
 
 	# Boost
     find_package(Boost COMPONENTS program_options REQUIRED)
     include_directories(${Boost_INCLUDE_DIRS})
     target_link_libraries(${TARGET} ${Boost_LIBRARIES})
 else()
-	find_library(GLEW glew32 PATHS ${DEPDIR}/win/lib NO_DEFAULT_PATH)
-   	target_link_libraries(${TARGET} ${GLEW})
-
     # Boost
     find_package(Boost COMPONENTS program_options REQUIRED)
     include_directories(${Boost_INCLUDE_DIRS})

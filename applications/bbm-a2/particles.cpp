@@ -16,8 +16,13 @@ Particles::Particles(unsigned int N, float particle_size) : N(N), position(N), d
     // lazy init static stuff
     if (!draw_shader)
         draw_shader = Shader("particle-draw", "shader/particle-flare.vs", "shader/particle-flare.fs");
+#ifndef A2_5
     if (!splat_shader)
         splat_shader = Shader("particle-splat", "shader/deferred-splats.vs", "shader/deferred-splats.gs", "shader/deferred-splats.fs");
+#else
+    if (!splat_shader)
+        splat_shader = Shader("particle-splat", "shader/deferred-splats.vs", "shader/deferred-splats.fs");
+#endif
 }
 
 Particles::~Particles() {}
@@ -81,6 +86,8 @@ void Particles::draw() {
     glDisable(GL_POINT_SPRITE);
     glDisable(GL_PROGRAM_POINT_SIZE);
 
+    //HINT: We may haved skipped something tagged 'splatting' here
+#ifndef A2_5
     // splatting pass using a geometry shader
     splat_shader->bind();
     splat_shader->uniform("view", cam->view);
@@ -104,6 +111,10 @@ void Particles::draw() {
     mesh->unbind();
 
     splat_shader->unbind();
+#endif
+
+
+    //reset for other render calls
     glDepthMask(GL_TRUE);
     glDisable(GL_BLEND);
 }

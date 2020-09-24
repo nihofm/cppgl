@@ -26,7 +26,7 @@ public:
     glm::mat4 trafo;
     static std::vector<Drawelement> prototype;
 };
-
+#ifndef A2_6
 class Fog {
 public:
     Fog(int w, int h);
@@ -38,3 +38,4 @@ public:
     Timer fog_timer;
     static Drawelement prototype;
 };
+#endif

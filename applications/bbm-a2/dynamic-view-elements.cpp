@@ -18,8 +18,9 @@ extern std::shared_ptr<Particles> particles, particles_small;
 
 // ------------------------------------------------
 // prototypes
-
+#ifndef A2_3
 std::vector<glm::vec3> Player::colors;
+#endif
 std::vector<Drawelement> Player::prototype;
 Material Box::wood_material;
 std::vector<Material> Box::stone_materials;

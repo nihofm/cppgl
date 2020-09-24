@@ -13,6 +13,7 @@ uniform vec2 screenres;
 
 float linear_depth(in float depth, in float near, in float far) { return (2.0 * near) / (far + near - depth * (far - near)); }
 
+#ifndef A2_7
 float sobel_edges() {
     float dx = 2.f / screenres.x;
     float dy = 2.f / screenres.y;
@@ -63,18 +64,28 @@ float sobel_edges() {
     float magnitude = max(pow(20 * mag_norm, 10), pow(50 * mag_depth, 10));
     return magnitude > 1 ? 0 : 1;
 }
+#endif
 
 void main() {
     float depth = texture(gbuf_depth, tc).r;
+#ifndef A2_1
     gl_FragDepth = depth;
     vec3 norm = texture(gbuf_norm, tc).xyz;
     if (depth == 1.f || norm == vec3(0,0,0))  { discard; return; }
     float n_dot_l = max(0, dot(norm, -light_dir));
+#endif
+#ifndef A2_7
     // comic style shading
     n_dot_l = int(4 * n_dot_l) / 4.f;
     // comic style corners
     float edge_f = sobel_edges();
     // lighting
+#endif
+#ifndef A2_1
     vec3 diff = texture(gbuf_diff, tc).rgb;
     out_col = vec4(edge_f * diff * (ambient_col + light_col * n_dot_l), 1);
+#else
+    out_col = vec4(1,1,1,1);
+#endif
+
 }

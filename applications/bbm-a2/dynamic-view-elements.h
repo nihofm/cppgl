@@ -39,7 +39,9 @@ public:
 	int id;
 	bool respawning;
 	int frags;
+#ifndef A2_3
 	static std::vector<glm::vec3> colors;
+#endif
     static std::vector<Drawelement> prototype;
 };
 

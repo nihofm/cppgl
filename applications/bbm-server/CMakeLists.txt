@@ -12,7 +12,10 @@ set_target_properties(${TARGET} PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CUR
 # handle dependencies
 # Boost
 if(UNIX)
+    find_package(Threads REQUIRED)
+    target_link_libraries(${TARGET} ${CMAKE_THREAD_LIBS_INIT})
     find_package(Boost REQUIRED COMPONENTS system)
+    find_package(Boost COMPONENTS program_options REQUIRED)
     include_directories(${Boost_INCLUDE_DIRS})
     target_link_libraries(${TARGET} ${Boost_LIBRARIES})
 else()

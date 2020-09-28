@@ -25,6 +25,8 @@ if(UNIX)
     #find_library(GLEW GLEW PATHS ${DEPDIR}/lin/lib NO_DEFAULT_PATH)
 	#target_link_libraries(${TARGET} ${GLEW})
 
+    find_package(Threads REQUIRED)
+    target_link_libraries(${TARGET} ${CMAKE_THREAD_LIBS_INIT})
 	# Boost
     find_package(Boost COMPONENTS program_options REQUIRED)
     include_directories(${Boost_INCLUDE_DIRS})

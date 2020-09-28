@@ -1,5 +1,5 @@
 #include "osm.h"
-#include <earcut/earcut.hpp>
+#include <../common/thirdparty/include/earcut/earcut.hpp> // TODO: include include-path in CMake file!
 
 using namespace std;
 

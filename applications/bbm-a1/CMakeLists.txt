@@ -26,6 +26,8 @@ if(UNIX)
 	#target_link_libraries(${TARGET} ${GLEW})
 
 	# Boost
+    find_package(Threads REQUIRED)
+    target_link_libraries(${TARGET} ${CMAKE_THREAD_LIBS_INIT})
     find_package(Boost COMPONENTS program_options REQUIRED)
     include_directories(${Boost_INCLUDE_DIRS})
     target_link_libraries(${TARGET} ${Boost_LIBRARIES})

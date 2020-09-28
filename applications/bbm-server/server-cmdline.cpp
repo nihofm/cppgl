@@ -18,7 +18,7 @@ int parse_cmdline(int argc, char** argv)
 	desc.add_options()
 		("help,h", "produce help message")
 		("verbose,v", "Be verbose.")
-		("players,n", po::value<int>(), "Set number of players.")
+		("players,n", po::value<unsigned int>(), "Set number of players.")
 		("fraglimit,f", po::value<int>(), "Frags required to win the game.")
 		("map,m", po::value<string>(), "Map to be used. Default: default.map")
 		;

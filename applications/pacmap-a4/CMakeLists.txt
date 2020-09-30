@@ -42,4 +42,3 @@ else()
 endif()
 # common libs
 target_link_libraries(${TARGET} cppgl)
-# parser lib

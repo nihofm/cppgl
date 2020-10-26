@@ -1,7 +1,7 @@
-#include "static-view-elements.h"
+#include "static-objects.h"
 #include <cppgl.h>
 #include "rendering.h"
-#include "dynamic-view-elements.h"
+#include "dynamic-objects.h"
 
 // ------------------------------------------------
 // globals
@@ -157,20 +157,20 @@ void draw_gui() {
 // ------------------------------------------------
 // Floor
 
-Floor::Floor(int w, int h) : trafo(1) {
+Floor::Floor(int w, int h) : model(1) {
     // setup modelmatrix
-    trafo[0][0] = float(w) * render_settings::tile_size;
-    trafo[1][1] = 0.5 * render_settings::tile_size;
-    trafo[2][2] = float(h) * render_settings::tile_size;
-    trafo[3][0] = -0.5 * render_settings::tile_size;
-    trafo[3][2] = -0.5 * render_settings::tile_size;
+    model[0][0] = float(w) * render_settings::tile_size;
+    model[1][1] = 0.5 * render_settings::tile_size;
+    model[2][2] = float(h) * render_settings::tile_size;
+    model[3][0] = -0.5 * render_settings::tile_size;
+    model[3][2] = -0.5 * render_settings::tile_size;
 }
 
 void Floor::draw() {
-    prototype->model = trafo;
+    prototype->model = model;
     prototype->bind();
     setup_light(prototype->shader);
-    prototype->shader->uniform("tc_scale", glm::vec2(trafo[0][0], trafo[2][2]) / render_settings::tile_size);
+    prototype->shader->uniform("tc_scale", glm::vec2(model[0][0], model[2][2]) / render_settings::tile_size);
     prototype->draw();
     prototype->unbind();
 }
@@ -178,21 +178,21 @@ void Floor::draw() {
 // ------------------------------------------------
 // Skybox
 
-Skybox::Skybox(int w, int h, int d) : trafo(1) {
+Skybox::Skybox(int w, int h, int d) : model(1) {
     // build modelmatrix
-	trafo[0][0] = d * render_settings::tile_size;
-	trafo[1][1] = d * render_settings::tile_size;
-	trafo[2][2] = d * render_settings::tile_size;
-	trafo[3][0] = 0.5f * w * render_settings::tile_size;
-    trafo[3][1] = -0.5 * d * render_settings::tile_size;
-	trafo[3][2] = 0.5f * h * render_settings::tile_size;
+	model[0][0] = d * render_settings::tile_size;
+	model[1][1] = d * render_settings::tile_size;
+	model[2][2] = d * render_settings::tile_size;
+	model[3][0] = 0.5f * w * render_settings::tile_size;
+    model[3][1] = -0.5 * d * render_settings::tile_size;
+	model[3][2] = 0.5f * h * render_settings::tile_size;
 }
 
 void Skybox::draw() {
     glDepthFunc(GL_LEQUAL);
     glFrontFace(GL_CW);
     for (auto& elem : prototype) {
-        elem->model = trafo;
+        elem->model = model;
         elem->bind();
         setup_light(elem->shader);
         elem->draw();

@@ -1,4 +1,4 @@
-#include "dynamic-view-elements.h"
+#include "dynamic-objects.h"
 #include "clientside-networking.h"
 #include "particles.h"
 
@@ -93,11 +93,11 @@ void init_dynamic_prototypes() {
 // Player
 
 Player::Player(const std::string& name, int id) : moving(false), look_dir(0, 1),
-name(name), trafo(1), trafo_rot(1), health(100), id(id), respawning(false), frags(0) {
-	trafo[0][0] = render_settings::character_radius;
-	trafo[1][1] = render_settings::character_radius;
-	trafo[2][2] = render_settings::character_radius;
-	trafo[3][1] = render_settings::character_float_h;
+name(name), model(1), model_rot(1), health(100), id(id), respawning(false), frags(0) {
+	model[0][0] = render_settings::character_radius;
+	model[1][1] = render_settings::character_radius;
+	model[2][2] = render_settings::character_radius;
+	model[3][1] = render_settings::character_float_h;
 	// Start wobble timer
 	wobble_timer.begin();
 }
@@ -123,17 +123,17 @@ void Player::force_position(int x, int y) {
 	moving = false;
 	glm::vec3 axis(0, 1, 0);
 	base_rotation = -rotation(look_dir);
-	trafo_rot = glm::rotate(glm::mat4(1), base_rotation, glm::vec3(0, 1, 0));
-	trafo[3][0] = x * render_settings::tile_size;
-	trafo[3][2] = y * render_settings::tile_size;
+	model_rot = glm::rotate(glm::mat4(1), base_rotation, glm::vec3(0, 1, 0));
+	model[3][0] = x * render_settings::tile_size;
+	model[3][2] = y * render_settings::tile_size;
 	base = glm::vec3(x, 0, y);
 }
 
 void Player::start_moving(int dir_x, int dir_y, int est_duration) {
 	if (moving) {	// the last movement is not finished: reset base
 		base = base + move_dir;
-		trafo[3][0] = base.x * render_settings::tile_size;
-		trafo[3][2] = base.z * render_settings::tile_size;
+		model[3][0] = base.x * render_settings::tile_size;
+		model[3][2] = base.z * render_settings::tile_size;
 		base_rotation = -rotation(look_dir);
 	}
 
@@ -153,13 +153,13 @@ void Player::update() {
 	if (moving) {
 		const float elapsed = float(movement_timer.look());
 		// HINT: Right here we may have skipped something tagged 'smooth player movement'
-		// NOTE: Use matrix 'trafo' for translation/scale and 'trafo_rot' for rotation
+		// NOTE: Use matrix 'model' for translation/scale and 'model_rot' for rotation
 #ifndef A1_2
 		const float t = std::min(1.0f, elapsed / move_duration);
-		trafo_rot = glm::rotate(glm::mat4(1), base_rotation + t * move_rotation, glm::vec3(0, 1, 0));
+		model_rot = glm::rotate(glm::mat4(1), base_rotation + t * move_rotation, glm::vec3(0, 1, 0));
 		const glm::vec3 curr = (base + move_dir * t) * render_settings::tile_size;
-		trafo[3][0] = curr.x;
-		trafo[3][2] = curr.z;
+		model[3][0] = curr.x;
+		model[3][2] = curr.z;
 #endif // A1_2
 
 		// HINT: Right here we may have skipped something tagged 'smooth camera movement'
@@ -176,7 +176,7 @@ void Player::update() {
 
 	// HINT: Right here we may have skipped something tagged 'character idle animation'
 #ifndef A1_4
-	trafo[3][1] = render_settings::character_float_h + 0.2f * render_settings::character_radius +
+	model[3][1] = render_settings::character_float_h + 0.2f * render_settings::character_radius +
 		glm::sin(float(player_id) * 10.0f + glm::cos(0.002f * wobble_timer.look() + glm::cos(0.001f * wobble_timer.look())));
 #endif // A1_4
 
@@ -184,7 +184,7 @@ void Player::update() {
 	if (particle_timer.look() >= render_settings::particle_emitter_timeslice) {
 		particle_timer.begin();
 		const float offset = 0.9f * render_settings::character_radius;
-		const glm::vec3 pos = glm::vec3(trafo[3][0], trafo[3][1] - offset, trafo[3][2]);
+		const glm::vec3 pos = glm::vec3(model[3][0], model[3][1] - offset, model[3][2]);
 		const glm::vec3 dir = glm::normalize(glm::vec3(random_float(), -3, random_float()));
 		particles->add(pos, dir, (rand() % 1000) + 1000);
 		// HINT: Right here we may have skipped something tagged 'even more particles'
@@ -198,7 +198,7 @@ void Player::update() {
 void Player::draw() {
 	if (health <= 0) return;
 	for (auto& elem : prototype) {
-		elem->model = trafo * trafo_rot;
+		elem->model = model * model_rot;
 		elem->bind();
 		setup_light(elem->shader);
 		elem->draw();
@@ -209,16 +209,16 @@ void Player::draw() {
 // ------------------------------------------------
 // Box
 
-Box::Box(unsigned posx, unsigned posy, bool is_stone) : trafo(1.f), is_stone(is_stone), exploding(false) {
+Box::Box(unsigned posx, unsigned posy, bool is_stone) : model(1.f), is_stone(is_stone), exploding(false) {
 	stone_type = is_stone ? rand() % 3 : 0;
 	uv_offset.x = float(rand() % 100) / 100.0f;
 	uv_offset.y = float(rand() % 100) / 100.0f;
-	trafo[0][0] = 0.5 * render_settings::tile_size;
-	trafo[1][1] = 0.5 * render_settings::tile_size;
-	trafo[2][2] = 0.5 * render_settings::tile_size;
-	trafo[3][0] = posx * render_settings::tile_size;
-	trafo[3][1] = 0.5 * render_settings::tile_size;
-	trafo[3][2] = posy * render_settings::tile_size;
+	model[0][0] = 0.5 * render_settings::tile_size;
+	model[1][1] = 0.5 * render_settings::tile_size;
+	model[2][2] = 0.5 * render_settings::tile_size;
+	model[3][0] = posx * render_settings::tile_size;
+	model[3][1] = 0.5 * render_settings::tile_size;
+	model[3][2] = posy * render_settings::tile_size;
 }
 
 void Box::set_exploding(const glm::vec2& dir) {
@@ -236,7 +236,7 @@ void Box::set_exploding(const glm::vec2& dir) {
 			dir.y * 20.f * fabs(random_float()) + 3.f * random_float());
 		// HINT: Right here we may have skipped something tagged 'even more particles'
 		for (int p = 0; p < 10; ++p) {
-			const glm::vec3 pos = glm::vec3(trafo[3]);
+			const glm::vec3 pos = glm::vec3(model[3]);
 			const glm::vec3 dir = glm::normalize(explo_translation[i]) * glm::length(explo_translation[i]) * (random_float() + 1) * 0.3f;
 			particles_small->add(pos + 0.5f * render_settings::tile_size * glm::vec3(random_float(), random_float(), random_float()),
 				dir + glm::vec3(random_float(), random_float(), random_float()), (rand() % 750) + 750);
@@ -259,7 +259,7 @@ bool Box::to_destroy() {
 void Box::draw() {
 	if (!exploding) {
 		for (auto& elem : prototype_idle) {
-			elem->model = trafo;
+			elem->model = model;
 			elem->bind();
 			// bind wood or stone material
 			if (is_stone)
@@ -278,7 +278,7 @@ void Box::draw() {
 		for (size_t i = 0; i < prototype_scatter.size(); ++i) {
 			// apply explosion translation and rotation
 			const float t = powf(explo_timer.look() / render_settings::box_explosion_duration, 0.75);
-			glm::mat4 model = glm::translate(trafo, t * explo_translation[i]);
+			glm::mat4 model = glm::translate(model, t * explo_translation[i]);
 			model = glm::rotate(model, t * float(5 * M_PI), glm::vec3(explo_rot_axis[i]));
 
 			prototype_scatter[i]->model = model;
@@ -297,22 +297,22 @@ void Box::draw() {
 // ------------------------------------------------
 // Bomb
 
-Bomb::Bomb(int posx, int posy, int id) : x(posx), y(posy), id(id), trafo(1) {
+Bomb::Bomb(int posx, int posy, int id) : x(posx), y(posy), id(id), model(1) {
 	// HINT: Right here we may have skipped something tagged 'render bombs'
 #ifndef A1_6
-	trafo[0][0] = render_settings::bomb_radius;
-	trafo[1][1] = render_settings::bomb_radius;
-	trafo[2][2] = render_settings::bomb_radius;
-	trafo[3][0] = float(posx) * render_settings::tile_size;
-	trafo[3][1] = render_settings::bomb_radius;
-	trafo[3][2] = float(posy) * render_settings::tile_size;
+	model[0][0] = render_settings::bomb_radius;
+	model[1][1] = render_settings::bomb_radius;
+	model[2][2] = render_settings::bomb_radius;
+	model[3][0] = float(posx) * render_settings::tile_size;
+	model[3][1] = render_settings::bomb_radius;
+	model[3][2] = float(posy) * render_settings::tile_size;
 #endif // A1_6
 }
 
 void Bomb::draw() {
 
 	for (auto& elem : prototype) {
-		elem->model = trafo;
+		elem->model = model;
 		elem->bind();
 		setup_light(elem->shader);
 		elem->draw();
@@ -320,7 +320,7 @@ void Bomb::draw() {
 	}
 	// HINT: Right here we may have skipped something tagged 'even more particles'
 #ifndef A1_8
-	particles_small->add(glm::vec3(trafo[3]) + glm::vec3(0, render_settings::bomb_radius, 0),
+	particles_small->add(glm::vec3(model[3]) + glm::vec3(0, render_settings::bomb_radius, 0),
 		1.5f * glm::normalize(glm::vec3(random_float(), 2, random_float())), (rand() % 750) + 500);
 #endif // A1_8
 }

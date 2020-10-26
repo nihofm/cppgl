@@ -12,7 +12,7 @@ public:
 	void draw();
 
     // data
-    glm::mat4 trafo;
+    glm::mat4 model;
     static Drawelement prototype;
 };
 
@@ -23,6 +23,19 @@ public:
 	void draw();
 
     // data
-    glm::mat4 trafo;
+    glm::mat4 model;
     static std::vector<Drawelement> prototype;
 };
+#ifndef A2_6
+class Fog {
+public:
+    Fog(int w, int h);
+
+    void draw();
+
+    // data
+    glm::mat4 model;
+    Timer fog_timer;
+    static Drawelement prototype;
+};
+#endif

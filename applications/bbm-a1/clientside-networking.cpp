@@ -5,8 +5,8 @@
 
 #include <cppgl.h>
 
-#include "static-view-elements.h"
-#include "dynamic-view-elements.h"
+#include "static-objects.h"
+#include "dynamic-objects.h"
 #include "cmdline.h"
 
 using namespace std;

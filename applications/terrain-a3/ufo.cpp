@@ -14,15 +14,15 @@ Ufo::Ufo() {
         }
     }
     // rotate and translate ufo
-    trafo = glm::rotate(glm::mat4(1), float(M_PI) * -.5f, glm::vec3(1, 0, 0));
-    trafo[3][0] = 3;
+    model = glm::rotate(glm::mat4(1), float(M_PI) * -.5f, glm::vec3(1, 0, 0));
+    model[3][0] = 3;
 }
 
 Ufo::~Ufo() {}
 
 void Ufo::draw() {
     for (auto& elem : prototype) {
-        elem->model = trafo;
+        elem->model = model;
         elem->bind();
         setup_light(elem->shader);
         elem->draw();

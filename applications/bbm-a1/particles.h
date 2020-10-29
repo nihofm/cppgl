@@ -6,7 +6,7 @@ class Particles {
     const uint32_t N;
     std::vector<glm::vec3> position;
     std::vector<glm::vec3> direction;
-    std::vector<int> lifetime;
+    std::vector<uint32_t> lifetime;
     std::vector<uint32_t> index_buffer;
     uint32_t vbo_id_pos, vbo_id_life;
     uint32_t start, end;

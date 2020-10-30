@@ -10,6 +10,6 @@ public:
     void draw();
 
     // data
-    glm::mat4 trafo;
+    glm::mat4 model;
 	static std::vector<Drawelement> prototype;
 };

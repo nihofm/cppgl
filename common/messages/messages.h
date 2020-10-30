@@ -157,7 +157,7 @@ namespace msg {
 		char name[max_string_length];
 	} ;
 #pragma pack()
-};
+}
 
 template<typename M> M make_message() {
 	M m;

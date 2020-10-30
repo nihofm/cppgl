@@ -5,8 +5,8 @@
 #include "cmdline.h"
 #include "particles.h"
 #include "rendering.h"
-#include "static-view-elements.h"
-#include "dynamic-view-elements.h"
+#include "static-objects.h"
+#include "dynamic-objects.h"
 #include "clientside-networking.h"
 #undef far
 #undef near

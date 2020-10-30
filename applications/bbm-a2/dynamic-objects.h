@@ -34,7 +34,7 @@ public:
 
     // data
 	std::string name;
-	glm::mat4 trafo, trafo_rot;
+	glm::mat4 model, model_rot;
 	int health;
 	int id;
 	bool respawning;
@@ -56,7 +56,7 @@ public:
 	void draw();
 
     // data
-    glm::mat4   trafo;
+    glm::mat4   model;
 	bool        is_stone;
 	int         stone_type;
 	glm::vec2   uv_offset;
@@ -78,7 +78,7 @@ public:
 
     // data
 	int x, y, id;
-    glm::mat4 trafo;
+    glm::mat4 model;
     static std::vector<Drawelement> prototype;
 };
 

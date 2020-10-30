@@ -278,10 +278,10 @@ void Box::draw() {
 		for (size_t i = 0; i < prototype_scatter.size(); ++i) {
 			// apply explosion translation and rotation
 			const float t = powf(explo_timer.look() / render_settings::box_explosion_duration, 0.75);
-			glm::mat4 model = glm::translate(model, t * explo_translation[i]);
-			model = glm::rotate(model, t * float(5 * M_PI), glm::vec3(explo_rot_axis[i]));
+			glm::mat4 m_model = glm::translate(model, t * explo_translation[i]);
+			m_model = glm::rotate(m_model, t * float(5 * M_PI), glm::vec3(explo_rot_axis[i]));
 
-			prototype_scatter[i]->model = model;
+			prototype_scatter[i]->model = m_model;
 			prototype_scatter[i]->bind();
 			Box::wood_material->bind(prototype_scatter[i]->shader);
 			prototype_scatter[i]->shader->uniform("uv_offset", uv_offset);

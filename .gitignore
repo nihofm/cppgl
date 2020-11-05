@@ -131,3 +131,8 @@ $RECYCLE.BIN/
 imgui.ini
 *.ilk
 *.pdb
+
+# Exceptions
+!/external/thirdparty/lin/lib/*
+!/external/thirdparty/win/lib/*
+!/external/thirdparty/win/bin/x64/*

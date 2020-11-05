@@ -1,7 +1,0 @@
-newmtl ufomtl
-	map_Kd UFO_color.png
-	map_Ks UFO_spec.png
-	map_Bump UFO_norm.png
-	Ka 0 0 0
-	Kd 0.6 0.6 0.6
-

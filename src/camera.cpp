@@ -23,10 +23,10 @@ void make_camera_current(const Camera& cam) {
 
 static glm::mat4 getProjectionMatrix(float left, float right, float top, float bottom, float n, float f) {
     glm::mat4 proj = glm::mat4(0);
-    proj[0][0] = (2.f) / (right - left);
-    proj[1][1] = (2.f) / (bottom - top);
+    proj[0][0] = (2.f*n) / (right - left);
+    proj[1][1] = (2.f*n) / (top- bottom);
     proj[2][0] = (right + left) / (right - (left));
-    proj[2][1] = ((bottom)+(top)) / ((bottom)-(top));
+    proj[2][1] = (bottom+top) / (top-bottom);
     proj[2][2] = -(f + n) / (f - n);
     proj[2][3] = -1.f;
     proj[3][2] = (-2 * f * n) / (f - n);

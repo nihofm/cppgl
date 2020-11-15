@@ -15,7 +15,7 @@ install(TARGETS ${TARGET} DESTINATION lib)
 install(DIRECTORY . DESTINATION include/${TARGET} FILES_MATCHING PATTERN "*.h")
 
 #public interface (cppgl.h is an available header file for all dependant projects)
-target_include_directories(${TARGET} PUBLIC . FILES_MATCHING PATTERN "./${TARGET}.h")
+target_include_directories(${TARGET} INTERFACE .)
 
 # ----------------------------------------------------------
 # dependencies

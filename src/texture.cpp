@@ -25,7 +25,7 @@ inline GLint channels_to_ubyte_format(uint32_t channels) {
 // ----------------------------------------------------
 // Texture2D
 
-Texture2DImpl::Texture2DImpl(const std::string& name, const fs::path& path, bool mipmap) : name(name), id(0), loaded_from_path(path){
+Texture2DImpl::Texture2DImpl(const std::string& name, const fs::path& path, bool mipmap) : name(name), loaded_from_path(path), id(0) {
     // load image from disk
     stbi_set_flip_vertically_on_load(1);
     int channels;

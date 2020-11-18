@@ -1,4 +1,4 @@
-#version 130
+#version 330
 in vec4 pos_wc;
 in vec3 norm_wc;
 in vec2 tc;

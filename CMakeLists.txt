@@ -28,6 +28,11 @@ set(CMAKE_INCLUDE_DIRECTORIES_BEFORE ON)
 set(CMAKE_LINK_DIRECTORIES_BEFORE ON)
 
 if(UNIX)
+    set(LIN_LIB_PATH "${CMAKE_CURRENT_SOURCE_DIR}/external/thirdparty/lin/lib")
+    execute_process(COMMAND "ln" "-s" "${LIN_LIB_PATH}/libglfw.so.3.3"     "${LIN_LIB_PATH}/libglfw.so")
+    execute_process(COMMAND "ln" "-s" "${LIN_LIB_PATH}/libGLEW.so.2.1.0"   "${LIN_LIB_PATH}/libGLEW.so")
+    execute_process(COMMAND "ln" "-s" "${LIN_LIB_PATH}/libassimp.so.5.0.0" "${LIN_LIB_PATH}/libassimp.so")
+
     add_compile_options(-pthread -march=native)
     add_compile_options(-Wall -Wno-unused-parameter -Wno-unused-variable -Wno-int-to-pointer-cast)
     set(CMAKE_INTERPROCEDURAL_OPTIMIZATION ON)

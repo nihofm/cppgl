@@ -12,6 +12,7 @@ void DrawelementImpl::bind() const {
         shader->bind();
         if (mesh) mesh->bind(shader);
         shader->uniform("model", model);
+        shader->uniform("model_normal", glm::transpose(glm::inverse(model)));
         shader->uniform("view", current_camera()->view);
         shader->uniform("view_normal", current_camera()->view_normal);
         shader->uniform("proj", current_camera()->proj);

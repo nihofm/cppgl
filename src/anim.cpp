@@ -154,7 +154,9 @@ void AnimationImpl::put_data(const std::string& name, size_t i, const glm::vec4&
 glm::vec3 AnimationImpl::eval_pos() const {
     // eval centripedal catmull rom spline
     const size_t at = size_t(glm::floor(time));
-    const auto& p0 = camera_path[std::max(at - 1, size_t(0))].first;
+    // prevent underflow
+    const size_t prev_at = size_t(std::max(int(at) - 1, 0));
+    const auto& p0 = camera_path[std::max(prev_at, size_t(0))].first;
     const auto& p1 = camera_path[std::min(at + 0, camera_path.size()) % camera_path.size()].first;
     const auto& p2 = camera_path[std::min(at + 1, camera_path.size()) % camera_path.size()].first;
     const auto& p3 = camera_path[std::min(at + 2, camera_path.size()) % camera_path.size()].first;

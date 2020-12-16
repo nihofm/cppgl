@@ -47,11 +47,15 @@ int main(int argc, char** argv) {
     Context::init(params);
     Context::set_keyboard_callback(keyboard_callback);
     Context::set_mouse_button_callback(mouse_button_callback);
-    gui_add_callback("example_gui_callback", []{ ImGui::ShowMetricsWindow(); });
+    static bool doGreyscaleComputeShaderExample = false;
+    gui_add_callback("example_gui_callback", [] { ImGui::ShowMetricsWindow(); ImGui::Checkbox("do Greyscale", &doGreyscaleComputeShaderExample); });
 
     // setup draw shader
     Shader("draw", "shader/draw.vs", "shader/draw.fs");
     Shader fallbackShader = Shader("fallback", "shader/quad.vs", "shader/fallback.fs");
+
+    Shader computeShaderExample = Shader("computeShaderExample", "shader/computeShaderExample.glcs");
+    Texture2D computeShaderOutputTex("computeExampleOutputTex", Context::resolution().x, Context::resolution().y, GL_RGBA32F, GL_RGBA, GL_FLOAT);
 
     // parse cmd line args
     for (int i = 1; i < argc; ++i) {
@@ -113,10 +117,28 @@ int main(int argc, char** argv) {
 
         fbo->unbind();
 
-        // draw
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        blit(fbo->color_textures[0]);
+        if (doGreyscaleComputeShaderExample) {
+            computeShaderExample->bind();
+            computeShaderOutputTex->bind_image(0, GL_READ_WRITE, GL_RGBA32F);
+            fbo->color_textures[0]->bind(0);
 
+            computeShaderExample->dispatch_compute(Context::resolution().x, Context::resolution().y, 1);
+
+            fbo->color_textures[0]->unbind();
+            computeShaderOutputTex->unbind_image(0);
+
+
+            //blit to screen
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+            blit(computeShaderOutputTex);
+        }
+        else {
+            // draw
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+            blit(fbo->color_textures[0]);
+        }
         // finish frame
         Context::swap_buffers();
     }

@@ -48,7 +48,7 @@ int main(int argc, char** argv) {
     Context::set_keyboard_callback(keyboard_callback);
     Context::set_mouse_button_callback(mouse_button_callback);
     static bool doGreyscaleComputeShaderExample = false;
-    gui_add_callback("example_gui_callback", [] { ImGui::ShowMetricsWindow(); ImGui::Checkbox("do Greyscale", &doGreyscaleComputeShaderExample); });
+    gui_add_callback("example_gui_callback", [] { ImGui::ShowMetricsWindow(); ImGui::Checkbox("compute shader example: convert to greyscale", &doGreyscaleComputeShaderExample); });
 
     // setup draw shader
     Shader("draw", "shader/draw.vs", "shader/draw.fs");
@@ -87,6 +87,8 @@ int main(int argc, char** argv) {
     fbo->attach_depthbuffer(Texture2D("example_fbo/depth", res.x, res.y, GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT, GL_FLOAT));
     fbo->attach_colorbuffer(Texture2D("example_fbo/col", res.x, res.y, GL_RGBA32F, GL_RGBA, GL_FLOAT));
     fbo->check();
+
+    std::cout << "Camera Starting Position: " << current_camera()->pos << std::endl;
 
     // run
     while (Context::running()) {

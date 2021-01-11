@@ -17,3 +17,13 @@
 #include "query.h"
 #include "shader.h"
 #include "texture.h"
+
+//glm to string with <<operators
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtx/string_cast.hpp>
+#include <glm/gtx/type_trait.hpp>
+#include <type_traits>
+template<typename Mat, std::enable_if_t<glm::type<Mat>::is_vec || glm::type<Mat>::is_mat || glm::type<Mat>::is_quat, void*> = nullptr>
+std::ostream& operator<<(std::ostream& os, const Mat& mat) {
+    return os << glm::to_string(mat);
+}

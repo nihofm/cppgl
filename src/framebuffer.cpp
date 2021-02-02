@@ -54,7 +54,7 @@ void FramebufferImpl::attach_depthbuffer(Texture2D tex, bool with_stencil) {
     //depth-stencil combined buffers usually have two possible modes (with required attributes in order), here the first one is used
     //32 bit float depth and 8 bit stencil (GL_DEPTH32F_STENCIL8, GL_DEPTH_STENCIL, GL_FLOAT_32_UNSIGNED_INT_24_8_REV)
     //24 bit depth and 8 bit stencil (GL_DEPTH24_STENCIL8, GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8)
-    if (!tex) tex = Texture2D(name + "_default_depth_"+ (with_stencil ? "and_stencil" : "" )+ "buffer", w, h,
+    if (!tex) tex = Texture2D(name + "_default_depth_"+ (with_stencil ? "and_stencil_" : "" )+ "buffer", w, h,
                                 with_stencil ? GL_DEPTH32F_STENCIL8              : GL_DEPTH_COMPONENT32F,
                                 with_stencil ? GL_DEPTH_STENCIL                  : GL_DEPTH_COMPONENT,
                                 with_stencil ? GL_FLOAT_32_UNSIGNED_INT_24_8_REV : GL_FLOAT);

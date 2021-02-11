@@ -1,1 +1,1 @@
-
+* Remove assimp debug thing

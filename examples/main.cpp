@@ -124,21 +124,20 @@ int main(int argc, char** argv) {
             computeShaderOutputTex->bind_image(0, GL_READ_WRITE, GL_RGBA32F);
             fbo->color_textures[0]->bind(0);
 
+            // dispatches the task to the gpu
             computeShaderExample->dispatch_compute(Context::resolution().x, Context::resolution().y, 1);
 
             fbo->color_textures[0]->unbind();
             computeShaderOutputTex->unbind_image(0);
-
+            computeShaderExample->unbind();
 
             //blit to screen
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
             blit(computeShaderOutputTex);
         }
         else {
-            // draw
+            // copy to screen
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
             blit(fbo->color_textures[0]);
         }
         // finish frame

@@ -1,7 +1,8 @@
-#version 130
+#version 330
 in vec2 tc;
+layout (location = 0) out vec4 out_col;
 uniform sampler2D tex;
-out vec4 out_col;
+
 void main() {
     out_col = vec4(texture(tex, tc).rgb,1);
 }

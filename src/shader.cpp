@@ -116,6 +116,7 @@ static GLuint compile_shader(GLenum type, std::map<GLenum, fs::path>& source_fil
             line++;
         }
         glDeleteShader(shader);
+        std::cerr << error_msg << std::endl;
         throw std::runtime_error(error_msg);
     }
     return shader;
@@ -255,6 +256,7 @@ void ShaderImpl::compile() {
             error_msg += entry.second.string() + "\n";
         error_msg += "Log: " + get_log(program) + "\n";
         glDeleteProgram(program);
+        std::cerr << error_msg << std::endl;
         throw std::runtime_error(error_msg);
     }
     // success, set new id

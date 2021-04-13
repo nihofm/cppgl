@@ -21,7 +21,7 @@ void make_camera_current(const Camera& cam) {
     current_cam = cam;
 }
 
-static glm::mat4 getProjectionMatrix(float left, float right, float top, float bottom, float n, float f) {
+static glm::mat4 get_projection_matrix(float left, float right, float top, float bottom, float n, float f) {
     glm::mat4 proj = glm::mat4(0);
     proj[0][0] = (2.f*n) / (right - left);
     proj[1][1] = (2.f*n) / (top- bottom);
@@ -57,7 +57,7 @@ void CameraImpl::update() {
     up = glm::normalize(up);
     view = glm::lookAt(pos, pos + dir, up);
     view_normal = glm::transpose(glm::inverse(view));
-    proj = perspective ? (skewed ? getProjectionMatrix(left, right, top, bottom, near, far)
+    proj = perspective ? (skewed ? get_projection_matrix(left, right, top, bottom, near, far)
                                  : glm::perspective(fov_degree * float(M_PI / 180), aspect_ratio(), near, far) )
                         : glm::ortho(left, right, bottom, top, near, far);
 }

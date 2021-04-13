@@ -257,7 +257,7 @@ void ShaderImpl::compile() {
         error_msg += "Log: " + get_log(program) + "\n";
         glDeleteProgram(program);
         std::cerr << error_msg << std::endl;
-        throw std::runtime_error(error_msg);
+        throw std::runtime_error("Shader compilation failed");
     }
     // success, set new id
     if (glIsProgram(id))

@@ -54,7 +54,7 @@ void GeometryImpl::add(const std::vector<glm::vec3>& positions, const std::vecto
     // add vertices, normals and texture coords
     this->positions.reserve(this->positions.size() + positions.size());
     this->normals.reserve(this->normals.size() + normals.size());
-    this->texcoords.reserve(this->texcoords.size() + normals.size());
+    this->texcoords.reserve(this->texcoords.size() + texcoords.size());
     for (uint32_t i = 0; i < positions.size(); ++i) {
         this->positions.emplace_back(positions[i]);
         if (i < normals.size())

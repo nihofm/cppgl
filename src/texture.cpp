@@ -25,7 +25,7 @@ inline GLint channels_to_ubyte_format(uint32_t channels) {
 // ----------------------------------------------------
 // Texture2D
 
-Texture2DImpl::Texture2DImpl(const std::string& name, const fs::path& path, bool mipmap) : name(name), id(0), loaded_from_path(path){
+Texture2DImpl::Texture2DImpl(const std::string& name, const fs::path& path, bool mipmap) : name(name), loaded_from_path(path), id(0) {
     // load image from disk
     stbi_set_flip_vertically_on_load(1);
     int channels;
@@ -76,9 +76,9 @@ Texture2DImpl::Texture2DImpl(const std::string& name, uint32_t w, uint32_t h, GL
     glBindTexture(GL_TEXTURE_2D, id);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, format == GL_DEPTH_COMPONENT ? GL_NEAREST : GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, (format == GL_DEPTH_COMPONENT || format == GL_DEPTH_STENCIL) ? GL_NEAREST : GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
-            mipmap ? GL_LINEAR_MIPMAP_LINEAR : format == GL_DEPTH_COMPONENT ? GL_NEAREST : GL_LINEAR);
+            mipmap ? GL_LINEAR_MIPMAP_LINEAR : (format == GL_DEPTH_COMPONENT || format == GL_DEPTH_STENCIL) ? GL_NEAREST : GL_LINEAR);
     glTexImage2D(GL_TEXTURE_2D, 0, internal_format, w, h, 0, format, type, data);
     if (mipmap && data != 0) glGenerateMipmap(GL_TEXTURE_2D);
     glBindTexture(GL_TEXTURE_2D, 0);

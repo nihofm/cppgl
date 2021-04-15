@@ -21,6 +21,19 @@ void make_camera_current(const Camera& cam) {
     current_cam = cam;
 }
 
+static glm::mat4 get_projection_matrix(float left, float right, float top, float bottom, float n, float f) {
+    glm::mat4 proj = glm::mat4(0);
+    proj[0][0] = (2.f*n) / (right - left);
+    proj[1][1] = (2.f*n) / (top- bottom);
+    proj[2][0] = (right + left) / (right - (left));
+    proj[2][1] = (bottom+top) / (top-bottom);
+    proj[2][2] = -(f + n) / (f - n);
+    proj[2][3] = -1.f;
+    proj[3][2] = (-2 * f * n) / (f - n);
+    return proj;
+}
+
+
 // ----------------------------------------------------
 // CameraImpl
 
@@ -28,7 +41,7 @@ float CameraImpl::default_camera_movement_speed = 0.005f;
 
 CameraImpl::CameraImpl(const std::string& name) : name(name), pos(0, 0, 0), dir(1, 0, 0), up(0, 1, 0), fov_degree(70),
     near(0.01f), far(1000), left(-100), right(100), bottom(-100), top(100),
-    perspective(true), fix_up_vector(true) {
+    perspective(true), fix_up_vector(true), skewed(false) {
     update();
 }
 
@@ -44,7 +57,9 @@ void CameraImpl::update() {
     up = glm::normalize(up);
     view = glm::lookAt(pos, pos + dir, up);
     view_normal = glm::transpose(glm::inverse(view));
-    proj = perspective ? glm::perspective(fov_degree * float(M_PI / 180), aspect_ratio(), near, far) : glm::ortho(left, right, bottom, top, near, far);
+    proj = perspective ? (skewed ? get_projection_matrix(left, right, top, bottom, near, far)
+                                 : glm::perspective(fov_degree * float(M_PI / 180), aspect_ratio(), near, far) )
+                        : glm::ortho(left, right, bottom, top, near, far);
 }
 
 void CameraImpl::forward(float by) { pos += by * dir; }

@@ -4,7 +4,8 @@
 #include <memory>
 #include <glm/glm.hpp>
 #include "named_handle.h"
-
+#undef far
+#undef near
 // ----------------------------------------------------
 // Camera
 
@@ -43,8 +44,9 @@ public:
     const std::string name;
     glm::vec3 pos, dir, up;             // camera coordinate system
     float fov_degree, near, far;        // perspective projection
-    float left, right, bottom, top;     // orthographic projection
+    float left, right, bottom, top;     // orthographic projection or skewed frustum
     bool perspective;                   // switch between perspective and orthographic (default: perspective)
+    bool skewed;                        // switcg between normal perspective and skewed frustum (default: normal)
     bool fix_up_vector;                 // keep up vector fixed to avoid camera drift
     glm::mat4 view, view_normal, proj;  // camera matrices (computed via a call update())
 };

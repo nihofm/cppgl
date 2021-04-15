@@ -29,7 +29,11 @@ public:
     void check() const;
     void resize(uint32_t w, uint32_t h);
 
-    void attach_depthbuffer(Texture2D tex = Texture2D());
+    //attaches a depth buffer (with optional stencil component) to the framebuffer,
+    //if no valid texture is given, a default one is created
+    void attach_depthbuffer(Texture2D tex = Texture2D(), bool with_stencil = false);
+
+    //attaches a texture to the latest unused color attachment
     void attach_colorbuffer(const Texture2D& tex);
 
     // data

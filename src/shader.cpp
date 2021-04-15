@@ -104,7 +104,7 @@ static GLuint compile_shader(GLenum type, std::map<GLenum, fs::path>& source_fil
                 int line = stoi(out.substr(2, out.find(":") - 3));
                 lines.push_back(line);
             }
-            catch (const std::exception& e) { e; }
+            catch (const std::exception& e) { (void) e; }
         }
         // print relevant lines
         std::stringstream stream(source);
@@ -116,6 +116,7 @@ static GLuint compile_shader(GLenum type, std::map<GLenum, fs::path>& source_fil
             line++;
         }
         glDeleteShader(shader);
+        std::cerr << error_msg << std::endl;
         throw std::runtime_error(error_msg);
     }
     return shader;
@@ -255,7 +256,8 @@ void ShaderImpl::compile() {
             error_msg += entry.second.string() + "\n";
         error_msg += "Log: " + get_log(program) + "\n";
         glDeleteProgram(program);
-        throw std::runtime_error(error_msg);
+        std::cerr << error_msg << std::endl;
+        throw std::runtime_error("Shader compilation failed, see full output in std::cerr");
     }
     // success, set new id
     if (glIsProgram(id))

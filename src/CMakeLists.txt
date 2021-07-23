@@ -28,6 +28,7 @@ set(OpenGL_GL_PREFERENCE "GLVND")
 find_package(OpenGL REQUIRED)
 target_include_directories(${TARGET} PUBLIC ${OPENGL_INCLUDE_DIR})
 target_link_libraries(${TARGET} ${OPENGL_LIBRARIES})
+target_compile_definitions(${TARGET} PRIVATE CPPGL_BASE_PATH="${CMAKE_CURRENT_SOURCE_DIR}/..")
 
 if(UNIX)
     find_library(GLEW GLEW PATHS ${DEPDIR}/lin/lib NO_DEFAULT_PATH)
@@ -46,5 +47,3 @@ else()
     target_link_libraries(${TARGET} ${GLEW} ${GLFW})
     target_link_libraries(${TARGET} optimized ${ASSIMP} debug ${ASSIMPD})
 endif()
-
-

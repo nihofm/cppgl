@@ -73,15 +73,21 @@ public:
     // management/reload
     void clear();
     void reload_if_modified();
+    
+    // set default paths to search for shader source files
+    static void add_shader_search_path(fs::path path);
 
     // data
     const std::string name;
     GLuint id;
     std::map<GLenum, fs::path> source_files;
     std::map<GLenum, fs::file_time_type> timestamps;
+    
+    static std::vector<fs::path> shader_search_paths;
 };
 
 using Shader = NamedHandle<ShaderImpl>;
 template class _API NamedHandle<ShaderImpl>; //needed for Windows DLL export
+
 
 void reload_modified_shaders();

@@ -235,6 +235,10 @@ void Context::screenshot(const fs::path& path) {
     stbi_flip_vertically_on_write(1);
     const glm::ivec2 size = resolution();
     std::vector<uint8_t> pixels(size.x * size.y * 3);
+    // glReadPixels can align the first pixel in each row at 1-, 2-, 4- and 8-byte boundaries. We
+    // have allocated the exact size needed for the image so we have to use 1-byte alignment
+    // (otherwise glReadPixels would write out of bounds)
+    glPixelStorei(GL_PACK_ALIGNMENT, 1);
     glReadPixels(0, 0, size.x, size.y, GL_RGB, GL_UNSIGNED_BYTE, pixels.data());
     // check file extension
     if (path.extension() == ".png") {

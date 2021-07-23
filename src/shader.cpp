@@ -5,6 +5,14 @@
 #include <algorithm>
 #include <glm/gtc/type_ptr.hpp>
 
+// CPPGL_BASE_PATH compiled from cmake, this is the cppgl base_dir (not src or example)  
+
+// paths where to search for shader files  
+std::vector<fs::path> ShaderImpl::shader_search_paths = {  
+  fs::path(CPPGL_BASE_PATH) / fs::path("examples/shader"),  
+  fs::path(CPPGL_BASE_PATH) / fs::path("src/shader")  
+};  
+
 // ----------------------------------------------------
 // helper funcs
 
@@ -167,7 +175,28 @@ void ShaderImpl::bind() const { glUseProgram(id); }
 void ShaderImpl::unbind() const { glUseProgram(0); }
 
 void ShaderImpl::set_source(GLenum type, const fs::path& path) {
-    source_files[type] = path;
+    if (!fs::exists(path)) {
+      const fs::path filename = path.filename();
+      unsigned int i=0;
+      for(i=0; i<ShaderImpl::shader_search_paths.size(); i++) {
+        if(fs::exists(ShaderImpl::shader_search_paths[i]/filename)) {
+          source_files[type] = ShaderImpl::shader_search_paths[i]/filename;
+          break;
+        }
+      }
+      if(i == shader_search_paths.size()) {
+        // just set it to invalid path since an error is thrown
+        // later anyway
+        source_files[type] = path;
+      }
+    } else {
+      source_files[type] = path;
+    }    
+}
+
+
+void ShaderImpl::add_shader_search_path(fs::path path){  
+  shader_search_paths.push_back(path);  
 }
 
 void ShaderImpl::set_vertex_source(const fs::path& path) {

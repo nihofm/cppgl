@@ -12,6 +12,8 @@ namespace fs = std::filesystem;
 #include "geometry.h"
 #include "material.h"
 
+CPPGL_NAMESPACE_BEGIN
+
 // ------------------------------------------
 // Mesh
 
@@ -68,3 +70,5 @@ template class _API NamedHandle<MeshImpl>; //needed for Windows DLL export
 
 std::vector<std::pair<Geometry, Material>> load_meshes_cpu(const fs::path& path, bool normalize = false);
 std::vector<Mesh> load_meshes_gpu(const fs::path& path, bool normalize = false);
+
+CPPGL_NAMESPACE_END

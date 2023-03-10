@@ -4,8 +4,12 @@
 #include <memory>
 #include <glm/glm.hpp>
 #include "named_handle.h"
+
 #undef far
 #undef near
+
+CPPGL_NAMESPACE_BEGIN
+
 // ----------------------------------------------------
 // Camera
 
@@ -32,6 +36,7 @@ public:
     // load/store
     void store(glm::vec3& pos, glm::quat& rot) const;
     void load(const glm::vec3& pos, const glm::quat& rot);
+    void from_lookat(const glm::vec3& pos, const glm::vec3& lookat, const glm::vec3& up = glm::vec3(0, 1, 0));
 
     // compute aspect ratio from current viewport
     static float aspect_ratio();
@@ -57,3 +62,5 @@ template class _API NamedHandle<CameraImpl>; //needed for Windows DLL export
 // TODO move to CameraImpl::current()
 Camera current_camera();
 void make_camera_current(const Camera& cam);
+
+CPPGL_NAMESPACE_END

@@ -8,7 +8,8 @@
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/rotate_vector.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/quaternion.hpp>
+
+CPPGL_NAMESPACE_BEGIN
 
 static Camera current_cam;
 
@@ -33,7 +34,6 @@ static glm::mat4 get_projection_matrix(float left, float right, float top, float
     return proj;
 }
 
-
 // ----------------------------------------------------
 // CameraImpl
 
@@ -41,15 +41,11 @@ float CameraImpl::default_camera_movement_speed = 0.005f;
 
 CameraImpl::CameraImpl(const std::string& name) : name(name), pos(0, 0, 0), dir(1, 0, 0), up(0, 1, 0), fov_degree(70),
     near(0.01f), far(1000), left(-100), right(100), bottom(-100), top(100),
-    perspective(true), fix_up_vector(true), skewed(false) {
+    perspective(true), skewed(false), fix_up_vector(true) {
     update();
 }
 
-CameraImpl::~CameraImpl() {
-    // TODO debug segfault on reset
-    // if (current_camera().ptr.get() == this) // reset
-        // current_cam = Camera();
-}
+CameraImpl::~CameraImpl() {}
 
 
 void CameraImpl::update() {
@@ -58,7 +54,7 @@ void CameraImpl::update() {
     view = glm::lookAt(pos, pos + dir, up);
     view_normal = glm::transpose(glm::inverse(view));
     proj = perspective ? (skewed ? get_projection_matrix(left, right, top, bottom, near, far)
-                                 : glm::perspective(fov_degree * float(M_PI / 180), aspect_ratio(), near, far) )
+                                 : glm::perspective(glm::radians(fov_degree), aspect_ratio(), near, far))
                         : glm::ortho(left, right, bottom, top, near, far);
 }
 
@@ -76,22 +72,16 @@ void CameraImpl::pitch(float angle) {
 }
 void CameraImpl::roll(float angle) { up = glm::normalize(glm::rotate(up, angle * float(M_PI) / 180.f, dir)); }
 
-void CameraImpl::store(glm::vec3& pos, glm::quat& rot) const {
-    pos = this->pos;
-    rot = glm::quat_cast(view);
-}
-
-void CameraImpl::load(const glm::vec3& pos, const glm::quat& rot) {
+void CameraImpl::from_lookat(const glm::vec3& pos, const glm::vec3& lookat, const glm::vec3& up) {
     this->pos = pos;
-    this->view = glm::mat4_cast(rot);
-    this->dir = -glm::vec3(view[0][2], view[1][2], view[2][2]);
-    this->up = glm::vec3(view[0][1], view[1][1], view[2][1]);
+    this->dir = glm::normalize(lookat - pos);
+    this->up = up;
+    update();
 }
 
 float CameraImpl::aspect_ratio() {
-    GLint xywh[4];
-    glGetIntegerv(GL_VIEWPORT, xywh);
-    return xywh[2] / (float)xywh[3];
+    const glm::ivec2 res = Context::resolution();
+    return float(res.x) / float(res.y);
 }
 
 bool CameraImpl::default_input_handler(double dt_ms) {
@@ -147,3 +137,5 @@ bool CameraImpl::default_input_handler(double dt_ms) {
     last_pos = curr_pos;
     return moved;
 }
+
+CPPGL_NAMESPACE_END

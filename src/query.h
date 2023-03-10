@@ -9,6 +9,8 @@
 #include "named_handle.h"
 #include <algorithm>
 
+CPPGL_NAMESPACE_BEGIN
+
 // -------------------------------------------------------
 // simple cpu timer struct
 
@@ -167,3 +169,5 @@ public:
 
 using FragmentQueryGL = NamedHandle<FragmentQueryGLImpl>;
 template class _API NamedHandle<FragmentQueryGLImpl>; //needed for Windows DLL export
+
+CPPGL_NAMESPACE_END

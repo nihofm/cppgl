@@ -4,6 +4,8 @@
 #include <GL/gl.h>
 #include "named_handle.h"
 
+CPPGL_NAMESPACE_BEGIN
+
 // ----------------------------------------------------
 // Generic GLBufferImpl
 
@@ -131,3 +133,5 @@ template class _API NamedHandle<GLBufferImpl<GL_PIXEL_UNPACK_BUFFER>>;
 template class _API NamedHandle<GLBufferImpl<GL_PIXEL_PACK_BUFFER>>;
 template class _API NamedHandle<GLBufferImpl<GL_COPY_READ_BUFFER>>;
 template class _API NamedHandle<GLBufferImpl<GL_COPY_WRITE_BUFFER>>;
+
+CPPGL_NAMESPACE_END

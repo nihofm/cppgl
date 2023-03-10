@@ -4,6 +4,8 @@
 #include "mesh.h"
 #include "shader.h"
 
+CPPGL_NAMESPACE_BEGIN
+
 // -----------------------------------------------
 // Drawelement (object instance for rendering)
 
@@ -25,3 +27,5 @@ public:
 
 using Drawelement = NamedHandle<DrawelementImpl>;
 template class _API NamedHandle<DrawelementImpl>; //needed for Windows DLL export
+
+CPPGL_NAMESPACE_END

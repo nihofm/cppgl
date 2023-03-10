@@ -1,31 +1,31 @@
 #include <cppgl.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-
 #include <iostream>
 #include <fstream>
 
 // ------------------------------------------
 // helper funcs and callbacks
 
-void blit(const Texture2D& tex) {
-    static Shader blit_shader("blit", "shader/quad.vs", "shader/blit.fs");
+void blit(const cppgl::Texture2D& tex) {
+    static cppgl::Shader blit_shader("blit", "shader/quad.vs", "shader/blit.fs");
     blit_shader->bind();
     blit_shader->uniform("tex", tex, 0);
-    Quad::draw();
+    cppgl::Quad::draw();
     blit_shader->unbind();
 }
 
 void resize_callback(int w, int h) {
-    Framebuffer::find("example_fbo")->resize(w, h);
+    cppgl::Framebuffer::find("example_fbo")->resize(w, h);
+    cppgl::Texture2D::find("computeExampleOutputTex")->resize(w, h);
 }
 
 void keyboard_callback(int key, int scancode, int action, int mods) {
     if (ImGui::GetIO().WantCaptureKeyboard) return;
     if (mods == GLFW_MOD_SHIFT && key == GLFW_KEY_R && action == GLFW_PRESS)
-        reload_modified_shaders();
+        cppgl::reload_modified_shaders();
     if (key == GLFW_KEY_ENTER && action == GLFW_PRESS)
-        Context::screenshot("screenshot.png");
+        cppgl::Context::screenshot("screenshot.png");
 }
 
 void mouse_button_callback(int button, int action, int mods) {
@@ -34,6 +34,8 @@ void mouse_button_callback(int button, int action, int mods) {
 
 // ------------------------------------------
 // main
+
+using namespace cppgl;
 
 int main(int argc, char** argv) {
     // init GL
@@ -45,17 +47,28 @@ int main(int argc, char** argv) {
     //params.resizable = GLFW_FALSE;
     params.swap_interval = 1;
     Context::init(params);
-    Context::set_keyboard_callback(keyboard_callback);
-    Context::set_mouse_button_callback(mouse_button_callback);
-    static bool doGreyscaleComputeShaderExample = false;
-    gui_add_callback("example_gui_callback", [] { ImGui::ShowMetricsWindow(); ImGui::Checkbox("compute shader example: convert to greyscale", &doGreyscaleComputeShaderExample); });
+
+    // setup fbo
+    const glm::ivec2 res = Context::resolution();
+    Framebuffer fbo = Framebuffer("example_fbo", res.x, res.y);
+    fbo->attach_depthbuffer(Texture2D("example_fbo/depth", res.x, res.y, GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT, GL_FLOAT));
+    fbo->attach_colorbuffer(Texture2D("example_fbo/col", res.x, res.y, GL_RGBA32F, GL_RGBA, GL_FLOAT));
+    fbo->check();
 
     // setup draw shader
     Shader("draw", "shader/draw.vs", "shader/draw.fs");
     Shader fallbackShader = Shader("fallback", "shader/quad.vs", "shader/fallback.fs");
 
+    // setup compute shader
     Shader computeShaderExample = Shader("computeShaderExample", "shader/computeShaderExample.glcs");
     Texture2D computeShaderOutputTex("computeExampleOutputTex", Context::resolution().x, Context::resolution().y, GL_RGBA32F, GL_RGBA, GL_FLOAT);
+
+    // install callbacks
+    Context::set_resize_callback(resize_callback);
+    Context::set_keyboard_callback(keyboard_callback);
+    Context::set_mouse_button_callback(mouse_button_callback);
+    static bool doGreyscaleComputeShaderExample = false;
+    gui_add_callback("example_gui_callback", [] { ImGui::ShowMetricsWindow(); ImGui::Checkbox("compute shader example: convert to greyscale", &doGreyscaleComputeShaderExample); });
 
     // parse cmd line args
     for (int i = 1; i < argc; ++i) {
@@ -79,14 +92,6 @@ int main(int argc, char** argv) {
                 Drawelement(mesh->name, Shader::find("draw"), mesh);
         }
     }
-    Context::set_resize_callback(resize_callback);
-
-    // setup fbo
-    const glm::ivec2 res = Context::resolution();
-    Framebuffer fbo = Framebuffer("example_fbo", res.x, res.y);
-    fbo->attach_depthbuffer(Texture2D("example_fbo/depth", res.x, res.y, GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT, GL_FLOAT));
-    fbo->attach_colorbuffer(Texture2D("example_fbo/col", res.x, res.y, GL_RGBA32F, GL_RGBA, GL_FLOAT));
-    fbo->check();
 
     std::cout << "Camera Starting Position: " << current_camera()->pos << std::endl;
 
@@ -102,21 +107,20 @@ int main(int argc, char** argv) {
         if (frame_counter++ % 100 == 0)
             reload_modified_shaders();
 
-        // render all drawelements into fbo
+        // render all drawelements (or fallback) into fbo
         fbo->bind();
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        for (const auto& [key, drawelement] : Drawelement::map) {
-            drawelement->bind();
-            drawelement->draw();
-            drawelement->unbind();
-        }
-        // render tc as fallback if no objects are rendered
         if (Drawelement::map.empty()) {
             fallbackShader->bind();
             Quad::draw();
             fallbackShader->unbind();
+        } else {
+            for (const auto& [key, drawelement] : Drawelement::map) {
+                drawelement->bind();
+                drawelement->draw();
+                drawelement->unbind();
+            }
         }
-
         fbo->unbind();
 
         if (doGreyscaleComputeShaderExample) {
@@ -134,12 +138,12 @@ int main(int argc, char** argv) {
             //blit to screen
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
             blit(computeShaderOutputTex);
-        }
-        else {
+        } else {
             // copy to screen
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
             blit(fbo->color_textures[0]);
         }
+
         // finish frame
         Context::swap_buffers();
     }

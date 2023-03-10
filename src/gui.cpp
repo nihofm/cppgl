@@ -3,6 +3,8 @@
 #include "imgui/imgui_impl_opengl3.h"
 #include <map>
 
+CPPGL_NAMESPACE_BEGIN
+
 // -------------------------------------------
 // callbacks
 
@@ -21,10 +23,19 @@ void gui_remove_callback(const std::string& name) {
 
 void gui_draw() {
     // show timers/queries in top left corner
-    ImGui::SetNextWindowPos(ImVec2(10, 20));
-    ImGui::SetNextWindowSize(ImVec2(350, 500));
-    if (ImGui::Begin("CPU/GPU Timer", 0, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoBackground)) {
-        ImGui::PushStyleVar(ImGuiStyleVar_Alpha, .9f);
+    static const int entry_length = 500/8; // crude approximation
+    // calc window size
+    int window_length = entry_length*TimerQuery::map.size();
+    window_length +=    entry_length*TimerQueryGL::map.size();
+    window_length +=    entry_length*PrimitiveQueryGL::map.size();
+    window_length +=    entry_length*FragmentQueryGL::map.size();
+
+    // timers
+    ImGui::SetNextWindowPos(ImVec2(0, 20));
+    ImGui::SetNextWindowSize(ImVec2(350+200*(ImGui::GetIO().FontGlobalScale-1), window_length));
+    ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.,0.,0., 0.7));
+    ImGui::PushStyleVar(ImGuiStyleVar_Alpha, .9f);
+    if (ImGui::Begin("CPU/GPU Timer", 0, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoInputs)) {
         for (const auto& [name, query] : TimerQuery::map) {
             ImGui::Separator();
             gui_display_query_timer(*query, name.c_str());
@@ -41,8 +52,9 @@ void gui_draw() {
             ImGui::Separator();
             gui_display_query_counter(*query, name.c_str());
         }
-        ImGui::PopStyleVar();
     }
+    ImGui::PopStyleVar();
+    ImGui::PopStyleColor();
     ImGui::End();
 
     static bool gui_show_cameras = false;
@@ -188,10 +200,10 @@ void gui_display_texture(const Texture2D& tex, const glm::ivec2& size) {
     ImGui::Text("name: %s", tex->name.c_str());
     ImGui::Text("ID: %u, size: %ux%u", tex->id, tex->w, tex->h);
     ImGui::Text("internal_format: %u, format %u, type: %u", tex->internal_format, tex->format, tex->type);
-    ImGui::Image((ImTextureID)tex->id, ImVec2(size.x, size.y), ImVec2(0, 1), ImVec2(1, 0), ImVec4(1, 1, 1, 1), ImVec4(1, 1, 1, 0.5));
-    if (ImGui::Button(("Save PNG##" + tex->name).c_str())) tex->save_png(fs::path(tex->name).replace_extension(".png"));
+    ImGui::Image((ImTextureID)size_t(tex->id), ImVec2(size.x, size.y), ImVec2(0, 1), ImVec2(1, 0), ImVec4(1, 1, 1, 1), ImVec4(1, 1, 1, 0.5));
+    if (ImGui::Button(("Save PNG##" + tex->name).c_str())) tex->save_ldr(fs::path(tex->name).filename().replace_extension(".png"));
     ImGui::SameLine();
-    if (ImGui::Button(("Save JPEG##" + tex->name).c_str())) tex->save_jpg(fs::path(tex->name).replace_extension(".jpg"));
+    if (ImGui::Button(("Save JPEG##" + tex->name).c_str())) tex->save_ldr(fs::path(tex->name).filename().replace_extension(".jpg"));
     ImGui::Unindent();
 }
 
@@ -289,10 +301,12 @@ void gui_display_geometry(const Geometry& geom) {
 void gui_display_mesh(const Mesh& mesh) {
     ImGui::Indent();
     ImGui::Text("name: %s", mesh->name.c_str());
-    if (ImGui::CollapsingHeader(("geometry: " + mesh->geometry->name).c_str()))
-        gui_display_geometry(mesh->geometry);
-    if (ImGui::CollapsingHeader(("material: " + mesh->material->name).c_str()))
-        gui_display_material(mesh->material);
+    if (mesh->geometry)
+        if (ImGui::CollapsingHeader(("geometry: " + mesh->geometry->name).c_str()))
+            gui_display_geometry(mesh->geometry);
+    if (mesh->material)
+        if (ImGui::CollapsingHeader(("material: " + mesh->material->name).c_str()))
+            gui_display_material(mesh->material);
     ImGui::Unindent();
 }
 
@@ -311,7 +325,7 @@ void gui_display_mat4(glm::mat4& mat) {
 void gui_display_drawelement(Drawelement& elem) {
     ImGui::Indent();
     ImGui::Text("name: %s", elem->name.c_str());
-    if (ImGui::CollapsingHeader("modelmatrix"))
+    if (ImGui::CollapsingHeader(("modelmatrix##" + elem->name).c_str()))
         gui_display_mat4(elem->model);
     if (ImGui::CollapsingHeader(("shader: " + elem->shader->name).c_str()))
         gui_display_shader(elem->shader);
@@ -326,10 +340,15 @@ void gui_display_animation(const Animation& anim) {
     ImGui::Text("curr time: %.3f / %lu, ms_per_node: %.3f", anim->time, anim->camera_path.size(), anim->ms_between_nodes);
     ImGui::Text("camera path:");
     ImGui::Indent();
-    for (const auto& [pos, rot] : anim->camera_path)
-        ImGui::Text("pos: (%.3f, %.3f, %.3f), rot: (%.3f, %.3f, %.3f, %.3f)", pos.x, pos.y, pos.z, rot.x, rot.y, rot.z, rot.w);
+    for (const auto& [pos, lookat] : anim->camera_path)
+        ImGui::Text("pos: (%.3f, %.3f, %.3f), lookat: (%.3f, %.3f, %.3f)", pos.x, pos.y, pos.z, lookat.x, lookat.y, lookat.z);
     ImGui::Unindent();
-    // TODO add anim node data?
+    ImGui::Text("path data:");
+    ImGui::Indent();
+    for (const auto& [name, data] : anim->data_path)
+        if (data.size() > 0)
+            ImGui::Text("name: %s, length: %lu, type: %s", name.c_str(), data.size(), data.at(0).type().name());
+    ImGui::Unindent();
     ImGui::Unindent();
 }
 
@@ -352,3 +371,5 @@ void gui_display_query_counter(const Query& query, const char* label) {
     ImGui::PlotHistogram(label, query.data.data(), query.data.size(), query.curr, 0, 0.f, std::max(upper, 17.f), ImVec2(0, 30));
     ImGui::PopStyleColor();
 }
+
+CPPGL_NAMESPACE_END

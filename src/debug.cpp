@@ -1,134 +1,17 @@
 #include "debug.h"
-
 #include <GL/glew.h>
 #include <GL/gl.h>
 
 // -----------------------------------------------------------
-// GL debug output
+// Signal handler to demangle current stack frame on linux
 
-void debugCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam) {
-    // get source of error
-    std::string src;
-    switch (source){
-    case GL_DEBUG_SOURCE_API:
-        src = "API"; break;
-    case GL_DEBUG_SOURCE_WINDOW_SYSTEM:
-        src = "WINDOW_SYSTEM"; break;
-    case GL_DEBUG_SOURCE_SHADER_COMPILER:
-        src = "SHADER_COMPILER"; break;
-    case GL_DEBUG_SOURCE_THIRD_PARTY:
-        src = "THIRD_PARTY"; break;
-    case GL_DEBUG_SOURCE_APPLICATION:
-        src = "APPLICATION"; break;
-    case GL_DEBUG_SOURCE_OTHER:
-        src = "OTHER"; break;
-    }
-    // get type of error
-    std::string typ;
-    switch (type){
-    case GL_DEBUG_TYPE_ERROR:
-        typ = "ERROR"; break;
-    case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR:
-        typ = "DEPRECATED_BEHAVIOR"; break;
-    case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR:
-        typ = "UNDEFINED_BEHAVIOR"; break;
-    case GL_DEBUG_TYPE_PORTABILITY:
-        typ = "PORTABILITY"; break;
-    case GL_DEBUG_TYPE_PERFORMANCE:
-        typ = "PERFORMANCE"; break;
-    case GL_DEBUG_TYPE_OTHER:
-        typ = "OTHER"; break;
-    case GL_DEBUG_TYPE_MARKER:
-        typ = "MARKER"; break;
-    case GL_DEBUG_TYPE_PUSH_GROUP:
-        typ = "PUSH_GROUP"; break;
-    case GL_DEBUG_TYPE_POP_GROUP:
-        typ = "POP_GROUP"; break;
-    }
-    // get severity
-    std::string sev;
-    switch (severity) {
-    case GL_DEBUG_SEVERITY_NOTIFICATION:
-        sev = "NOTIFICATION"; break;
-    case GL_DEBUG_SEVERITY_LOW:
-        sev = "LOW"; break;
-    case GL_DEBUG_SEVERITY_MEDIUM:
-        sev = "MEDIUM"; break;
-    case GL_DEBUG_SEVERITY_HIGH:
-        sev = "HIGH"; break;
-    }
-    fprintf(stderr, "GL_DEBUG: Severity: %s, Source: %s, Type: %s.\nMessage: %s\n", sev.c_str(), src.c_str(), typ.c_str(), message);
-}
-
-void enable_gl_debug_output() {
-    glEnable(GL_DEBUG_OUTPUT);
-    glDebugMessageCallback(debugCallback, 0);
-    disable_gl_notifications();
-}
-
-void disable_gl_debug_output() {
-    glDisable(GL_DEBUG_OUTPUT);
-}
-
-void enable_gl_notifications() {
-    glDebugMessageControl(GL_DEBUG_SOURCE_API, GL_DEBUG_TYPE_OTHER, GL_DEBUG_SEVERITY_NOTIFICATION, 0, 0, GL_TRUE);
-}
-
-void disable_gl_notifications() {
-    glDebugMessageControl(GL_DEBUG_SOURCE_API, GL_DEBUG_TYPE_OTHER, GL_DEBUG_SEVERITY_NOTIFICATION, 0, 0, GL_FALSE);
-}
-
-
-#ifdef _WIN32
-
-void enable_strack_trace_on_crash(){ std::cerr <<"STACK TRACE NOT IMPLEMENTED ON WINDOWS" << std::endl; }
-void disable_stack_trace_on_crash() { }
-
-#else
+#ifndef _WIN32
 
 #include <execinfo.h>
 #include <cxxabi.h>
 #include <signal.h>
-// -----------------------------------------------------------
-// Demangle and print current stack frame
-
-using namespace std;
-
-void print_stack_trace(FILE* out, unsigned int offset);
-
-void signal_handler(int signum) {
-    const char* name = NULL;
-    switch (signum) {
-    case SIGABRT: name = "SIGABRT";  break;
-    case SIGSEGV: name = "SIGSEGV";  break;
-    case SIGBUS:  name = "SIGBUS";   break;
-    case SIGILL:  name = "SIGILL";   break;
-    case SIGFPE:  name = "SIGFPE";   break;
-    }
-    if (name)
-        fprintf(stderr, "Caught signal %d (%s)\n", signum, name);
-    else
-        fprintf(stderr, "Caught signal %d\n", signum);
-    print_stack_trace(stderr, 4);
-    exit(signum);
-}
-
-void enable_strack_trace_on_crash() {
-    signal(SIGABRT, signal_handler);
-    signal(SIGSEGV, signal_handler);
-    signal(SIGILL, signal_handler);
-    signal(SIGFPE, signal_handler);
-}
-
-void disable_strack_trace_on_crash() {
-    signal(SIGABRT, SIG_DFL);
-    signal(SIGSEGV, SIG_DFL);
-    signal(SIGILL, SIG_DFL);
-    signal(SIGFPE, SIG_DFL);
-}
-
-
 #define MAX_FRAMES 63
+
 void print_stack_trace(FILE *out, unsigned int offset) {
     fprintf(out, "Stack trace:\n");
     // storage array for stack trace address data
@@ -211,4 +94,119 @@ void print_stack_trace(FILE *out, unsigned int offset) {
     free(symbollist);
 }
 
+void signal_handler(int signum) {
+    const char* name = NULL;
+    switch (signum) {
+    case SIGABRT: name = "SIGABRT";  break;
+    case SIGSEGV: name = "SIGSEGV";  break;
+    case SIGBUS:  name = "SIGBUS";   break;
+    case SIGILL:  name = "SIGILL";   break;
+    case SIGFPE:  name = "SIGFPE";   break;
+    }
+    if (name)
+        fprintf(stderr, "Caught signal %d (%s)\n", signum, name);
+    else
+        fprintf(stderr, "Caught signal %d\n", signum);
+    print_stack_trace(stderr, 4);
+    exit(signum);
+}
 #endif
+
+CPPGL_NAMESPACE_BEGIN
+
+#ifdef _WIN32
+void enable_strack_trace_on_crash(){ std::cerr <<"STACK TRACE NOT IMPLEMENTED ON WINDOWS" << std::endl; }
+
+void disable_stack_trace_on_crash() { }
+#else
+void enable_strack_trace_on_crash() {
+    signal(SIGABRT, signal_handler);
+    signal(SIGSEGV, signal_handler);
+    signal(SIGILL, signal_handler);
+    signal(SIGFPE, signal_handler);
+}
+
+void disable_strack_trace_on_crash() {
+    signal(SIGABRT, SIG_DFL);
+    signal(SIGSEGV, SIG_DFL);
+    signal(SIGILL, SIG_DFL);
+    signal(SIGFPE, SIG_DFL);
+}
+#endif
+
+// -----------------------------------------------------------
+// GL debug output
+
+void GLAPIENTRY debugCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam) {
+    // get source of error
+    std::string src;
+    switch (source){
+    case GL_DEBUG_SOURCE_API:
+        src = "API"; break;
+    case GL_DEBUG_SOURCE_WINDOW_SYSTEM:
+        src = "WINDOW_SYSTEM"; break;
+    case GL_DEBUG_SOURCE_SHADER_COMPILER:
+        src = "SHADER_COMPILER"; break;
+    case GL_DEBUG_SOURCE_THIRD_PARTY:
+        src = "THIRD_PARTY"; break;
+    case GL_DEBUG_SOURCE_APPLICATION:
+        src = "APPLICATION"; break;
+    case GL_DEBUG_SOURCE_OTHER:
+        src = "OTHER"; break;
+    }
+    // get type of error
+    std::string typ;
+    switch (type){
+    case GL_DEBUG_TYPE_ERROR:
+        typ = "ERROR"; break;
+    case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR:
+        typ = "DEPRECATED_BEHAVIOR"; break;
+    case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR:
+        typ = "UNDEFINED_BEHAVIOR"; break;
+    case GL_DEBUG_TYPE_PORTABILITY:
+        typ = "PORTABILITY"; break;
+    case GL_DEBUG_TYPE_PERFORMANCE:
+        typ = "PERFORMANCE"; break;
+    case GL_DEBUG_TYPE_OTHER:
+        typ = "OTHER"; break;
+    case GL_DEBUG_TYPE_MARKER:
+        typ = "MARKER"; break;
+    case GL_DEBUG_TYPE_PUSH_GROUP:
+        typ = "PUSH_GROUP"; break;
+    case GL_DEBUG_TYPE_POP_GROUP:
+        typ = "POP_GROUP"; break;
+    }
+    // get severity
+    std::string sev;
+    switch (severity) {
+    case GL_DEBUG_SEVERITY_NOTIFICATION:
+        sev = "NOTIFICATION"; break;
+    case GL_DEBUG_SEVERITY_LOW:
+        sev = "LOW"; break;
+    case GL_DEBUG_SEVERITY_MEDIUM:
+        sev = "MEDIUM"; break;
+    case GL_DEBUG_SEVERITY_HIGH:
+        sev = "HIGH"; break;
+    }
+    fprintf(stderr, "GL_DEBUG: Severity: %s, Source: %s, Type: %s.\nMessage: %s\n", sev.c_str(), src.c_str(), typ.c_str(), message);
+}
+
+void enable_gl_debug_output() {
+    glEnable(GL_DEBUG_OUTPUT);
+    glDebugMessageCallback(debugCallback, 0);
+    disable_gl_notifications();
+}
+
+void disable_gl_debug_output() {
+    glDisable(GL_DEBUG_OUTPUT);
+}
+
+void enable_gl_notifications() {
+    glDebugMessageControl(GL_DEBUG_SOURCE_API, GL_DEBUG_TYPE_OTHER, GL_DEBUG_SEVERITY_NOTIFICATION, 0, 0, GL_TRUE);
+}
+
+void disable_gl_notifications() {
+    glDebugMessageControl(GL_DEBUG_SOURCE_API, GL_DEBUG_TYPE_OTHER, GL_DEBUG_SEVERITY_NOTIFICATION, 0, 0, GL_FALSE);
+}
+
+CPPGL_NAMESPACE_END

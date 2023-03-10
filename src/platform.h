@@ -1,5 +1,14 @@
 #pragma once
 
+// -------------------------------------------
+// main cppgl namespace definition TODO: better place for this, own header?
+
+#define CPPGL_NAMESPACE_BEGIN namespace cppgl {
+#define CPPGL_NAMESPACE_END }
+
+// -------------------------------------------
+// platform-dependent defines
+
 #ifdef _WIN32
 	#ifdef BUILD_CPPGL_DLL
 		#define _API __declspec(dllexport)

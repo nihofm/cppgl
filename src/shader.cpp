@@ -5,13 +5,10 @@
 #include <algorithm>
 #include <glm/gtc/type_ptr.hpp>
 
-// CPPGL_BASE_PATH compiled from cmake, this is the cppgl base_dir (not src or example)  
+CPPGL_NAMESPACE_BEGIN
 
 // paths where to search for shader files  
-std::vector<fs::path> ShaderImpl::shader_search_paths = {  
-  fs::path(CPPGL_BASE_PATH) / fs::path("examples/shader"),  
-  fs::path(CPPGL_BASE_PATH) / fs::path("src/shader")  
-};  
+std::vector<fs::path> ShaderImpl::shader_search_paths = {};  
 
 // ----------------------------------------------------
 // helper funcs
@@ -50,15 +47,16 @@ static std::string get_log(GLuint object) {
     return error_string;
 }
 
-static GLuint compile_shader(GLenum type, std::map<GLenum, fs::path>& source_files, std::map<GLenum, fs::file_time_type>& timestamps) {
-    std::cout << "Loading: " << source_files[type] << "..." << std::endl;
-    std::string source = read_file(source_files[type]);
-    timestamps[type] = fs::last_write_time(source_files[type]);
+static GLuint compile_shader(GLenum type, ShaderImpl& impl) {
+    std::cout << "Loading: " << impl.source_files[type] << "..." << std::endl;
+    std::string source = read_file(impl.source_files[type]);
+    impl.timestamps[type] = fs::last_write_time(impl.source_files[type]);
     if (source.empty())
         throw std::runtime_error("ERROR: Trying to compile shader from empty source!");
 
     // handle single level of #include
     std::string::size_type inc_at;
+    impl.include_timestamps.clear();
     while ((inc_at = source.find("#include")) != std::string::npos) {
         auto inc_to = source.find("\n", inc_at);
         std::string inc_str = source.substr(inc_at, inc_to - inc_at);
@@ -77,7 +75,7 @@ static GLuint compile_shader(GLenum type, std::map<GLenum, fs::path>& source_fil
             throw std::runtime_error("ERROR: Failed to parse #include string: " + inc_str);
 
         // read #include-file
-        fs::path p = source_files[type];
+        fs::path p = impl.source_files[type];
         p = p.remove_filename() / inc_file;
         std::ifstream f(p.c_str(), std::ios::in);
         if (f.is_open()) {
@@ -88,6 +86,9 @@ static GLuint compile_shader(GLenum type, std::map<GLenum, fs::path>& source_fil
             source.replace(inc_at, inc_to - inc_at, inc_src);
         } else
             throw std::runtime_error("ERROR: Failed to open #include file: " + inc_str);
+
+        // store include file timestamp for reloads
+        impl.include_timestamps[p] = fs::last_write_time(p);
     }
 
     // actually compile shader
@@ -101,7 +102,7 @@ static GLuint compile_shader(GLenum type, std::map<GLenum, fs::path>& source_fil
     glGetShaderiv(shader, GL_COMPILE_STATUS, &shaderCompiled);
     if (shaderCompiled != GL_TRUE) {
         std::string log = get_log(shader);
-        std::string error_msg = "ERROR: Failed to compile shader: " + source_files[type].string() + ".\n" + log + "\nSource:\n";
+        std::string error_msg = "ERROR: Failed to compile shader: " + impl.source_files[type].string() + ".\n" + log + "\nSource:\n";
         // get relevant lines
         std::string out;
         std::stringstream logstream(log);
@@ -130,9 +131,11 @@ static GLuint compile_shader(GLenum type, std::map<GLenum, fs::path>& source_fil
     return shader;
 }
 
-void reload_modified_shaders() {
+bool reload_modified_shaders() {
+    bool modified = false;
     for (auto& pair : Shader::map)
-        pair.second->reload_if_modified();
+        modified |= pair.second->reload_if_modified();
+    return modified;
 }
 
 // ----------------------------------------------------
@@ -176,27 +179,26 @@ void ShaderImpl::unbind() const { glUseProgram(0); }
 
 void ShaderImpl::set_source(GLenum type, const fs::path& path) {
     if (!fs::exists(path)) {
-      const fs::path filename = path.filename();
-      unsigned int i=0;
-      for(i=0; i<ShaderImpl::shader_search_paths.size(); i++) {
-        if(fs::exists(ShaderImpl::shader_search_paths[i]/filename)) {
-          source_files[type] = ShaderImpl::shader_search_paths[i]/filename;
-          break;
+        const fs::path filename = path.filename();
+        unsigned int i = 0;
+        for (i=0; i<ShaderImpl::shader_search_paths.size(); i++) {
+            if (fs::exists(ShaderImpl::shader_search_paths[i] / filename)) {
+                source_files[type] = ShaderImpl::shader_search_paths[i] / filename;
+                break;
+            }
         }
-      }
-      if(i == shader_search_paths.size()) {
-        // just set it to invalid path since an error is thrown
-        // later anyway
-        source_files[type] = path;
-      }
+        if (i == shader_search_paths.size()) {
+            // just set it to invalid path since an error is thrown later anyway
+            source_files[type] = path;
+        }
     } else {
-      source_files[type] = path;
-    }    
+        source_files[type] = path;
+    }
 }
 
 
 void ShaderImpl::add_shader_search_path(fs::path path){  
-  shader_search_paths.push_back(path);  
+    shader_search_paths.push_back(path);
 }
 
 void ShaderImpl::set_vertex_source(const fs::path& path) {
@@ -227,7 +229,7 @@ void ShaderImpl::compile() {
     // compile shaders
     GLuint program = glCreateProgram();
     if (source_files.count(GL_COMPUTE_SHADER)) { // is compute shader
-        GLuint shader = compile_shader(GL_COMPUTE_SHADER, source_files, timestamps);
+        GLuint shader = compile_shader(GL_COMPUTE_SHADER, *this);
         if (!shader) {
             glDeleteProgram(program);
             return;
@@ -235,7 +237,7 @@ void ShaderImpl::compile() {
         glAttachShader(program, shader);
     } else { // is pipeline
         if (source_files.count(GL_VERTEX_SHADER)) {
-            GLuint shader = compile_shader(GL_VERTEX_SHADER, source_files, timestamps);
+            GLuint shader = compile_shader(GL_VERTEX_SHADER, *this);
             if (!shader) {
                 glDeleteProgram(program);
                 return;
@@ -243,7 +245,7 @@ void ShaderImpl::compile() {
             glAttachShader(program, shader);
         }
         if (source_files.count(GL_TESS_CONTROL_SHADER)) {
-            GLuint shader = compile_shader(GL_TESS_CONTROL_SHADER, source_files, timestamps);
+            GLuint shader = compile_shader(GL_TESS_CONTROL_SHADER, *this);
             if (!shader) {
                 glDeleteProgram(program);
                 return;
@@ -251,7 +253,7 @@ void ShaderImpl::compile() {
             glAttachShader(program, shader);
         }
         if (source_files.count(GL_TESS_EVALUATION_SHADER)) {
-            GLuint shader = compile_shader(GL_TESS_EVALUATION_SHADER, source_files, timestamps);
+            GLuint shader = compile_shader(GL_TESS_EVALUATION_SHADER, *this);
             if (!shader) {
                 glDeleteProgram(program);
                 return;
@@ -259,7 +261,7 @@ void ShaderImpl::compile() {
             glAttachShader(program, shader);
         }
         if (source_files.count(GL_GEOMETRY_SHADER)) {
-            GLuint shader = compile_shader(GL_GEOMETRY_SHADER, source_files, timestamps);
+            GLuint shader = compile_shader(GL_GEOMETRY_SHADER, *this);
             if (!shader) {
                 glDeleteProgram(program);
                 return;
@@ -267,7 +269,7 @@ void ShaderImpl::compile() {
             glAttachShader(program, shader);
         }
         if (source_files.count(GL_FRAGMENT_SHADER)) {
-            GLuint shader = compile_shader(GL_FRAGMENT_SHADER, source_files, timestamps);
+            GLuint shader = compile_shader(GL_FRAGMENT_SHADER, *this);
             if (!shader) {
                 glDeleteProgram(program);
                 return;
@@ -294,10 +296,12 @@ void ShaderImpl::compile() {
     id = program;
 }
 
-void ShaderImpl::dispatch_compute(uint32_t w, uint32_t h, uint32_t d) const {
+void ShaderImpl::dispatch_compute(uint32_t w, uint32_t h, uint32_t d, GLbitfield memory_barrier_bits) const {
     glm::ivec3 size;
     glGetProgramiv(id, GL_COMPUTE_WORK_GROUP_SIZE, &size.x);
     glDispatchCompute(int(ceil(w / float(size.x))), int(ceil(h / float(size.y))), int(ceil(d / float(size.z))));
+    if (memory_barrier_bits != 0)
+        glMemoryBarrier(memory_barrier_bits);
 }
 
 void ShaderImpl::uniform(const std::string& name, int val) const {
@@ -308,6 +312,16 @@ void ShaderImpl::uniform(const std::string& name, int val) const {
 void ShaderImpl::uniform(const std::string& name, int *val, uint32_t count) const {
     int loc = glGetUniformLocation(id, name.c_str());
     glUniform1iv(loc, count, val);
+}
+
+void ShaderImpl::uniform(const std::string& name, uint32_t val) const {
+    int loc = glGetUniformLocation(id, name.c_str());
+    glUniform1ui(loc, val);
+}
+
+void ShaderImpl::uniform(const std::string& name, uint32_t* val, uint32_t count) const {
+    int loc = glGetUniformLocation(id, name.c_str());
+    glUniform1uiv(loc, count, val);
 }
 
 void ShaderImpl::uniform(const std::string& name, float val) const {
@@ -387,15 +401,32 @@ void ShaderImpl::uniform(const std::string& name, const Texture3D& tex, uint32_t
     glUniform1i(loc, unit);
 }
 
-void ShaderImpl::reload_if_modified() {
+bool ShaderImpl::reload_if_modified() {
+    // check source files
     for (const auto& entry : source_files) {
         try {
             if (fs::last_write_time(entry.second) != timestamps[entry.first]) {
                 compile();
-                return;
+                return true;
             }
         } catch (std::exception& e) {
             std::cerr << e.what() << std::endl;
+            return false;
         }
     }
+    // check include files
+    for (const auto& entry : include_timestamps) {
+        try {
+            if (fs::last_write_time(entry.first) != entry.second) {
+                compile();
+                return true;
+            }
+        } catch (std::exception& e) {
+            std::cerr << e.what() << std::endl;
+            return false;
+        }
+    }
+    return false;
 }
+
+CPPGL_NAMESPACE_END

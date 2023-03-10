@@ -1,5 +1,7 @@
 #include "query.h"
 
+CPPGL_NAMESPACE_BEGIN
+
 // -------------------------------------------------------
 // (CPU) TimerQuery (in ms)
 
@@ -97,3 +99,5 @@ void FragmentQueryGLImpl::end() {
     glGetQueryObjectuiv(query_ids[0], GL_QUERY_RESULT, &result);
     put(float(result));
 }
+
+CPPGL_NAMESPACE_END

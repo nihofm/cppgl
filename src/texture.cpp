@@ -1,10 +1,9 @@
 #include "texture.h"
 #include <vector>
 #include <iostream>
-#define STB_IMAGE_IMPLEMENTATION
-#include "stb_image.h"
-#define STB_IMAGE_WRITE_IMPLEMENTATION
-#include "stb_image_write.h"
+#include "image_load_store.h"
+
+CPPGL_NAMESPACE_BEGIN
 
 // ----------------------------------------------------
 // helper funcs
@@ -27,24 +26,18 @@ inline GLint channels_to_ubyte_format(uint32_t channels) {
 
 Texture2DImpl::Texture2DImpl(const std::string& name, const fs::path& path, bool mipmap) : name(name), loaded_from_path(path), id(0) {
     // load image from disk
-    stbi_set_flip_vertically_on_load(1);
-    int channels;
-    uint8_t* data = 0;
-    if (stbi_is_hdr(path.string().c_str())) {
-        data = (uint8_t*)stbi_loadf(path.string().c_str(), &w, &h, &channels, 0);
+    auto [data, w_out, h_out, channels, is_hdr] = image_load(path);
+    this->w = w_out;
+    this->h = h_out;
+
+    if (is_hdr) {
         internal_format = channels_to_float_format(channels);
-        format = channels_to_format(channels);
         type = GL_FLOAT;
     } else {
-        data = stbi_load(path.string().c_str(), &w, &h, &channels, 0);
         internal_format = channels_to_ubyte_format(channels);
-        format = channels_to_format(channels);
         type = GL_UNSIGNED_BYTE;
     }
-    if (!data) {
-        throw std::runtime_error("Failed to load image file: " + path.string());
-        return;
-    }
+    format = channels_to_format(channels);
 
     // init GL texture
     glGenTextures(1, &id);
@@ -64,9 +57,6 @@ Texture2DImpl::Texture2DImpl(const std::string& name, const fs::path& path, bool
     glTexImage2D(GL_TEXTURE_2D, 0, internal_format, w, h, 0, format, type, &data[0]);
     if (mipmap) glGenerateMipmap(GL_TEXTURE_2D);
     glBindTexture(GL_TEXTURE_2D, 0);
-
-    // free data
-    stbi_image_free(data);
 }
 
 Texture2DImpl::Texture2DImpl(const std::string& name, uint32_t w, uint32_t h, GLint internal_format, GLenum format, GLenum type, const void* data, bool mipmap)
@@ -82,7 +72,6 @@ Texture2DImpl::Texture2DImpl(const std::string& name, uint32_t w, uint32_t h, GL
     glTexImage2D(GL_TEXTURE_2D, 0, internal_format, w, h, 0, format, type, data);
     if (mipmap && data != 0) glGenerateMipmap(GL_TEXTURE_2D);
     glBindTexture(GL_TEXTURE_2D, 0);
-
 }
 
 Texture2DImpl::~Texture2DImpl() {
@@ -115,24 +104,12 @@ void Texture2DImpl::unbind_image(uint32_t unit) const {
     glBindImageTexture(unit, 0, 0, GL_FALSE, 0, GL_READ_ONLY, GL_RGBA8);
 }
 
-void Texture2DImpl::save_png(const fs::path& path, bool flip) const {
-    stbi_flip_vertically_on_write(flip);
-    std::vector<uint8_t> pixels(w * h * format_to_channels(format));
+void Texture2DImpl::save_ldr(const fs::path& path, bool flip, bool async) const {
+    std::vector<uint8_t> pixels(size_t(w) * h * format_to_channels(format));
     glBindTexture(GL_TEXTURE_2D, id);
     glGetTexImage(GL_TEXTURE_2D, 0, format, GL_UNSIGNED_BYTE, &pixels[0]);
     glBindTexture(GL_TEXTURE_2D, 0);
-    stbi_write_png(path.string().c_str(), w, h, format_to_channels(format), pixels.data(), 0);
-    std::cout << path << " written." << std::endl;
-}
-
-void Texture2DImpl::save_jpg(const fs::path& path, int quality, bool flip) const {
-    stbi_flip_vertically_on_write(flip);
-    std::vector<uint8_t> pixels(w * h * format_to_channels(format));
-    glBindTexture(GL_TEXTURE_2D, id);
-    glGetTexImage(GL_TEXTURE_2D, 0, format, GL_UNSIGNED_BYTE, &pixels[0]);
-    glBindTexture(GL_TEXTURE_2D, 0);
-    stbi_write_jpg(path.string().c_str(), w, h, format_to_channels(format), pixels.data(), quality);
-    std::cout << path << " written." << std::endl;
+    image_store_ldr(path, pixels.data(), w, h, format_to_channels(format), flip, async);
 }
 
 // ----------------------------------------------------
@@ -184,3 +161,5 @@ void Texture3DImpl::bind_image(uint32_t unit, GLenum access, GLenum format) cons
 void Texture3DImpl::unbind_image(uint32_t unit) const {
     glBindImageTexture(unit, 0, 0, GL_FALSE, 0, GL_READ_ONLY, GL_RGBA8);
 }
+
+CPPGL_NAMESPACE_END

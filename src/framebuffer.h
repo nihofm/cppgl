@@ -8,6 +8,8 @@
 #include "named_handle.h"
 #include "texture.h"
 
+CPPGL_NAMESPACE_BEGIN
+
 // ------------------------------------------
 // Framebuffer
 
@@ -48,3 +50,5 @@ public:
 
 using Framebuffer = NamedHandle<FramebufferImpl>;
 template class _API NamedHandle<FramebufferImpl>; //needed for Windows DLL export
+
+CPPGL_NAMESPACE_END

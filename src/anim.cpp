@@ -2,6 +2,8 @@
 #include "camera.h"
 #include <algorithm>
 
+CPPGL_NAMESPACE_BEGIN
+
 static Animation current_anim;
 
 Animation current_animation() {
@@ -68,8 +70,8 @@ AnimationImpl::~AnimationImpl() {}
 
 void AnimationImpl::update(float dt_ms) {
     if (running && time < camera_path.size() && !camera_path.empty()) {
-        // update camera and advance time
-        current_camera()->load(eval_pos(), eval_rot());
+        // update camera and advance time (for video making purposes we evaluate first and then advance)
+        current_camera()->from_lookat(eval_pos(), eval_lookat());
         time = glm::min(time + dt_ms / ms_between_nodes, float(camera_path.size()));
     } else
         running = false;
@@ -77,11 +79,7 @@ void AnimationImpl::update(float dt_ms) {
 
 void AnimationImpl::clear() {
     camera_path.clear();
-    data_int.clear();
-    data_float.clear();
-    data_vec2.clear();
-    data_vec3.clear();
-    data_vec4.clear();
+    data_path.clear();
 }
 
 size_t AnimationImpl::length() const {
@@ -89,16 +87,11 @@ size_t AnimationImpl::length() const {
 }
 
 void AnimationImpl::play() {
-    time = 0;
     running = true;
 }
 
 void AnimationImpl::pause() {
     running = false;
-}
-
-void AnimationImpl::toggle_pause() {
-    running = !running;
 }
 
 void AnimationImpl::stop() {
@@ -110,45 +103,28 @@ void AnimationImpl::reset() {
     time = 0;
 }
 
-size_t AnimationImpl::push_node(const glm::vec3& pos, const glm::quat& rot) {
+size_t AnimationImpl::push_node(const glm::vec3& cam_pos, const glm::vec3& lookat_pos) {
     const size_t i = camera_path.size();
-    camera_path.push_back(std::make_pair(pos, rot));
+    camera_path.push_back(std::make_pair(cam_pos, lookat_pos));
     return i;
 }
 
-void AnimationImpl::put_node(size_t i, const glm::vec3& pos, const glm::quat& rot) {
-    if (i < camera_path.size())
-        camera_path[i] = std::make_pair(pos, rot);
+size_t AnimationImpl::push_data(const std::string& name, const std::any& data) {
+    const size_t i = data_path[name].size();
+    data_path[name].push_back(data);
+    return i;
 }
 
-void AnimationImpl::put_data(const std::string& name, size_t i, int val) {
-    if (data_int[name].size() <= i)
-        data_int[name].resize(i + 1);
-    data_int[name][i] = val;
+void AnimationImpl::put_node(size_t i, const glm::vec3& cam_pos, const glm::vec3& lookat_pos) {
+    if (camera_path.size() <= i)
+        camera_path.resize(i + 1);
+    camera_path[i] = std::make_pair(cam_pos, lookat_pos);
 }
 
-void AnimationImpl::put_data(const std::string& name, size_t i, float val) {
-    if (data_float[name].size() <= i)
-        data_float[name].resize(i + 1);
-    data_float[name][i] = val;
-}
-
-void AnimationImpl::put_data(const std::string& name, size_t i, const glm::vec2& val) {
-    if (data_vec2[name].size() <= i)
-        data_vec2[name].resize(i + 1);
-    data_vec2[name][i] = val;
-}
-
-void AnimationImpl::put_data(const std::string& name, size_t i, const glm::vec3& val) {
-    if (data_vec3[name].size() <= i)
-        data_vec3[name].resize(i + 1);
-    data_vec3[name][i] = val;
-}
-
-void AnimationImpl::put_data(const std::string& name, size_t i, const glm::vec4& val) {
-    if (data_vec4[name].size() <= i)
-        data_vec4[name].resize(i + 1);
-    data_vec4[name][i] = val;
+void AnimationImpl::put_data(size_t i, const std::string& name, const std::any& data) {
+    if (data_path[name].size() <= i)
+        data_path[name].resize(i + 1);
+    data_path[name][i] = data;
 }
 
 glm::vec3 AnimationImpl::eval_pos() const {
@@ -163,39 +139,16 @@ glm::vec3 AnimationImpl::eval_pos() const {
     return CentripedalCR(p0, p1, p2, p3).eval(glm::fract(time));
 }
 
-glm::quat AnimationImpl::eval_rot() const {
-    // TODO spherical spline
+glm::vec3 AnimationImpl::eval_lookat() const {
+    // eval centripedal catmull rom spline
     const size_t at = size_t(glm::floor(time));
-    const auto& lower = camera_path[std::min(at, camera_path.size()) % camera_path.size()].second;
-    const auto& upper = camera_path[std::min(at + 1, camera_path.size()) % camera_path.size()].second;
-    return glm::slerp(lower, upper, time - at);
+    // prevent underflow
+    const size_t prev_at = size_t(std::max(int(at) - 1, 0));
+    const auto& p0 = camera_path[std::max(prev_at, size_t(0))].second;
+    const auto& p1 = camera_path[std::min(at + 0, camera_path.size()) % camera_path.size()].second;
+    const auto& p2 = camera_path[std::min(at + 1, camera_path.size()) % camera_path.size()].second;
+    const auto& p3 = camera_path[std::min(at + 2, camera_path.size()) % camera_path.size()].second;
+    return CentripedalCR(p0, p1, p2, p3).eval(glm::fract(time));
 }
 
-int AnimationImpl::eval_int(const std::string& name) const {
-    const size_t i = std::min(size_t(glm::floor(time)), data_int.at(name).size() - 1);
-    return data_int.at(name).at(i); // no lerp necessary
-}
-
-// lerp helper
-template <typename T> inline T lerp_data(const std::vector<T>& data, float time) {
-    const size_t at = size_t(glm::floor(time));
-    const auto& lower = data[std::min(at, data.size()) % data.size()];
-    const auto& upper = data[std::min(at + 1, data.size()) % data.size()];
-    return glm::mix(lower, upper, time - at);
-}
-
-float AnimationImpl::eval_float(const std::string& name) const {
-    return lerp_data<float>(data_float.at(name), time);
-}
-
-glm::vec2 AnimationImpl::eval_vec2(const std::string& name) const {
-    return lerp_data<glm::vec2>(data_vec2.at(name), time);
-}
-
-glm::vec3 AnimationImpl::eval_vec3(const std::string& name) const {
-    return lerp_data<glm::vec3>(data_vec3.at(name), time);
-}
-
-glm::vec4 AnimationImpl::eval_vec4(const std::string& name) const {
-    return lerp_data<glm::vec4>(data_vec4.at(name), time);
-}
+CPPGL_NAMESPACE_END

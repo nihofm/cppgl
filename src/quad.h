@@ -3,6 +3,8 @@
 #include <GL/glew.h>
 #include <GL/gl.h>
 
+CPPGL_NAMESPACE_BEGIN
+
 // ----------------------------
 // Definition
 
@@ -56,3 +58,5 @@ void Quad::draw_internal() const {
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
     glBindVertexArray(0);
 }
+
+CPPGL_NAMESPACE_END

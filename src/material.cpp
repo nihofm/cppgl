@@ -1,6 +1,8 @@
 #include "material.h"
 #include <iostream>
 
+CPPGL_NAMESPACE_BEGIN
+
 MaterialImpl::MaterialImpl(const std::string& name) : name(name) {}
 
 MaterialImpl::MaterialImpl(const std::string& name, const fs::path& base_path, const aiMaterial* mat_ai) : name(name) {
@@ -136,3 +138,4 @@ void MaterialImpl::unbind() const {
         entry.second->unbind();
 }
 
+CPPGL_NAMESPACE_END

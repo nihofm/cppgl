@@ -7,9 +7,11 @@
 #include <cassert>
 #include <iostream>
 #include <stdexcept>
+#include <type_traits>
 #include "platform.h"
 
-#include <type_traits>
+CPPGL_NAMESPACE_BEGIN
+
 template <typename T, typename = int> struct HasName : std::false_type {};
 template <typename T> struct HasName <T, decltype((void) T::name, 0)> : std::true_type {};
 
@@ -22,7 +24,9 @@ public:
     template <class... Args> NamedHandle(const std::string& name, Args&&... args) : ptr(std::make_shared<T>(name, args...)) {
         static_assert(HasName<T>::value, "Template type T is required to have a member \"name\"!");
         static_assert(std::is_same<decltype(T::name), std::string>::value || std::is_same<decltype(T::name), const std::string>::value, "bad type bro");
-        assert(!map.count(ptr->name)); // check if key unique in NamedHandle<T>::map
+#ifndef NDEBUG
+        if (map.count(ptr->name)) std::cerr << "Warning: Name \"" << ptr->name << "\" is not unique!" << std::endl;
+#endif
         const std::lock_guard<std::mutex> lock(mutex);
         map[ptr->name] = *this;
     }
@@ -74,3 +78,5 @@ public:
 // definition of static members (compiler magic)
 template <typename T> std::mutex NamedHandle<T>::mutex;
 template <typename T> std::map<std::string, NamedHandle<T>> NamedHandle<T>::map;
+
+CPPGL_NAMESPACE_END

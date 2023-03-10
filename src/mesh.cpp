@@ -8,6 +8,8 @@
 #include <assimp/material.h>
 #include "buffer.h"
 
+CPPGL_NAMESPACE_BEGIN
+
 // ------------------------------------------
 // helper funcs
 
@@ -174,7 +176,7 @@ std::vector<std::pair<Geometry, Material>> load_meshes_cpu(const fs::path& path,
         const aiMesh* ai_mesh = scene_ai->mMeshes[i];
         geometries.push_back(Geometry(base_name + "_" + ai_mesh->mName.C_Str() + "_" + std::to_string(i), ai_mesh));
     }
-    // move and scale geometry to fit into [-1, 1]x3?
+    // move and scale geometry to fit into [-1, 1]^3?
     if (normalize) {
         glm::vec3 bb_min(FLT_MAX), bb_max(FLT_MIN);
         for (const auto& geom : geometries) {
@@ -211,3 +213,5 @@ std::vector<Mesh> load_meshes_gpu(const fs::path& path, bool normalize) {
         meshes.push_back(Mesh(geometry->name + "/" + material->name, geometry, material));
     return meshes;
 }
+
+CPPGL_NAMESPACE_END

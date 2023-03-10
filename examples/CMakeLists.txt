@@ -14,8 +14,15 @@ set_target_properties(${TARGET} PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CUR
 # ----------------------------------------------------------
 # dependencies
 if(WIN32)
-	add_custom_command(TARGET ${TARGET} POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy_directory "${CMAKE_CURRENT_SOURCE_DIR}/../external/thirdparty/win/bin/x64" $<TARGET_FILE_DIR:${TARGET}>)
-	add_custom_command(TARGET ${TARGET} POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/cppgl.dll" $<TARGET_FILE_DIR:${TARGET}>)
+	set(copyDest \"${CMAKE_CURRENT_SOURCE_DIR}/\")
+	set(copySource \"${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/*.dll\")
+	set(copySourceGlew \"${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/subtrees/glew/bin/*.dll\")
+	#THESE STRING ESCAPES NEEDS TO BE THERE
+	STRING(REGEX REPLACE "/" "\\\\" copyDest \"${CMAKE_CURRENT_SOURCE_DIR}/\")
+	STRING(REGEX REPLACE "/" "\\\\" copySource \"${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/*.dll\")
+	STRING(REGEX REPLACE "/" "\\\\" copySourceGlew \"${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/subtrees/glew/bin/*.dll\")
+	add_custom_command(TARGET ${TARGET} POST_BUILD COMMAND COMMAND copy ${copySource}  ${copyDest})
+	add_custom_command(TARGET ${TARGET} POST_BUILD COMMAND COMMAND copy ${copySourceGlew}  ${copyDest})
 endif()
 
 # built libs

@@ -2,6 +2,8 @@
 #include "camera.h"
 #include <iostream>
 
+CPPGL_NAMESPACE_BEGIN
+
 DrawelementImpl::DrawelementImpl(const std::string& name, const Shader& shader, const Mesh& mesh)
     : name(name), model(glm::mat4(1)), shader(shader), mesh(mesh) {}
 
@@ -28,3 +30,5 @@ void DrawelementImpl::draw() const {
     if (mesh)
         mesh->draw();
 }
+
+CPPGL_NAMESPACE_END

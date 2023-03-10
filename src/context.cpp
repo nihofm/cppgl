@@ -9,13 +9,15 @@
 #include "drawelement.h"
 #include "anim.h"
 #include "query.h"
-#include "stb_image_write.h"
 #include "gui.h"
 #include "imgui/imgui.h"
 #include "imgui/imgui_impl_glfw.h"
 #include "imgui/imgui_impl_opengl3.h"
+#include "image_load_store.h"
 #include <glm/glm.hpp>
 #include <iostream>
+
+CPPGL_NAMESPACE_BEGIN
 
 // -------------------------------------------
 // helper funcs
@@ -35,10 +37,9 @@ static void (*user_resize_callback)(int w, int h) = 0;
 static void glfw_key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
     if (key == GLFW_KEY_F1 && action == GLFW_PRESS)
         show_gui = !show_gui;
-    if (ImGui::GetIO().WantCaptureKeyboard) {
-        ImGui_ImplGlfw_KeyCallback(window, key, scancode, action, mods);
+    ImGui_ImplGlfw_KeyCallback(window, key, scancode, action, mods);
+    if (ImGui::GetIO().WantCaptureKeyboard)
         return;
-    }
     if (key == GLFW_KEY_ESCAPE)
         glfwSetWindowShouldClose(window, 1);
     if (user_keyboard_callback)
@@ -53,19 +54,17 @@ static void glfw_mouse_callback(GLFWwindow* window, double xpos, double ypos) {
 }
 
 static void glfw_mouse_button_callback(GLFWwindow* window, int button, int action, int mods) {
-    if (ImGui::GetIO().WantCaptureMouse) {
-        ImGui_ImplGlfw_MouseButtonCallback(window, button, action, mods);
+    ImGui_ImplGlfw_MouseButtonCallback(window, button, action, mods);
+    if (ImGui::GetIO().WantCaptureMouse)
         return;
-    }
     if (user_mouse_button_callback)
         user_mouse_button_callback(button, action, mods);
 }
 
 static void glfw_mouse_scroll_callback(GLFWwindow* window, double xoffset, double yoffset) {
-    if (ImGui::GetIO().WantCaptureMouse) {
-        ImGui_ImplGlfw_ScrollCallback(window, xoffset, yoffset);
+    ImGui_ImplGlfw_ScrollCallback(window, xoffset, yoffset);
+    if (ImGui::GetIO().WantCaptureMouse)
         return;
-    }
     CameraImpl::default_camera_movement_speed += CameraImpl::default_camera_movement_speed * float(yoffset * 0.1);
     CameraImpl::default_camera_movement_speed = std::max(0.00001f, CameraImpl::default_camera_movement_speed);
     if (user_mouse_scroll_callback)
@@ -73,7 +72,7 @@ static void glfw_mouse_scroll_callback(GLFWwindow* window, double xoffset, doubl
 }
 
 static void glfw_resize_callback(GLFWwindow* window, int w, int h) {
-    Context::resize(w, h);
+    glViewport(0, 0, w, h);
     if (user_resize_callback)
         user_resize_callback(w, h);
 }
@@ -160,6 +159,7 @@ Context::Context() {
         ImGui::GetIO().FontDefault = ImGui::GetIO().Fonts->AddFontFromFileTTF(
                 parameters.font_ttf_filename.string().c_str(), float(parameters.font_size_pixels), &config);
     }
+    ImGui::GetIO().FontGlobalScale = parameters.global_font_scale;
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
@@ -196,6 +196,8 @@ Context::~Context() {
 
 Context& Context::init(const ContextParameters& params) {
     parameters = params;
+    // enforce setup of default camera
+    current_camera();
     return instance();
 }
 
@@ -231,27 +233,16 @@ void Context::swap_buffers() {
 
 double Context::frame_time() { return instance().curr_t - instance().last_t; }
 
-void Context::screenshot(const fs::path& path) {
-    stbi_flip_vertically_on_write(1);
+void Context::screenshot(const std::filesystem::path& path) {
     const glm::ivec2 size = resolution();
-    std::vector<uint8_t> pixels(size.x * size.y * 3);
+    std::vector<uint8_t> pixels(size_t(size.x) * size.y * 3);
     // glReadPixels can align the first pixel in each row at 1-, 2-, 4- and 8-byte boundaries. We
     // have allocated the exact size needed for the image so we have to use 1-byte alignment
     // (otherwise glReadPixels would write out of bounds)
     glPixelStorei(GL_PACK_ALIGNMENT, 1);
     glReadPixels(0, 0, size.x, size.y, GL_RGB, GL_UNSIGNED_BYTE, pixels.data());
-    // check file extension
-    if (path.extension() == ".png") {
-        stbi_write_png(path.string().c_str(), size.x, size.y, 3, pixels.data(), 0);
-        std::cout << path << " written." << std::endl;
-    } else if (path.extension() == ".jpg") {
-        stbi_write_jpg(path.string().c_str(), size.x, size.y, 3, pixels.data(), 0);
-        std::cout << path << " written." << std::endl;
-    } else {
-        std::cerr << "WARN: Context::screenshot: unknown extension, changing to .png!" << std::endl;
-        stbi_write_png(fs::path(path).replace_extension(".png").string().c_str(), size.x, size.y, 3, pixels.data(), 0);
-        std::cout << fs::path(path).replace_extension(".png") << " written." << std::endl;
-    }
+    // write ldr image to disk (async)
+    image_store_ldr(path, pixels.data(), size.x, size.y, 3, true, true);
 }
 
 void Context::show() { glfwShowWindow(instance().glfw_window); }
@@ -275,6 +266,8 @@ void Context::set_swap_interval(uint32_t interval) { glfwSwapInterval(interval);
 
 void Context::capture_mouse(bool on) { glfwSetInputMode(instance().glfw_window, GLFW_CURSOR, on ? GLFW_CURSOR_DISABLED : GLFW_CURSOR_NORMAL); }
 
+void Context::set_attribute(int attribute, bool value) { glfwSetWindowAttrib(instance().glfw_window, attribute, value ? GLFW_TRUE : GLFW_FALSE); }
+
 glm::vec2 Context::mouse_pos() {
     double xpos, ypos;
     glfwGetCursorPos(instance().glfw_window, &xpos, &ypos);
@@ -294,3 +287,5 @@ void Context::set_mouse_button_callback(void (*fn)(int button, int action, int m
 void Context::set_mouse_scroll_callback(void (*fn)(double xoffset, double yoffset)) { user_mouse_scroll_callback = fn; }
 
 void Context::set_resize_callback(void (*fn)(int w, int h)) { user_resize_callback = fn; }
+
+CPPGL_NAMESPACE_END

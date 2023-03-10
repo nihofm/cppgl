@@ -7,6 +7,8 @@ namespace fs = std::filesystem;
 #include <GL/gl.h>
 #include "named_handle.h"
 
+CPPGL_NAMESPACE_BEGIN
+
 // ----------------------------------------------------
 // Texture2D
 
@@ -39,8 +41,7 @@ public:
     // TODO CPU <-> GPU data transfers
 
     // save to disk
-    void save_png(const fs::path& path, bool flip = true) const;
-    void save_jpg(const fs::path& path, int quality = 100, bool flip = true) const; // quality: [1, 100]
+    void save_ldr(const fs::path& path, bool flip = true, bool async = false) const;
 
     // data
     const std::string name;
@@ -94,3 +95,4 @@ public:
 using Texture3D = NamedHandle<Texture3DImpl>;
 template class _API NamedHandle<Texture3DImpl>; //needed for Windows DLL export
 
+CPPGL_NAMESPACE_END

@@ -1,6 +1,8 @@
 #include "framebuffer.h"
 #include <atomic>
 
+CPPGL_NAMESPACE_BEGIN
+
 FramebufferImpl::FramebufferImpl(const std::string& name, uint32_t w, uint32_t h) : name(name), id(0), w(w), h(h), prev_vp{0,0,0,0} {
     glGenFramebuffers(1, &id);
 }
@@ -73,3 +75,5 @@ void FramebufferImpl::attach_colorbuffer(const Texture2D& tex) {
     color_textures.push_back(tex);
     color_targets.push_back(target);
 }
+
+CPPGL_NAMESPACE_END

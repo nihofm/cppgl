@@ -12,6 +12,8 @@ namespace fs = std::filesystem;
 #include "named_handle.h"
 #include "texture.h"
 
+CPPGL_NAMESPACE_BEGIN
+
 // ------------------------------------------
 // Shader
 
@@ -48,12 +50,14 @@ public:
     // compile and link shader from previously given source files
     void compile();
 
-    // compute shader dispatch (call with actual amount of threads, will internally divide by workgroup size)
-    void dispatch_compute(uint32_t w, uint32_t h = 1, uint32_t d = 1) const;
+    // compute shader dispatch (call with actual amount of threads, will internally divide by workgroup size), memory_barrier_bits is option for automatic glMemoryBarrier(memory_barrier_bits)
+    void dispatch_compute(uint32_t w, uint32_t h = 1, uint32_t d = 1, GLbitfield memory_barrier_bits = GL_ALL_BARRIER_BITS) const;
 
     // uniform upload handling
     void uniform(const std::string& name, int val) const;
     void uniform(const std::string& name, int* val, uint32_t count) const;
+    void uniform(const std::string& name, uint32_t val) const;
+    void uniform(const std::string& name, uint32_t* val, uint32_t count) const;
     void uniform(const std::string& name, float val) const;
     void uniform(const std::string& name, float* val, uint32_t count) const;
     void uniform(const std::string& name, const glm::vec2& val) const;
@@ -70,9 +74,10 @@ public:
     void uniform(const std::string& name, const Texture2D& tex, uint32_t unit) const;
     void uniform(const std::string& name, const Texture3D& tex, uint32_t unit) const;
 
-    // management/reload
+    // clear shader
     void clear();
-    void reload_if_modified();
+    // check and reload if modified (return true if reloaded)
+    bool reload_if_modified();
     
     // set default paths to search for shader source files
     static void add_shader_search_path(fs::path path);
@@ -82,6 +87,7 @@ public:
     GLuint id;
     std::map<GLenum, fs::path> source_files;
     std::map<GLenum, fs::file_time_type> timestamps;
+    std::map<fs::path, fs::file_time_type> include_timestamps;
     
     static std::vector<fs::path> shader_search_paths;
 };
@@ -89,5 +95,6 @@ public:
 using Shader = NamedHandle<ShaderImpl>;
 template class _API NamedHandle<ShaderImpl>; //needed for Windows DLL export
 
+bool reload_modified_shaders();
 
-void reload_modified_shaders();
+CPPGL_NAMESPACE_END

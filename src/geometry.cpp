@@ -2,6 +2,8 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <iostream>
 
+CPPGL_NAMESPACE_BEGIN
+
 GeometryImpl::GeometryImpl(const std::string& name) : name(name), bb_min(FLT_MAX), bb_max(FLT_MIN) {}
 
 GeometryImpl::GeometryImpl(const std::string& name, const aiMesh* mesh_ai) : GeometryImpl(name) {
@@ -123,3 +125,5 @@ void GeometryImpl::rotate(float angle_degrees, const glm::vec3& axis) {
     for (uint32_t i = 0; i < normals.size(); ++i)
         normals[i] = glm::normalize(glm::vec3(rot_inv_tra * glm::vec4(normals[i], 0)));
 }
+
+CPPGL_NAMESPACE_END

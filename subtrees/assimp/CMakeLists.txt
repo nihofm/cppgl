@@ -96,10 +96,6 @@ OPTION ( ASSIMP_BUILD_SAMPLES
   "If the official samples are built as well (needs Glut)."
   OFF
 )
-OPTION ( ASSIMP_BUILD_TESTS
-  "If the test suite for Assimp is built in addition to the library."
-  ON
-)
 OPTION ( ASSIMP_COVERALLS
   "Enable this to measure test coverage."
   OFF
@@ -705,10 +701,6 @@ IF ( ASSIMP_BUILD_SAMPLES )
     ADD_SUBDIRECTORY( samples/SimpleTexturedDirectx11 )
   ENDIF ()
   ADD_SUBDIRECTORY( samples/SimpleOpenGL/ )
-ENDIF ()
-
-IF ( ASSIMP_BUILD_TESTS )
-  ADD_SUBDIRECTORY( test/ )
 ENDIF ()
 
 # Generate a pkg-config .pc for the Assimp library.

@@ -106,7 +106,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #       define gltf_unordered_map tr1::unordered_map
 #       define gltf_unordered_set tr1::unordered_set
 #   else
-#      define gltf_unordered_map unordered_map
+#       define gltf_unordered_map unordered_map
 #       define gltf_unordered_set unordered_set
 #   endif
 #endif
@@ -374,6 +374,8 @@ struct CustomExtension {
             mValues(other.mValues) {
         // empty
     }
+
+    CustomExtension& operator=(const CustomExtension&) = default;
 };
 
 //! Base class for all glTF top-level objects
@@ -389,7 +391,7 @@ struct Object {
     //! Objects marked as special are not exported (used to emulate the binary body buffer)
     virtual bool IsSpecial() const { return false; }
 
-    virtual ~Object() {}
+    virtual ~Object() = default;
 
     //! Maps special IDs to another ID, where needed. Subclasses may override it (statically)
     static const char *TranslateId(Asset & /*r*/, const char *id) { return id; }
@@ -611,7 +613,7 @@ struct Accessor : public Object {
         return Indexer(*this);
     }
 
-    Accessor() {}
+    Accessor() = default;
     void Read(Value &obj, Asset &r);
 
     //sparse
@@ -679,7 +681,7 @@ struct Light : public Object {
     float innerConeAngle;
     float outerConeAngle;
 
-    Light() {}
+    Light() = default;
     void Read(Value &obj, Asset &r);
 };
 
@@ -875,7 +877,7 @@ struct Mesh : public Object {
     std::vector<float> weights;
     std::vector<std::string> targetNames;
 
-    Mesh() {}
+    Mesh() = default;
 
     /// Get mesh data from JSON-object and place them to root asset.
     /// \param [in] pJSON_Object - reference to pJSON-object from which data are read.
@@ -901,12 +903,12 @@ struct Node : public Object {
 
     Ref<Node> parent; //!< This is not part of the glTF specification. Used as a helper.
 
-    Node() {}
+    Node() = default;
     void Read(Value &obj, Asset &r);
 };
 
 struct Program : public Object {
-    Program() {}
+    Program() = default;
     void Read(Value &obj, Asset &r);
 };
 
@@ -925,12 +927,12 @@ struct Scene : public Object {
     std::string name;
     std::vector<Ref<Node>> nodes;
 
-    Scene() {}
+    Scene() = default;
     void Read(Value &obj, Asset &r);
 };
 
 struct Shader : public Object {
-    Shader() {}
+    Shader() = default;
     void Read(Value &obj, Asset &r);
 };
 
@@ -940,7 +942,7 @@ struct Skin : public Object {
     std::vector<Ref<Node>> jointNames; //!< Joint names of the joints (nodes with a jointName property) in this skin.
     std::string name; //!< The user-defined name of this object.
 
-    Skin() {}
+    Skin() = default;
     void Read(Value &obj, Asset &r);
 };
 
@@ -955,7 +957,7 @@ struct Texture : public Object {
     //TextureTarget target; //!< The target that the WebGL texture should be bound to. (default: TextureTarget_TEXTURE_2D)
     //TextureType type; //!< Texel datatype. (default: TextureType_UNSIGNED_BYTE)
 
-    Texture() {}
+    Texture() = default;
     void Read(Value &obj, Asset &r);
 };
 
@@ -988,14 +990,14 @@ struct Animation : public Object {
     std::vector<Sampler> samplers; //!< All the key-frame data for this animation.
     std::vector<Channel> channels; //!< Data to connect nodes to key-frames.
 
-    Animation() {}
+    Animation() = default;
     void Read(Value &obj, Asset &r);
 };
 
 //! Base class for LazyDict that acts as an interface
 class LazyDictBase {
 public:
-    virtual ~LazyDictBase() {}
+    virtual ~LazyDictBase() = default;
 
     virtual void AttachToDocument(Document &doc) = 0;
     virtual void DetachFromDocument() = 0;
@@ -1087,28 +1089,10 @@ class Asset {
 
     template <class T>
     friend class LazyDict;
-
     friend struct Buffer; // To access OpenFile
-
     friend class AssetWriter;
 
-private:
-    IOSystem *mIOSystem;
-    rapidjson::IRemoteSchemaDocumentProvider *mSchemaDocumentProvider;
-
-    std::string mCurrentAssetDir;
-
-    size_t mSceneLength;
-    size_t mBodyOffset, mBodyLength;
-
     std::vector<LazyDictBase *> mDicts;
-
-    IdMap mUsedIds;
-
-    Ref<Buffer> mBodyBuffer;
-
-    Asset(Asset &);
-    Asset &operator=(const Asset &);
 
 public:
     //! Keeps info about the enabled extensions
@@ -1125,16 +1109,36 @@ public:
         bool KHR_draco_mesh_compression;
         bool FB_ngon_encoding;
         bool KHR_texture_basisu;
+
+        Extensions() :
+                KHR_materials_pbrSpecularGlossiness(false), 
+                KHR_materials_unlit(false), 
+                KHR_lights_punctual(false), 
+                KHR_texture_transform(false), 
+                KHR_materials_sheen(false), 
+                KHR_materials_clearcoat(false), 
+                KHR_materials_transmission(false), 
+                KHR_materials_volume(false),
+                KHR_materials_ior(false),
+                KHR_draco_mesh_compression(false),
+                FB_ngon_encoding(false),
+                KHR_texture_basisu(false) {
+            // empty
+        }
     } extensionsUsed;
 
     //! Keeps info about the required extensions
     struct RequiredExtensions {
         bool KHR_draco_mesh_compression;
         bool KHR_texture_basisu;
+
+        RequiredExtensions() : KHR_draco_mesh_compression(false), KHR_texture_basisu(false) {
+            // empty
+        }
     } extensionsRequired;
 
     AssetMetadata asset;
-    Value *extras = nullptr;
+    Value *extras;
 
     // Dictionaries for each type of object
 
@@ -1156,10 +1160,12 @@ public:
     Ref<Scene> scene;
 
 public:
-    Asset(IOSystem *io = nullptr, rapidjson::IRemoteSchemaDocumentProvider *schemaDocumentProvider = nullptr) : 
-            mIOSystem(io),
-            mSchemaDocumentProvider(schemaDocumentProvider),
+    Asset(IOSystem *io = nullptr, rapidjson::IRemoteSchemaDocumentProvider *schemaDocumentProvider = nullptr) :
+            mDicts(),
+            extensionsUsed(),
+            extensionsRequired(),
             asset(),
+            extras(nullptr),
             accessors(*this, "accessors"),
             animations(*this, "animations"),
             buffers(*this, "buffers"),
@@ -1173,9 +1179,10 @@ public:
             samplers(*this, "samplers"),
             scenes(*this, "scenes"),
             skins(*this, "skins"),
-            textures(*this, "textures") {
-        memset(&extensionsUsed, 0, sizeof(extensionsUsed));
-        memset(&extensionsRequired, 0, sizeof(extensionsRequired));
+            textures(*this, "textures") ,
+            mIOSystem(io),
+            mSchemaDocumentProvider(schemaDocumentProvider) {
+        // empty
     }
 
     //! Main function
@@ -1192,18 +1199,31 @@ public:
 
     Ref<Buffer> GetBodyBuffer() { return mBodyBuffer; }
 
+    Asset(Asset &) = delete;
+    Asset &operator=(const Asset &) = delete;
+
 private:
     void ReadBinaryHeader(IOStream &stream, std::vector<char> &sceneData);
 
-    //! Obtain a JSON document from the stream.
-    // \param second argument is a buffer used by the document. It must be kept
-    // alive while the document is in use.
+    /// Obtain a JSON document from the stream.
+    /// \param second argument is a buffer used by the document. It must be kept
+    /// alive while the document is in use.
     Document ReadDocument(IOStream& stream, bool isBinary, std::vector<char>& sceneData);
 
     void ReadExtensionsUsed(Document &doc);
     void ReadExtensionsRequired(Document &doc);
 
     IOStream *OpenFile(const std::string &path, const char *mode, bool absolute = false);
+
+private:
+    IOSystem *mIOSystem;
+    rapidjson::IRemoteSchemaDocumentProvider *mSchemaDocumentProvider;
+    std::string mCurrentAssetDir;
+    size_t mSceneLength;
+    size_t mBodyOffset;
+    size_t mBodyLength;
+    IdMap mUsedIds;
+    Ref<Buffer> mBodyBuffer;
 };
 
 inline std::string getContextForErrorMessages(const std::string &id, const std::string &name) {

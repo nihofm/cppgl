@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.16)
 
 PROJECT(CppGL
-    VERSION 1.7
+    VERSION 1.8
     DESCRIPTION "OpenGL framework for use in teaching and research with focus on simplicity and reusability."
     LANGUAGES CXX
 )
@@ -13,7 +13,6 @@ endif()
 # ---------------------------------------------------------------------
 # cmake options
 
-option(CPPGL_BUILD_GLM "" ON)
 option(CPPGL_BUILD_EXAMPLES "" OFF)
 
 # ---------------------------------------------------------------------
@@ -31,7 +30,6 @@ set(BUILD_SHARED_LIBS ON CACHE BOOL "" FORCE)
 set(glew-cmake_BUILD_STATIC OFF CACHE BOOL "" FORCE)
 set(glew-cmake_BUILD_SHARED ON CACHE BOOL "" FORCE)
 add_subdirectory(subtrees/glew)
-include_directories(subtrees/glew/include)
 
 set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL " " FORCE)
 set(GLFW_BUILD_TESTS OFF CACHE BOOL " " FORCE)
@@ -40,23 +38,16 @@ set(GLFW_BUILD_INSTALL OFF CACHE BOOL " " FORCE)
 set(GLFW_INSTALL OFF CACHE BOOL " " FORCE)
 set(GLFW_USE_CHDIR OFF CACHE BOOL " " FORCE)
 add_subdirectory(subtrees/glfw)
-include_directories(subtrees/glfw/include)
 
-if (CPPGL_BUILD_GLM)
-    add_subdirectory(subtrees/glm EXCLUDE_FROM_ALL)
-    include_directories(subtrees/glm)
-endif()
-
+# assimp
 find_package(assimp QUIET)
 if (NOT assimp_FOUND)
     message(STATUS "ASSIMP NOT FOUND: compiling from source")
     set(ASSIMP_BUILD_ASSIMP_TOOLS OFF CACHE BOOL "" FORCE)
     set(ASSIMP_BUILD_TESTS OFF CACHE BOOL "" FORCE)
     add_subdirectory(subtrees/assimp)
-    include_directories(subtrees/assimp/include)
 else()
     message(STATUS "ASSIMP FOUND: ${assimp_DIR}")
-    include_directories(${assimp_INCLUDE_DIR})
 endif()
 
 # ---------------------------------------------------------------------
@@ -84,7 +75,6 @@ include(GenerateExportHeader)
 # ---------------------------------------------------------------------
 # traverse source tree
 
-include_directories(src)
 add_subdirectory(src)
 
 if (CPPGL_BUILD_EXAMPLES)

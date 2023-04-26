@@ -102,6 +102,7 @@ ColladaLoader::ColladaLoader() :
         mTextures(),
         mAnims(),
         noSkeletonMesh(false),
+        removeEmptyBones(false),
         ignoreUpDirection(false),
         useColladaName(false),
         mNodeNameCounter(0) {
@@ -110,9 +111,7 @@ ColladaLoader::ColladaLoader() :
 
 // ------------------------------------------------------------------------------------------------
 // Destructor, private as well
-ColladaLoader::~ColladaLoader() {
-    // empty
-}
+ColladaLoader::~ColladaLoader() = default;
 
 // ------------------------------------------------------------------------------------------------
 // Returns whether the class can handle the format of the given file.
@@ -130,6 +129,7 @@ bool ColladaLoader::CanRead(const std::string &pFile, IOSystem *pIOHandler, bool
 // ------------------------------------------------------------------------------------------------
 void ColladaLoader::SetupProperties(const Importer *pImp) {
     noSkeletonMesh = pImp->GetPropertyInteger(AI_CONFIG_IMPORT_NO_SKELETON_MESHES, 0) != 0;
+    removeEmptyBones = pImp->GetPropertyInteger(AI_CONFIG_IMPORT_REMOVE_EMPTY_BONES, true) != 0;
     ignoreUpDirection = pImp->GetPropertyInteger(AI_CONFIG_IMPORT_COLLADA_IGNORE_UP_DIRECTION, 0) != 0;
     useColladaName = pImp->GetPropertyInteger(AI_CONFIG_IMPORT_COLLADA_USE_COLLADA_NAMES, 0) != 0;
 }
@@ -357,9 +357,9 @@ void ColladaLoader::BuildLightsForNode(const ColladaParser &pParser, const Node 
             out->mAngleInnerCone = AI_DEG_TO_RAD(srcLight->mFalloffAngle);
 
             // ... some extension magic.
-            if (srcLight->mOuterAngle >= ASSIMP_COLLADA_LIGHT_ANGLE_NOT_SET * (1 - 1e-6f)) {
+            if (srcLight->mOuterAngle >= ASSIMP_COLLADA_LIGHT_ANGLE_NOT_SET * (1 - ai_epsilon)) {
                 // ... some deprecation magic.
-                if (srcLight->mPenumbraAngle >= ASSIMP_COLLADA_LIGHT_ANGLE_NOT_SET * (1 - 1e-6f)) {
+                if (srcLight->mPenumbraAngle >= ASSIMP_COLLADA_LIGHT_ANGLE_NOT_SET * (1 - ai_epsilon)) {
                     // Need to rely on falloff_exponent. I don't know how to interpret it, so I need to guess ....
                     // epsilon chosen to be 0.1
                     float f = 1.0f;
@@ -798,9 +798,10 @@ aiMesh *ColladaLoader::CreateMesh(const ColladaParser &pParser, const Mesh *pSrc
         // count the number of bones which influence vertices of the current submesh
         size_t numRemainingBones = 0;
         for (const auto & dstBone : dstBones) {
-            if (!dstBone.empty()) {
-                ++numRemainingBones;
+            if (dstBone.empty() && removeEmptyBones) {
+                continue;
             }
+            ++numRemainingBones;
         }
 
         // create bone array and copy bone weights one by one
@@ -809,7 +810,7 @@ aiMesh *ColladaLoader::CreateMesh(const ColladaParser &pParser, const Mesh *pSrc
         size_t boneCount = 0;
         for (size_t a = 0; a < numBones; ++a) {
             // omit bones without weights
-            if (dstBones[a].empty()) {
+            if (dstBones[a].empty() && removeEmptyBones) {
                 continue;
             }
 
@@ -1065,7 +1066,7 @@ void insertMorphTimeValue(std::vector<MorphTimeValues> &values, float time, floa
         return;
     }
     for (unsigned int i = 0; i < values.size(); i++) {
-        if (std::abs(time - values[i].mTime) < 1e-6f) {
+        if (std::abs(time - values[i].mTime) < ai_epsilon) {
             values[i].mKeys.push_back(k);
             return;
         } else if (time > values[i].mTime && time < values[i + 1].mTime) {

@@ -73,7 +73,6 @@ public:
     static void set_resize_callback(void (*fn)(int w, int h));
 
     // data
-    bool show_gui = false;
     GLFWwindow* glfw_window;
     double last_t, curr_t;
     TimerQuery cpu_timer, frame_timer;

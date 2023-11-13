@@ -6,22 +6,6 @@
 CPPGL_NAMESPACE_BEGIN
 
 // ----------------------------------------------------
-// helper funcs
-
-inline uint32_t format_to_channels(GLint format) {
-    return format == GL_RGBA ? 4 : format == GL_RGB ? 3 : format == GL_RG ? 2 : 1;
-}
-inline GLint channels_to_format(uint32_t channels) {
-    return channels == 4 ? GL_RGBA : channels == 3 ? GL_RGB : channels == 2 ? GL_RG : GL_RED;
-}
-inline GLint channels_to_float_format(uint32_t channels) {
-    return channels == 4 ? GL_RGBA32F : channels == 3 ? GL_RGB32F : channels == 2 ? GL_RG32F : GL_R32F;
-}
-inline GLint channels_to_ubyte_format(uint32_t channels) {
-    return channels == 4 ? GL_RGBA8 : channels == 3 ? GL_RGB8 : channels == 2 ? GL_RG8 : GL_R8;
-}
-
-// ----------------------------------------------------
 // Texture2D
 
 Texture2DImpl::Texture2DImpl(const std::string& name, const fs::path& path, bool mipmap) : name(name), loaded_from_path(path), id(0) {
@@ -70,7 +54,7 @@ Texture2DImpl::Texture2DImpl(const std::string& name, uint32_t w, uint32_t h, GL
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
             mipmap ? GL_LINEAR_MIPMAP_LINEAR : (format == GL_DEPTH_COMPONENT || format == GL_DEPTH_STENCIL) ? GL_NEAREST : GL_LINEAR);
     glTexImage2D(GL_TEXTURE_2D, 0, internal_format, w, h, 0, format, type, data);
-    if (mipmap && data != 0) glGenerateMipmap(GL_TEXTURE_2D);
+    if (mipmap) glGenerateMipmap(GL_TEXTURE_2D);
     glBindTexture(GL_TEXTURE_2D, 0);
 }
 
@@ -96,8 +80,8 @@ void Texture2DImpl::unbind() const {
     glBindTexture(GL_TEXTURE_2D, 0);
 }
 
-void Texture2DImpl::bind_image(uint32_t unit, GLenum access, GLenum format) const {
-    glBindImageTexture(unit, id, 0, GL_FALSE, 0, access, format);
+void Texture2DImpl::bind_image(uint32_t unit, GLenum access, GLenum format, uint32_t level) const {
+    glBindImageTexture(unit, id, level, GL_FALSE, 0, access, format);
 }
 
 void Texture2DImpl::unbind_image(uint32_t unit) const {
@@ -127,7 +111,7 @@ Texture3DImpl::Texture3DImpl(const std::string& name, uint32_t w, uint32_t h, ui
     glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, mipmap ? GL_LINEAR_MIPMAP_LINEAR : GL_LINEAR);
     glTexImage3D(GL_TEXTURE_3D, 0, internal_format, w, h, d, 0, format, type, data);
-    if (mipmap && data != 0) glGenerateMipmap(GL_TEXTURE_3D);
+    if (mipmap) glGenerateMipmap(GL_TEXTURE_3D);
     glBindTexture(GL_TEXTURE_3D, 0);
 }
 
@@ -141,7 +125,7 @@ void Texture3DImpl::resize(uint32_t w, uint32_t h, uint32_t d) {
     this->h = h;
     this->d = d;
     glBindTexture(GL_TEXTURE_3D, id);
-    glTexImage2D(GL_TEXTURE_3D, 0, internal_format, w, h, 0, format, type, 0);
+    glTexImage3D(GL_TEXTURE_3D, 0, internal_format, w, h, d, 0, format, type, 0);
     glBindTexture(GL_TEXTURE_3D, 0);
 }
 

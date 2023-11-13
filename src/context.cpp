@@ -26,6 +26,8 @@ static void glfw_error_func(int error, const char *description) {
     fprintf(stderr, "GLFW: Error %i: %s\n", error, description);
 }
 
+static bool show_gui = false;
+
 static void (*user_keyboard_callback)(int key, int scancode, int action, int mods) = 0;
 static void (*user_mouse_callback)(double xpos, double ypos) = 0;
 static void (*user_mouse_button_callback)(int button, int action, int mods) = 0;
@@ -34,11 +36,10 @@ static void (*user_resize_callback)(int w, int h) = 0;
 
 static void glfw_key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
     if (key == GLFW_KEY_F1 && action == GLFW_PRESS)
-        Context::instance().show_gui = !Context::instance().show_gui;
-    if (ImGui::GetIO().WantCaptureKeyboard) {
-        ImGui_ImplGlfw_KeyCallback(window, key, scancode, action, mods);
+        show_gui = !show_gui;
+    ImGui_ImplGlfw_KeyCallback(window, key, scancode, action, mods);
+    if (ImGui::GetIO().WantCaptureKeyboard)
         return;
-    }
     if (key == GLFW_KEY_ESCAPE)
         glfwSetWindowShouldClose(window, 1);
     if (user_keyboard_callback)
@@ -208,7 +209,7 @@ Context& Context::instance() {
 bool Context::running() { return !glfwWindowShouldClose(instance().glfw_window); }
 
 void Context::swap_buffers() {
-    if (instance().show_gui) gui_draw();
+    if (show_gui) gui_draw();
     ImGui::Render();
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
     instance().cpu_timer->end();

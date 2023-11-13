@@ -14,9 +14,9 @@
 CPPGL_NAMESPACE_BEGIN
 
 static Camera current_cam;
-static Camera default_cam("default");
 
 Camera current_camera() {
+    static Camera default_cam("default");
     return current_cam ? current_cam : default_cam;
 }
 

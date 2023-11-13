@@ -5,6 +5,7 @@
 #include "anim.h"
 #include "buffer.h"
 #include "camera.h"
+#include "camera-visualizer.h"
 #include "context.h"
 #include "debug.h"
 #include "drawelement.h"

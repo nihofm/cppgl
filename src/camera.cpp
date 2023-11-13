@@ -8,13 +8,15 @@
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/rotate_vector.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/quaternion.hpp>
+
 
 CPPGL_NAMESPACE_BEGIN
 
 static Camera current_cam;
+static Camera default_cam("default");
 
 Camera current_camera() {
-    static Camera default_cam("default");
     return current_cam ? current_cam : default_cam;
 }
 
@@ -49,10 +51,18 @@ CameraImpl::~CameraImpl() {}
 
 
 void CameraImpl::update() {
+    update_view();
+    update_proj();
+}
+
+void CameraImpl::update_view() {
     dir = glm::normalize(dir);
     up = glm::normalize(up);
     view = glm::lookAt(pos, pos + dir, up);
     view_normal = glm::transpose(glm::inverse(view));
+}
+
+void CameraImpl::update_proj() {
     proj = perspective ? (skewed ? get_projection_matrix(left, right, top, bottom, near, far)
                                  : glm::perspective(glm::radians(fov_degree), aspect_ratio(), near, far))
                         : glm::ortho(left, right, bottom, top, near, far);
@@ -78,6 +88,15 @@ void CameraImpl::from_lookat(const glm::vec3& pos, const glm::vec3& lookat, cons
     this->up = up;
     update();
 }
+
+void CameraImpl::load(const glm::vec3& pos, const glm::quat& rot) {
+    this->pos = pos;
+    this->view = glm::mat4_cast(rot);
+    this->dir = -glm::vec3(view[0][2], view[1][2], view[2][2]);
+    this->up = glm::vec3(view[0][1], view[1][1], view[2][1]);
+    this->update();
+}
+
 
 float CameraImpl::aspect_ratio() {
     const glm::ivec2 res = Context::resolution();

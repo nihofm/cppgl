@@ -309,14 +309,14 @@ void ShaderImpl::uniform(const std::string& name, int val) const {
     glUniform1i(loc, val);
 }
 
+void ShaderImpl::uniform(const std::string& name, uint32_t val) const {
+    int loc = glGetUniformLocation(id, name.c_str());
+    glUniform1i(loc, val);
+}
+
 void ShaderImpl::uniform(const std::string& name, int *val, uint32_t count) const {
     int loc = glGetUniformLocation(id, name.c_str());
     glUniform1iv(loc, count, val);
-}
-
-void ShaderImpl::uniform(const std::string& name, uint32_t val) const {
-    int loc = glGetUniformLocation(id, name.c_str());
-    glUniform1ui(loc, val);
 }
 
 void ShaderImpl::uniform(const std::string& name, uint32_t* val, uint32_t count) const {

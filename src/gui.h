@@ -5,6 +5,7 @@
 #include "anim.h"
 #include "mesh.h"
 #include "camera.h"
+#include "camera-visualizer.h"
 #include "shader.h"
 #include "texture.h"
 #include "material.h"

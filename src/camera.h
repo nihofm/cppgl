@@ -19,6 +19,8 @@ public:
     virtual ~CameraImpl();
 
     void update();
+    void update_view();
+    void update_proj();
 
     // move
     void forward(float by);
@@ -48,8 +50,9 @@ public:
     // data
     const std::string name;
     glm::vec3 pos, dir, up;             // camera coordinate system
-    float fov_degree, near, far;        // perspective projection
-    float left, right, bottom, top;     // orthographic projection or skewed frustum
+    float fov_degree;
+    float near, far;        // perspective projection
+    float left, right, bottom, top;     // orthographic projection
     bool perspective;                   // switch between perspective and orthographic (default: perspective)
     bool skewed;                        // switcg between normal perspective and skewed frustum (default: normal)
     bool fix_up_vector;                 // keep up vector fixed to avoid camera drift

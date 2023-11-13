@@ -166,7 +166,7 @@ std::vector<std::pair<Geometry, Material>> load_meshes_cpu(const fs::path& path,
     // load from disk
     Assimp::Importer importer;
     std::cout << "Loading: " << path << "..." << std::endl;
-    const aiScene* scene_ai = importer.ReadFile(path.string(), aiProcess_Triangulate | aiProcess_GenNormals);// | aiProcess_FlipUVs);
+    const aiScene* scene_ai = importer.ReadFile(path.string(), aiProcess_Triangulate | aiProcess_GenSmoothNormals);// | aiProcess_FlipUVs);
     if (!scene_ai) // handle error
         throw std::runtime_error("ERROR: Failed to load file: " + path.string() + "!");
     const std::string base_name = path.filename().replace_extension("").string();

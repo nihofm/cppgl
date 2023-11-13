@@ -55,8 +55,8 @@ public:
 
     // uniform upload handling
     void uniform(const std::string& name, int val) const;
-    void uniform(const std::string& name, int* val, uint32_t count) const;
     void uniform(const std::string& name, uint32_t val) const;
+    void uniform(const std::string& name, int* val, uint32_t count) const;
     void uniform(const std::string& name, uint32_t* val, uint32_t count) const;
     void uniform(const std::string& name, float val) const;
     void uniform(const std::string& name, float* val, uint32_t count) const;

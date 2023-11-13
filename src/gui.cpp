@@ -92,6 +92,34 @@ void gui_draw() {
     if (gui_show_cameras) {
         if (ImGui::Begin(std::string("Cameras (" + std::to_string(Camera::map.size()) + ")").c_str(), &gui_show_cameras)) {
             ImGui::Text("Current: %s", current_camera()->name.c_str());
+            
+            ImGui::Separator();
+            static bool debug_visualization = false;
+            ImGui::Checkbox("Visualization", &debug_visualization);
+            if(debug_visualization){
+                if(!CameraVisualization::display_got_called) 
+                ImGui::Text(
+                    "You need to call CameraVisualization::display_all_active() to activate the camera visualization debugging helpers."
+                        );
+                else {
+                    ImGui::ColorPicker3("Use Uniform Color", &CameraVisualization::uniform_color[0]);   
+                    ImGui::SliderFloat("Far", &CameraVisualization::clamp_far, 0.0f, 100.f, "%.3f"); 
+                    ImGui::Checkbox("Render Lines only", &CameraVisualization::lines);
+                    if(CameraVisualization::lines){
+                        ImGui::SameLine();
+                        ImGui::SliderFloat("Line Width", &CameraVisualization::line_width, 1.f, 10.f, "%.1f");
+                    }
+                    ImGui::Checkbox("Show all", &CameraVisualization::display_all_cameras);
+                    if(!CameraVisualization::display_all_cameras){
+                    ImGui::Text("Show active cameras:");
+                        for (auto& [name, active] : CameraVisualization::active_cameras) {
+                            ImGui::Checkbox(name.c_str(), &active);
+                        }
+                    }
+                }  
+            }
+            ImGui::Separator();
+            
             for (auto& [name, cam] : Camera::map) {
                 if (ImGui::CollapsingHeader(name.c_str()))
                     gui_display_camera(cam);

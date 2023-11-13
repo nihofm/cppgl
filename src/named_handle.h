@@ -54,10 +54,11 @@ public:
     // return mapped handle for given name
     static NamedHandle<T> find(const std::string& name) {
         const std::lock_guard<std::mutex> lock(mutex);
-        return map[name];
+        return map.at(name);
     }
     // remove element from map for given name
     static void erase(const std::string& name) {
+        const std::lock_guard<std::mutex> lock(mutex);
         map.erase(name);
     }
     // clear saved handles and free unsused memory

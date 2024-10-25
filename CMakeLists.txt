@@ -14,7 +14,6 @@ endif()
 # cmake options
 
 option(CPPGL_BUILD_EXAMPLES "" OFF)
-set(CPPGL_BUILD_EXAMPLES ON CACHE BOOL "" FORCE) # TODO: remove this
 
 # ---------------------------------------------------------------------
 # subtrees

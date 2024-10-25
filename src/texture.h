@@ -53,7 +53,6 @@ public:
 };
 
 using Texture2D = NamedHandle<Texture2DImpl>;
-template class _API NamedHandle<Texture2DImpl>; //needed for Windows DLL export
 
 // ----------------------------------------------------
 // Texture3D
@@ -93,6 +92,5 @@ public:
 };
 
 using Texture3D = NamedHandle<Texture3DImpl>;
-template class _API NamedHandle<Texture3DImpl>; //needed for Windows DLL export
 
 CPPGL_NAMESPACE_END

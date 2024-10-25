@@ -96,7 +96,6 @@ public:
 };
 
 using TimerQuery = NamedHandle<TimerQueryImpl>;
-template class _API NamedHandle<TimerQueryImpl>; //needed for Windows DLL export
 
 // -------------------------------------------------------
 // (GPU) TimerQueryGL (in ms)
@@ -120,7 +119,6 @@ public:
 };
 
 using TimerQueryGL = NamedHandle<TimerQueryGLImpl>;
-template class _API NamedHandle<TimerQueryGLImpl>; //needed for Windows DLL export
 
 // -------------------------------------------------------
 // (GPU) PrimitiveQueryGL
@@ -144,7 +142,6 @@ public:
 };
 
 using PrimitiveQueryGL = NamedHandle<PrimitiveQueryGLImpl>;
-template class _API NamedHandle<PrimitiveQueryGLImpl>; //needed for Windows DLL export
 
 // -------------------------------------------------------
 // (GPU) FragmentQueryGL
@@ -168,6 +165,5 @@ public:
 };
 
 using FragmentQueryGL = NamedHandle<FragmentQueryGLImpl>;
-template class _API NamedHandle<FragmentQueryGLImpl>; //needed for Windows DLL export
 
 CPPGL_NAMESPACE_END

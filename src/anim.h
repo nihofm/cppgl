@@ -67,9 +67,7 @@ template <typename T> T AnimationImpl::eval_data(const std::string& name) const 
 }
 
 using Animation = NamedHandle<AnimationImpl>;
-template class _API NamedHandle<AnimationImpl>; //needed for Windows DLL export
 
-// TODO move this to own module
 Animation current_animation();
 void make_animation_current(const Animation& anim);
 

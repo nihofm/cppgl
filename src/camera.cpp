@@ -47,7 +47,6 @@ CameraImpl::CameraImpl(const std::string& name) : name(name), pos(0, 0, 0), dir(
 
 CameraImpl::~CameraImpl() {}
 
-
 void CameraImpl::update() {
     dir = glm::normalize(dir);
     up = glm::normalize(up);

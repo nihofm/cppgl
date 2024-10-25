@@ -63,7 +63,6 @@ public:
 };
 
 using Mesh = NamedHandle<MeshImpl>;
-template class _API NamedHandle<MeshImpl>; //needed for Windows DLL export
 
 // ------------------------------------------
 // Mesh loader (Ass-Imp)

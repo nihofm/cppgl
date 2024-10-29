@@ -12,6 +12,6 @@ RUN apt-get install -y build-essential libx11-dev xorg-dev libopengl-dev freeglu
 WORKDIR /workspace
 COPY CMakeLists.txt ./
 COPY src/ src/
-COPY subtrees/ subtrees/
+COPY submodules/ subdmodules/
 COPY examples/ examples/
 RUN cmake -S . -B build -DCPPGL_BUILD_EXAMPLES=ON -DCMAKE_BUILD_TYPE=Release -Wno-dev && cmake --build build --parallel

@@ -6,10 +6,10 @@ add_library(cppgl STATIC ${SOURCES})
 
 # public interface (cppgl.h is an available header file for all dependant projects)
 target_include_directories(cppgl PUBLIC .)
-target_include_directories(cppgl PUBLIC ../subtrees/glm)
-target_include_directories(cppgl PRIVATE ../subtrees/glew/include)
-target_include_directories(cppgl PRIVATE ../subtrees/glfw/include)
-target_include_directories(cppgl PRIVATE ../subtrees/assimp/include)
+target_include_directories(cppgl PUBLIC ../submodules/glm)
+target_include_directories(cppgl PRIVATE ../submodules/glew-cmake/include)
+target_include_directories(cppgl PRIVATE ../submodules/glfw/include)
+target_include_directories(cppgl PRIVATE ../submodules/assimp/include)
 
 # ----------------------------------------------------------
 # dependencies

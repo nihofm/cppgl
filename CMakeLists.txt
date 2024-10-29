@@ -16,14 +16,14 @@ endif()
 option(CPPGL_BUILD_EXAMPLES "" OFF)
 
 # ---------------------------------------------------------------------
-# subtrees
+# submodules
 
 set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
 set(BUILD_STATIC_LIBS ON CACHE BOOL "" FORCE)
 
 set(glew-cmake_BUILD_STATIC ON CACHE BOOL "" FORCE)
 set(glew-cmake_BUILD_SHARED OFF CACHE BOOL "" FORCE)
-add_subdirectory(subtrees/glew)
+add_subdirectory(submodules/glew-cmake)
 
 set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL " " FORCE)
 set(GLFW_BUILD_TESTS OFF CACHE BOOL " " FORCE)
@@ -31,12 +31,12 @@ set(GLFW_BUILD_DOCS OFF CACHE BOOL " " FORCE)
 set(GLFW_BUILD_INSTALL OFF CACHE BOOL " " FORCE)
 set(GLFW_INSTALL OFF CACHE BOOL " " FORCE)
 set(GLFW_USE_CHDIR OFF CACHE BOOL " " FORCE)
-add_subdirectory(subtrees/glfw)
+add_subdirectory(submodules/glfw)
 
 # assimp
 set(ASSIMP_BUILD_ASSIMP_TOOLS OFF CACHE BOOL "" FORCE)
 set(ASSIMP_BUILD_TESTS OFF CACHE BOOL "" FORCE)
-add_subdirectory(subtrees/assimp)
+add_subdirectory(submodules/assimp)
 
 # ---------------------------------------------------------------------
 # compiler options

@@ -7,5 +7,5 @@ build_ubuntu:
         GIT_SUBMODULE_STRATEGY: recursive
     script:
         - apt-get update && apt-get upgrade -y
-        - DEBIAN_FRONTEND=noninteractive nice apt-get install -y build-essential libgomp1 cmake libx11-dev xorg-dev libopengl-dev freeglut3-dev ninja-build
+        - DEBIAN_FRONTEND=noninteractive nice apt-get install -y build-essential libwayland-dev libxkbcommon-dev xorg-dev libopengl-dev freeglut3-dev cmake ninja-build
         - cmake -S . -B build -DCPPGL_BUILD_EXAMPLES=ON -DCMAKE_BUILD_TYPE=Release -G Ninja -Wno-dev && nice cmake --build build --parallel

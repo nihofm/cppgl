@@ -3,8 +3,9 @@ build_ubuntu:
     image: ubuntu
     tags: 
         - ubuntu
+    variables:
+        GIT_SUBMODULE_STRATEGY: recursive
     script:
         - apt-get update && apt-get upgrade -y
         - DEBIAN_FRONTEND=noninteractive nice apt-get install -y build-essential libgomp1 cmake libx11-dev xorg-dev libopengl-dev freeglut3-dev ninja-build
-        - git submodule update --init --recursive
         - cmake -S . -B build -DCPPGL_BUILD_EXAMPLES=ON -DCMAKE_BUILD_TYPE=Release -G Ninja -Wno-dev && nice cmake --build build --parallel

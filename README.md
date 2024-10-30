@@ -11,7 +11,7 @@ OpenGL framework for use in teaching and research with focus on simplicity and r
 
 ### Windows
 
-    Visual Studio 2019 or newer with cmake support
+    Visual Studio build tools 2019 or newer and editor with CMake support
 
 ## Build
 

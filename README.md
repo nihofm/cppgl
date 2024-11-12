@@ -7,12 +7,22 @@ OpenGL framework for use in teaching and research with focus on simplicity and r
 
 ### Ubuntu (22.04)
 
-    apt-get install -y build-essential libx11-dev xorg-dev libopengl-dev freeglut3-dev cmake
-    apt-get install -y libassimp-dev # optional, to reduce compile times
+    apt-get install -y build-essential libwayland-dev libxkbcommon-dev xorg-dev libopengl-dev freeglut3-dev cmake
 
 ### Windows
 
-    Visual Studio 2019 or newer with cmake support
+    Visual Studio build tools 2019 or newer and editor with CMake support
+
+## Clone
+
+Use:
+
+    git clone --recursive git@git9.cs.fau.de:renderingframeworks/cppgl.git
+
+
+Or, after clone use:
+
+    git submodule update --init
 
 ## Build
 

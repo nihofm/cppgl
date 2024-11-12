@@ -59,6 +59,5 @@ void gui_display_drawelement(Drawelement& elem);
 void gui_display_animation(const Animation& anim);
 void gui_display_query_timer(const Query& query, const char* label="");
 void gui_display_query_counter(const Query& query, const char* label="");
-// TODO add more
 
 CPPGL_NAMESPACE_END

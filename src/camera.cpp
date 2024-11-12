@@ -49,7 +49,6 @@ CameraImpl::CameraImpl(const std::string& name) : name(name), pos(0, 0, 0), dir(
 
 CameraImpl::~CameraImpl() {}
 
-
 void CameraImpl::update() {
     update_view();
     update_proj();

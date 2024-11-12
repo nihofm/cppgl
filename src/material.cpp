@@ -6,7 +6,6 @@ CPPGL_NAMESPACE_BEGIN
 MaterialImpl::MaterialImpl(const std::string& name) : name(name) {}
 
 MaterialImpl::MaterialImpl(const std::string& name, const fs::path& base_path, const aiMaterial* mat_ai) : name(name) {
-    // TODO include more (useful) assimp params?
     // ambient, diffuse, specular and emissive color are handled via fallback 1x1 textures
     // parse assimp material parameters (http://assimp.sourceforge.net/lib_html/materials.html)
 

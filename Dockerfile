@@ -6,12 +6,12 @@ RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
 # install deps
 RUN apt-get update && apt-get upgrade -y
-RUN apt-get install -y build-essential libx11-dev xorg-dev libopengl-dev freeglut3-dev cmake
+RUN apt-get install -y build-essential libwayland-dev libxkbcommon-dev xorg-dev libopengl-dev freeglut3-dev cmake ninja-build
 
 # build
 WORKDIR /workspace
 COPY CMakeLists.txt ./
 COPY src/ src/
-COPY subtrees/ subtrees/
+COPY submodules/ submodules/
 COPY examples/ examples/
-RUN cmake -S . -B build -DCPPGL_BUILD_EXAMPLES=ON -DCMAKE_BUILD_TYPE=Release -Wno-dev && cmake --build build --parallel
+RUN cmake -S . -B build -DCPPGL_BUILD_EXAMPLES=ON -DCMAKE_BUILD_TYPE=Release -G Ninja -Wno-dev && cmake --build build --parallel

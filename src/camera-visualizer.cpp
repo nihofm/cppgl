@@ -9,51 +9,9 @@
 CPPGL_NAMESPACE_BEGIN
 using namespace CameraVisualization;
 
-// // ------------------------------------------------
-// // prototypes
-// Drawelement Cube::prototype;
-
-
-// // ------------------------------------------------
-// // Cube
-
-
-// class Cube {
-// public:
-//     Cube();
-//     ~Cube();
-
-//     void draw();
-//     void update(const glm::mat4& trans);
-
-//     // data
-//     glm::mat4 trafo;
-// 	static Drawelement prototype;
-// };
-
-// Cube::Cube() {
-//     trafo = glm::mat4(1);// glm::scale(glm::mat4(1), glm::vec3(.2f,.2f,.2f));
-// }
-
-// void Cube::update(const glm::mat4& trans){
-//     trafo = trans*glm::scale(glm::mat4(1), glm::vec3(.2f,.2f,.2f));;
-// }
-
-// void Cube::draw() {
-//     prototype->model = trafo;
-//     prototype->bind();
-//     prototype->draw();
-//     prototype->unbind();
-// }
-
-// Cube::~Cube() {
-// }
-
 static bool initialized = false;
 static Mesh mesh;
 static GLuint gl_shader;
-
-
 
 bool CameraVisualization::lines = true;
 float CameraVisualization::line_width = 3.f;
@@ -313,9 +271,7 @@ void CameraVisualization::display(const glm::mat4& view, const glm::mat4& proj){
         glLineWidth(line_width);  
     }
 
-    // std::cout << "bind shader" << std::endl; 
     glUseProgram(gl_shader); 
-    // std::cout << "bind uniforms" << std::endl; 
     glUniformMatrix4fv(glGetUniformLocation(gl_shader, "inv_frustum_proj")
                         , 1, GL_FALSE, glm::value_ptr(glm::inverse(proj)));
     glUniformMatrix4fv(glGetUniformLocation(gl_shader, "inv_frustum_view")
@@ -328,9 +284,7 @@ void CameraVisualization::display(const glm::mat4& view, const glm::mat4& proj){
     glUniform3f(glGetUniformLocation(gl_shader, "uniform_color"), uniform_color.x, uniform_color.y, uniform_color.z);
 
 
-    // std::cout << "bind vao" << std::endl; 
     glBindVertexArray(mesh->vao);
-    // std::cout << "draw" << std::endl; 
     mesh->draw();
     glBindVertexArray(0);
     glUseProgram(0); 
@@ -341,10 +295,9 @@ void CameraVisualization::display(const glm::mat4& view, const glm::mat4& proj){
         glEnable(GL_CULL_FACE);
 }
 
-void CameraVisualization::display_view(const Texture2D& tex){
-    // TODO
-}
-
+// void CameraVisualization::display_view(const Texture2D& tex){
+//     // TODO
+// }
 
 
 CPPGL_NAMESPACE_END

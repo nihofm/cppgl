@@ -26,7 +26,7 @@ void display_all_active();
 void display(const std::string& name);
 void display(const Camera& camera);
 void display(const glm::mat4& view, const glm::mat4& proj);
-void display_view(const Texture2D& tex);
+// void display_view(const Texture2D& tex); // TODO
 
 };
 

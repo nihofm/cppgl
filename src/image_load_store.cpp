@@ -11,8 +11,8 @@ CPPGL_NAMESPACE_BEGIN
 ///////////////////////
 //load
 
-std::tuple<std::vector<uint8_t>, int, int, int, bool> image_load(const std::filesystem::path& path) {
-    stbi_set_flip_vertically_on_load(1); // important: the default value for this is different on windows and linux
+std::tuple<std::vector<uint8_t>, int, int, int, bool> image_load(const std::filesystem::path& path, bool flip) {
+    stbi_set_flip_vertically_on_load(flip); // important: the default value for this is different on windows and linux
 
     uint8_t* data = 0;
     int w_out, h_out, channels_out;

@@ -1,5 +1,6 @@
 #include "camera-visualizer.h"
 #include <glm/gtc/type_ptr.hpp>
+#include <sstream>
 
 #include <glm/gtc/matrix_transform.hpp>
 #define GLM_ENABLE_EXPERIMENTAL

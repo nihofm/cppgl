@@ -21,7 +21,7 @@ MaterialImpl::MaterialImpl(const std::string& name, const fs::path& base_path, c
     if (mat_ai->Get(AI_MATKEY_OPACITY, float_value) == AI_SUCCESS)
         float_map["opacity"] = float_value;
     if (mat_ai->Get(AI_MATKEY_SHININESS, float_value) == AI_SUCCESS)
-        float_map["roughness"] = sqrtf(2.f / (float_value + 2.f));
+        float_map["roughness_constant"] = sqrtf(2.f / (float_value + 2.f));
     if (mat_ai->Get(AI_MATKEY_REFRACTI, float_value) == AI_SUCCESS)
         float_map["ior"] = float_value;
 
